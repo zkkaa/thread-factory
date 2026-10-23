@@ -128,7 +128,7 @@ export interface ThreadDef {
 
 ```ts
 export interface SimulationEngine {
-  load(level: LevelDefinition, setup: PlayerSetup, seed: number): void;
+  load(config: EngineConfig, seed: number): void;
   step(): StepResult;                 // tepat satu tick
   reset(seed?: number): void;
   getSnapshot(): Readonly<Snapshot>;  // keadaan penuh saat ini (immutable bagi pemanggil)
@@ -152,6 +152,8 @@ export type SimEvent =
 ```
 
 Engine **tidak punya timer**. Ia hanya maju saat `step()` dipanggil.
+
+**Catatan (disepakati saat T-011):** engine menerima `EngineConfig` (didefinisikan di `engine/types.ts`), **bukan** `LevelDefinition`. Dengan begitu `engine/` tidak perlu mengimpor `levels/` (menghindari ketergantungan melingkar). `SimulationController` yang menerjemahkan `LevelDefinition` + alat pilihan pemain (lewat `applyTools`) menjadi `EngineConfig`. Isi `EngineConfig`: `threads`, `sharedVars`, `mutexes`, `semaphores` (nama → nilai awal), `conditions`, `scheduler`, dan `maxTicks` (batas pengaman).
 
 ### 4.4 Determinisme dan scheduler
 
