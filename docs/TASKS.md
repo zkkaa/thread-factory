@@ -42,14 +42,14 @@
 
 ## Fase 2 — Mutex dan Alat Pemain (Minggu 1)
 
-- [x] **T-018** `P0` `primitives/mutex.ts`: `LOCK`/`UNLOCK`, pemilik, antrean FIFO, thread menunggu berstatus WAITING.  
+- [x] **T-018** `P0` `primitives/mutex.ts`: `LOCK`/`UNLOCK`, pemilik, antrean FIFO, thread menunggu berstatus WAITING.
 - [x] **T-019** `P0` `engine/tools.ts`: `applyTools()` mengubah rentang pengaman menjadi `LOCK`/`UNLOCK` (fungsi murni).
 - [x] **T-020** `P0` Tes mutex: tidak pernah dimiliki dua thread; `UNLOCK` oleh non-pemilik menghasilkan error jelas.
-- [ ] **T-021** `P0` Tes Level 1-1 dengan mutex: nilai akhir = target pada banyak seed (mis. 1.000).
+- [x] **T-021** `P0` Tes Level 1-1 dengan mutex: nilai akhir = target pada banyak seed (mis. 1.000).
 
 ## Fase 3 — Level 1-1 sebagai Data dan Controller (Minggu 1)
 
-- [ ] **T-022** `P0` `levels/types.ts` (`LevelDefinition`) dan `levels/module1/level-1-1.ts` (dua robot, 5 produk masing-masing, target 10).
+- [] **T-022** `P0` `levels/types.ts` (`LevelDefinition`) dan `levels/module1/level-1-1.ts` (dua robot, 5 produk masing-masing, target 10).
 - [ ] **T-023** `P0` Tentukan `tutorialSeed` atau `Scripted` yang **pasti** memunculkan race condition; tulis tesnya.
 - [ ] **T-024** `P0` `controller/SimulationController.ts`: state `idle/running/paused/finished`, jam tick (akumulator `requestAnimationFrame`), `run/pause/step/reset/setSpeed`, `subscribe`.
 - [ ] **T-025** `P0` Controller: `placeTool`/`removeTool`; alat terkunci saat simulasi berjalan.
