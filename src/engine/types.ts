@@ -121,7 +121,7 @@ export interface ConditionSnapshot {
 /**
  * Keadaan penuh simulasi. Bagi pemanggil (controller, Phaser, React) snapshot
  * bersifat BACA-SAJA: jangan dimodifikasi.
- * Metrik (throughput, lostUpdates, dst.) ditambahkan di T-016.
+ * Metrik (throughput, lostUpdates, dst.) dihitung terpisah oleh metrics.ts (computeMetrics).
  */
 export interface Snapshot {
   tick: number;
