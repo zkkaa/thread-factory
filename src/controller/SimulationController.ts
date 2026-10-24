@@ -4,6 +4,7 @@ import type { SimEvent, SimulationEngine, Snapshot } from '../engine/types';
 import type { LevelDefinition } from '../levels/types';
 import { buildEngineConfig } from './buildEngineConfig';
 import { browserClock, type Clock } from './clock';
+import { evaluateLevel, type LevelResult } from './evaluateLevel';
 
 export type RunState = 'idle' | 'running' | 'paused' | 'finished';
 export type Speed = 0.5 | 1 | 5;
@@ -33,8 +34,13 @@ export interface ControllerState {
   readonly seed: number;
   /** Alat yang sedang dipasang pemain (salinan; untuk digambar UI dan Phaser). */
   readonly tools: readonly PlacedTool[];
-  /** Pesan error dari engine (mis. UNLOCK oleh non-pemilik); null bila tidak ada. */
+  /**
+   * Pesan error dari engine (mis. UNLOCK oleh non-pemilik); null bila tidak ada.
+   * Setelah error, simulasi dianggap rusak: Run dan Step ditolak sampai Reset.
+   */
   readonly error: string | null;
+  /** Hasil penilaian; hanya terisi saat runState 'finished'. null di keadaan lain. */
+  readonly result: LevelResult | null;
 }
 
 export type ControllerListener = (state: ControllerState) => void;
@@ -48,6 +54,7 @@ const INITIAL_STATE: ControllerState = {
   seed: DEFAULT_SEED,
   tools: [],
   error: null,
+  result: null,
 };
 
 /** Salinan alat agar perubahan oleh pemanggil setelah placeTool tidak ikut mengubah state. */
@@ -102,6 +109,7 @@ export class SimulationController {
       seed: nextSeed,
       tools: [],
       error: null,
+      result: null,
     });
   }
 
@@ -137,7 +145,7 @@ export class SimulationController {
     if (!this.canStart()) return;
     // Jam dinyalakan sebelum setState agar pause() dari listener tetap efektif.
     this.startClock();
-    this.setState({ runState: 'running', events: [], error: null });
+    this.setState({ runState: 'running', events: [] });
   }
 
   pause(): void {
@@ -156,6 +164,7 @@ export class SimulationController {
    * Kembali ke awal. Engine dimuat ulang (bukan engine.reset) karena
    * konfigurasinya harus dibangun lagi dari level + alat pemain terbaru.
    * Alat pemain tetap terpasang, tetapi kunci alat terbuka lagi (state idle).
+   * Reset juga satu-satunya cara memulihkan simulasi setelah error.
    */
   reset(seed?: number): void {
     const { level } = this.state;
@@ -169,6 +178,7 @@ export class SimulationController {
       events: [],
       seed: nextSeed,
       error: null,
+      result: null,
     });
   }
 
@@ -183,9 +193,14 @@ export class SimulationController {
     this.listeners.clear();
   }
 
+  /**
+   * Run/Step hanya sah dari idle atau paused, dan tidak boleh dilanjutkan
+   * setelah error engine: simulasi yang gagal di tengah tick sudah tidak
+   * konsisten, jadi pemain harus Reset.
+   */
   private canStart(): boolean {
-    const { level, runState } = this.state;
-    return level !== null && (runState === 'idle' || runState === 'paused');
+    const { level, runState, error } = this.state;
+    return level !== null && error === null && (runState === 'idle' || runState === 'paused');
   }
 
   /**
@@ -215,6 +230,7 @@ export class SimulationController {
       snapshot: this.engine.getSnapshot(),
       events: [],
       error: null,
+      result: null,
     });
   }
 
@@ -244,7 +260,19 @@ export class SimulationController {
     else if (finished) runState = 'finished';
     if (runState !== 'running') this.stopClock();
 
-    this.setState({ runState, snapshot: this.engine.getSnapshot(), events, error });
+    const snapshot = this.engine.getSnapshot();
+    let result: LevelResult | null = null;
+    const { level } = this.state;
+    if (runState === 'finished' && level !== null) {
+      try {
+        result = evaluateLevel(level, snapshot);
+      } catch (e) {
+        // Data level yang salah tidak boleh mematikan jam/rAF; laporkan sebagai error.
+        error = `Gagal menilai hasil: ${e instanceof Error ? e.message : String(e)}`;
+      }
+    }
+
+    this.setState({ runState, snapshot, events, error, result });
   }
 
   private startClock(): void {
