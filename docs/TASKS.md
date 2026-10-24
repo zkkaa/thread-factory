@@ -52,15 +52,15 @@
 - [] **T-022** `P0` `levels/types.ts` (`LevelDefinition`) dan `levels/module1/level-1-1.ts` (dua robot, 5 produk masing-masing, target 10).
 - [ ] **T-023** `P0` Tentukan `tutorialSeed` atau `Scripted` yang **pasti** memunculkan race condition; tulis tesnya.
 - [ ] **T-024** `P0` `controller/SimulationController.ts`: state `idle/running/paused/finished`, jam tick (akumulator `requestAnimationFrame`), `run/pause/step/reset/setSpeed`, `subscribe`.
-- [ ] **T-025** `P0` Controller: `placeTool`/`removeTool`; alat terkunci saat simulasi berjalan.
+- [x] **T-025** `P0` Controller: `placeTool`/`removeTool`; alat terkunci saat simulasi berjalan.
 
 ## Fase 4 — Renderer Minimal Phaser (Minggu 1)
 
-- [ ] **T-026** `P0` `game/theme.ts` (warna state, ukuran ubin) dan `LevelScene` yang membangun view dari snapshot awal.
-- [ ] **T-027** `P0` `RobotView` (kotak berwarna + label sesuai state) dan `BoardView` (menampilkan nilai Papan Stok).
-- [ ] **T-028** `P0` Animasi: robot bergerak per ubin mengikuti event; durasi tween = `tickInterval / speed`.
-- [ ] **T-029** `P0` `DoorView` (pintu mutex) di slot yang tersedia; tampilan robot menunggu di depan pintu.
-- [ ] **T-030** `P0` Reset membangun ulang view dari snapshot.
+- [x] **T-026** `P0` `game/theme.ts` (warna state, ukuran ubin) dan `LevelScene` yang membangun view dari snapshot awal.
+- [x] **T-027** `P0` `RobotView` (kotak berwarna + label sesuai state) dan `BoardView` (menampilkan nilai Papan Stok).
+- [x] **T-028** `P0` Animasi: robot bergerak per ubin mengikuti event; durasi tween = `tickInterval / speed`.
+- [x] **T-029** `P0` `DoorView` (pintu mutex) di slot yang tersedia; tampilan robot menunggu di depan pintu.
+- [x] **T-030** `P0` Reset membangun ulang view dari snapshot.
 
 ## Fase 5 — Control Panel React (Minggu 1)
 

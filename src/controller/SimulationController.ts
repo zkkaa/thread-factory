@@ -31,6 +31,8 @@ export interface ControllerState {
   readonly events: readonly SimEvent[];
   readonly speed: Speed;
   readonly seed: number;
+  /** Alat yang sedang dipasang pemain (salinan; untuk digambar UI dan Phaser). */
+  readonly tools: readonly PlacedTool[];
   /** Pesan error dari engine (mis. UNLOCK oleh non-pemilik); null bila tidak ada. */
   readonly error: string | null;
 }
@@ -44,8 +46,14 @@ const INITIAL_STATE: ControllerState = {
   events: [],
   speed: 1,
   seed: DEFAULT_SEED,
+  tools: [],
   error: null,
 };
+
+/** Salinan alat agar perubahan oleh pemanggil setelah placeTool tidak ikut mengubah state. */
+function copyTool(tool: PlacedTool): PlacedTool {
+  return { ...tool, spans: tool.spans.map((span) => ({ ...span })) };
+}
 
 /**
  * Satu-satunya pemilik jam simulasi dan satu-satunya pemanggil engine.step().
@@ -55,7 +63,8 @@ const INITIAL_STATE: ControllerState = {
  */
 export class SimulationController {
   private state: ControllerState = INITIAL_STATE;
-  // Alat pemain. Diisi/dikosongkan oleh placeTool/removeTool (T-025); sementara selalu kosong.
+  // Alat pemain, dipakai membangun EngineConfig. Diubah hanya lewat placeTool/removeTool
+  // (dan dikosongkan loadLevel); salinannya selalu dicerminkan ke state.tools.
   private placedTools: PlacedTool[] = [];
   private readonly listeners = new Set<ControllerListener>();
   private frameHandle: number | null = null;
@@ -91,8 +100,37 @@ export class SimulationController {
       snapshot: this.engine.getSnapshot(),
       events: [],
       seed: nextSeed,
+      tools: [],
       error: null,
     });
+  }
+
+  /**
+   * Memasang alat. Hanya boleh saat idle (sebelum Run); setelah itu pemain
+   * harus Reset dulu. Melempar Error bila terkunci, alat tidak tersedia di
+   * level, id sudah dipakai, atau konfigurasinya tidak valid.
+   */
+  placeTool(tool: PlacedTool): void {
+    const level = this.requireEditableLevel();
+    if (!level.availableTools.includes(tool.kind)) {
+      throw new Error(`Alat "${tool.kind}" tidak tersedia di level ${level.id}.`);
+    }
+    if (this.placedTools.some((placed) => placed.id === tool.id)) {
+      throw new Error(`Alat dengan id "${tool.id}" sudah terpasang.`);
+    }
+    this.commitTools(level, [...this.placedTools, copyTool(tool)]);
+  }
+
+  /** Melepas alat berdasarkan id. Aturan penguncian sama dengan placeTool. */
+  removeTool(id: string): void {
+    const level = this.requireEditableLevel();
+    if (!this.placedTools.some((placed) => placed.id === id)) {
+      throw new Error(`Alat dengan id "${id}" tidak ditemukan.`);
+    }
+    this.commitTools(
+      level,
+      this.placedTools.filter((placed) => placed.id !== id),
+    );
   }
 
   run(): void {
@@ -117,6 +155,7 @@ export class SimulationController {
   /**
    * Kembali ke awal. Engine dimuat ulang (bukan engine.reset) karena
    * konfigurasinya harus dibangun lagi dari level + alat pemain terbaru.
+   * Alat pemain tetap terpasang, tetapi kunci alat terbuka lagi (state idle).
    */
   reset(seed?: number): void {
     const { level } = this.state;
@@ -147,6 +186,36 @@ export class SimulationController {
   private canStart(): boolean {
     const { level, runState } = this.state;
     return level !== null && (runState === 'idle' || runState === 'paused');
+  }
+
+  /**
+   * Alat hanya boleh diubah saat idle. Pada paused/finished simulasi sudah
+   * pernah berjalan, jadi mengubah alat akan membuat hasil di layar tidak
+   * sesuai dengan konfigurasinya. Aturan ini dijaga di sini, bukan hanya di UI.
+   */
+  private requireEditableLevel(): LevelDefinition {
+    const { level, runState } = this.state;
+    if (level === null) throw new Error('Belum ada level yang dimuat.');
+    if (runState !== 'idle') {
+      throw new Error('Alat terkunci karena simulasi sudah dimulai; tekan Reset dulu.');
+    }
+    return level;
+  }
+
+  /**
+   * Menerapkan daftar alat baru. Engine dimuat ulang dengan konfigurasi baru
+   * SEBELUM daftar alat disimpan: bila alat tidak valid (mis. rentang di luar
+   * program), load() melempar error dan state lama tetap utuh.
+   */
+  private commitTools(level: LevelDefinition, next: PlacedTool[]): void {
+    this.engine.load(buildEngineConfig(level, next), this.state.seed);
+    this.placedTools = next;
+    this.setState({
+      tools: next.map(copyTool),
+      snapshot: this.engine.getSnapshot(),
+      events: [],
+      error: null,
+    });
   }
 
   private setState(patch: Partial<ControllerState>): void {
