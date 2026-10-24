@@ -52,7 +52,7 @@
 - [] **T-022** `P0` `levels/types.ts` (`LevelDefinition`) dan `levels/module1/level-1-1.ts` (dua robot, 5 produk masing-masing, target 10).
 - [ ] **T-023** `P0` Tentukan `tutorialSeed` atau `Scripted` yang **pasti** memunculkan race condition; tulis tesnya.
 - [ ] **T-024** `P0` `controller/SimulationController.ts`: state `idle/running/paused/finished`, jam tick (akumulator `requestAnimationFrame`), `run/pause/step/reset/setSpeed`, `subscribe`.
-- [ ] **T-025** `P0` Controller: `placeTool`/`removeTool`; alat terkunci saat simulasi berjalan.
+- [x] **T-025** `P0` Controller: `placeTool`/`removeTool`; alat terkunci saat simulasi berjalan.
 
 ## Fase 4 — Renderer Minimal Phaser (Minggu 1)
 
