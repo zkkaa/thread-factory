@@ -1,10 +1,12 @@
 import { createPrng } from './prng';
+import { Mutex } from './primitives/mutex';
 import { createScheduler, type Scheduler } from './scheduler';
 import {
   createThread,
   executeInstruction,
   snapshotThread,
   transition,
+  type SyncContext,
   type ThreadRuntime,
 } from './thread';
 import type {
@@ -30,6 +32,8 @@ function isRunnable(thread: ThreadRuntime): boolean {
  *  2. scheduler memilih hingga `cores` thread yang boleh jalan
  *  3. thread RUNNING yang tidak terpilih turun ke READY (context switch)
  *  4. thread terpilih menjadi RUNNING dan mengeksekusi SATU instruksi
+ *     (LOCK pada mutex terpakai membuat thread WAITING; UNLOCK membangunkan
+ *     thread terdepan di antrean)
  *  5. simulasi selesai bila semua TERMINATED atau tick mencapai maxTicks
  */
 export class Engine implements SimulationEngine {
@@ -39,6 +43,8 @@ export class Engine implements SimulationEngine {
   private finished = false;
   private threads: ThreadRuntime[] = [];
   private threadById = new Map<string, ThreadRuntime>();
+  private mutexes = new Map<string, Mutex>();
+  private sync: SyncContext | null = null;
   private sharedVars: Record<string, number> = {};
   private scheduler: Scheduler | null = null;
 
@@ -58,7 +64,17 @@ export class Engine implements SimulationEngine {
     this.finished = false;
     this.sharedVars = { ...config.sharedVars };
     this.threads = config.threads.map(createThread);
-    this.threadById = new Map(this.threads.map((t) => [t.def.id, t]));
+    const threadById = new Map(this.threads.map((t) => [t.def.id, t]));
+    this.threadById = threadById;
+    this.mutexes = new Map(config.mutexes.map((name) => [name, new Mutex(name)]));
+    this.sync = {
+      mutexes: this.mutexes,
+      getThread(id) {
+        const thread = threadById.get(id);
+        if (thread === undefined) throw new Error(`Thread tidak ada: "${id}"`);
+        return thread;
+      },
+    };
     this.scheduler = scheduler;
   }
 
@@ -74,7 +90,7 @@ export class Engine implements SimulationEngine {
    * (tick tidak bertambah dan events kosong), sehingga aman dipanggil berulang.
    */
   step(): StepResult {
-    if (this.config === null || this.scheduler === null) {
+    if (this.config === null || this.scheduler === null || this.sync === null) {
       throw new Error('step() dipanggil sebelum load()');
     }
     if (this.finished) {
@@ -100,7 +116,8 @@ export class Engine implements SimulationEngine {
     const runnable = this.threads.filter(isRunnable).map((t) => t.def.id);
     if (runnable.length === 0) {
       // Tidak ada thread yang bisa jalan padahal belum semua selesai (semua
-      // WAITING). Berhenti di sini daripada berputar sampai maxTicks.
+      // WAITING, mis. dua thread saling menunggu mutex). Berhenti di sini
+      // daripada berputar sampai maxTicks.
       // TODO(T-055): pancarkan DEADLOCK_DETECTED sebelum FINISHED.
       this.finished = true;
       events.push({ type: 'FINISHED', tick });
@@ -123,7 +140,8 @@ export class Engine implements SimulationEngine {
         throw new Error(`Scheduler memilih thread yang tidak ada: "${id}"`);
       }
       push(transition(thread, 'RUNNING', tick));
-      events.push(...executeInstruction(thread, tick, this.sharedVars));
+      events.push(...executeInstruction(thread, tick, this.sharedVars, this.sync));
+      this.assertNoLockLeak(thread);
     }
 
     // 5. Selesai?
@@ -136,20 +154,36 @@ export class Engine implements SimulationEngine {
     return { tick, events, finished: this.finished };
   }
 
+  /**
+   * Thread yang selesai tidak boleh masih memegang mutex: itu berarti LOCK dan
+   * UNLOCK di programnya tidak seimbang, dan thread lain akan menunggu selamanya.
+   */
+  private assertNoLockLeak(thread: ThreadRuntime): void {
+    if (thread.state !== 'TERMINATED') return;
+    for (const mutex of this.mutexes.values()) {
+      if (mutex.isOwnedBy(thread.def.id)) {
+        throw new Error(
+          `Thread "${thread.def.id}" selesai tetapi masih memegang mutex "${mutex.id}" ` +
+            `(LOCK dan UNLOCK tidak seimbang)`,
+        );
+      }
+    }
+  }
+
   /** Salinan keadaan penuh; aman dari modifikasi pemanggil. */
   getSnapshot(): Readonly<Snapshot> {
     if (this.config === null) {
       throw new Error('getSnapshot() dipanggil sebelum load()');
     }
-    // Primitif (mutex/semaphore/condition) belum punya keadaan runtime sampai
-    // T-018, T-040, T-044; sementara ditampilkan dalam keadaan awal.
+    // Semaphore dan condition belum punya keadaan runtime sampai T-040 dan
+    // T-044; sementara ditampilkan dalam keadaan awal.
     return {
       tick: this.tick,
       seed: this.seed,
       finished: this.finished,
       threads: this.threads.map(snapshotThread),
       sharedVars: { ...this.sharedVars },
-      mutexes: this.config.mutexes.map((id) => ({ id, owner: null, queue: [] })),
+      mutexes: Array.from(this.mutexes.values(), (m) => m.snapshot()),
       semaphores: Object.entries(this.config.semaphores).map(([id, value]) => ({
         id,
         value,

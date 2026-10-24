@@ -1,6 +1,8 @@
+import type { Mutex } from './primitives/mutex';
 import type {
   SimEvent,
   ThreadDef,
+  ThreadId,
   ThreadSnapshot,
   ThreadState,
 } from './types';
@@ -13,7 +15,7 @@ import type {
 export interface ThreadRuntime {
   readonly def: ThreadDef;
   state: ThreadState;
-  /** Indeks instruksi berikutnya. */
+  /** Indeks instruksi berikutnya. Saat WAITING, menunjuk instruksi yang memblokir. */
   pc: number;
   /** Pengulangan program ke berapa (mulai 0). */
   iteration: number;
@@ -23,6 +25,23 @@ export interface ThreadRuntime {
   workRemaining: number;
   waitTicks: number;
 }
+
+/**
+ * Akses ke resource sinkronisasi dan thread lain, dibutuhkan instruksi yang
+ * bisa memblokir atau membangunkan thread (LOCK, UNLOCK, dst.).
+ */
+export interface SyncContext {
+  mutexes: ReadonlyMap<string, Mutex>;
+  /** Mengambil thread lain (untuk dibangunkan). Melempar error bila tidak ada. */
+  getThread(id: ThreadId): ThreadRuntime;
+}
+
+const EMPTY_SYNC: SyncContext = {
+  mutexes: new Map(),
+  getThread(id) {
+    throw new Error(`Thread "${id}" tidak tersedia (tanpa konteks sinkronisasi)`);
+  },
+};
 
 /**
  * Transisi state yang sah. Selain tabel ini, engine melempar error supaya bug
@@ -102,12 +121,41 @@ function readNumber(
   return record[key] as number;
 }
 
+function requireMutex(sync: SyncContext, name: string, threadId: string): Mutex {
+  const mutex = sync.mutexes.get(name);
+  if (mutex === undefined) {
+    throw new Error(`Thread "${threadId}" memakai mutex "${name}" yang tidak ada`);
+  }
+  return mutex;
+}
+
+/**
+ * Memajukan pc setelah satu instruksi selesai. Bila program habis, pengulangan
+ * berikutnya dimulai; bila semua pengulangan habis, thread TERMINATED
+ * (thread harus RUNNING saat itu).
+ */
+function advancePc(thread: ThreadRuntime, tick: number): SimEvent | null {
+  thread.pc += 1;
+  if (thread.pc < thread.def.program.length) return null;
+
+  thread.pc = 0;
+  thread.iteration += 1;
+  if (thread.iteration >= (thread.def.repeat ?? 1)) {
+    return transition(thread, 'TERMINATED', tick);
+  }
+  return null;
+}
+
 /**
  * Menjalankan SATU instruksi pada pc saat ini (satu tick), lalu memajukan pc.
- * Thread harus sudah berstatus RUNNING. Mengubah thread dan sharedVars.
+ * Thread harus sudah berstatus RUNNING. Mengubah thread, sharedVars, dan
+ * (untuk LOCK/UNLOCK) mutex serta thread lain yang dibangunkan.
  *
  * Catatan perilaku:
  * - WORK n membutuhkan n tick; tiap tick tetap menghasilkan event INSTRUCTION.
+ * - LOCK pada mutex terpakai membuat thread WAITING dengan pc tetap di LOCK.
+ *   Instruksi itu dianggap selesai saat UNLOCK menyerahkan mutex kepadanya
+ *   (handoff); saat itu pc-nya dimajukan oleh thread yang melepas.
  * - Setelah instruksi terakhir selesai, program diulang sampai `repeat`
  *   terpenuhi; setelah itu thread TERMINATED.
  */
@@ -115,6 +163,7 @@ export function executeInstruction(
   thread: ThreadRuntime,
   tick: number,
   sharedVars: Record<string, number>,
+  sync: SyncContext = EMPTY_SYNC,
 ): SimEvent[] {
   const id = thread.def.id;
   const index = thread.pc;
@@ -126,6 +175,9 @@ export function executeInstruction(
   const events: SimEvent[] = [
     { type: 'INSTRUCTION', tick, thread: id, index, op: instruction.op },
   ];
+  const push = (event: SimEvent | null): void => {
+    if (event) events.push(event);
+  };
   let completed = true;
 
   switch (instruction.op) {
@@ -164,23 +216,39 @@ export function executeInstruction(
       });
       break;
     }
+    case 'LOCK': {
+      const mutex = requireMutex(sync, instruction.mutex, id);
+      if (mutex.lock(id)) {
+        events.push({ type: 'LOCK_ACQUIRED', tick, thread: id, mutex: instruction.mutex });
+      } else {
+        completed = false;
+        const on = `mutex:${instruction.mutex}`;
+        thread.waitingOn = on;
+        events.push({ type: 'BLOCKED', tick, thread: id, on });
+        push(transition(thread, 'WAITING', tick));
+      }
+      break;
+    }
+    case 'UNLOCK': {
+      const mutex = requireMutex(sync, instruction.mutex, id);
+      const next = mutex.unlock(id); // melempar error bila bukan pemilik
+      events.push({ type: 'LOCK_RELEASED', tick, thread: id, mutex: instruction.mutex });
+      if (next !== null) {
+        // Handoff: thread terdepan kini pemilik, dibangunkan, dan LOCK-nya selesai.
+        const woken = sync.getThread(next);
+        push(transition(woken, 'READY', tick));
+        events.push({ type: 'LOCK_ACQUIRED', tick, thread: next, mutex: instruction.mutex });
+        push(advancePc(woken, tick));
+      }
+      break;
+    }
     default:
       throw new Error(
         `Instruksi ${instruction.op} belum didukung engine ` +
-          `(mutex: T-018, semaphore: T-040, condition variable: T-044)`,
+          `(semaphore: T-040, condition variable: T-044)`,
       );
   }
 
-  if (completed) {
-    thread.pc += 1;
-    if (thread.pc >= thread.def.program.length) {
-      thread.pc = 0;
-      thread.iteration += 1;
-      if (thread.iteration >= (thread.def.repeat ?? 1)) {
-        const event = transition(thread, 'TERMINATED', tick);
-        if (event) events.push(event);
-      }
-    }
-  }
+  if (completed) push(advancePc(thread, tick));
   return events;
 }

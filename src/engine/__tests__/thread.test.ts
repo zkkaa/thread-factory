@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import { Mutex } from '../primitives/mutex';
 import {
   createThread,
   executeInstruction,
   snapshotThread,
   transition,
+  type SyncContext,
   type ThreadRuntime,
 } from '../thread';
 import type { Instruction, ThreadDef } from '../types';
@@ -175,9 +177,104 @@ describe('executeInstruction: pengulangan dan terminasi', () => {
 });
 
 describe('executeInstruction: instruksi yang belum didukung', () => {
-  it('LOCK melempar error yang menyebut tugas terkait', () => {
-    const thread = makeRunning([{ op: 'LOCK', mutex: 'papan' }]);
-    expect(() => executeInstruction(thread, 1, {})).toThrow(/belum didukung.*T-018/);
+  it('SEM_WAIT melempar error yang menyebut tugas terkait', () => {
+    const thread = makeRunning([{ op: 'SEM_WAIT', sem: 'mesin' }]);
+    expect(() => executeInstruction(thread, 1, {})).toThrow(/belum didukung.*T-040/);
+  });
+});
+
+describe('executeInstruction: LOCK dan UNLOCK', () => {
+  const lockProgram: Instruction[] = [
+    { op: 'LOCK', mutex: 'papan' },
+    { op: 'WORK', ticks: 1 },
+    { op: 'UNLOCK', mutex: 'papan' },
+  ];
+
+  function makeSync(threads: ThreadRuntime[]): SyncContext {
+    return {
+      mutexes: new Map([['papan', new Mutex('papan')]]),
+      getThread(id) {
+        const found = threads.find((t) => t.def.id === id);
+        if (found === undefined) throw new Error(`tidak ada ${id}`);
+        return found;
+      },
+    };
+  }
+
+  function makeNamed(id: string): ThreadRuntime {
+    const thread = createThread({ id, label: id, program: lockProgram });
+    transition(thread, 'READY', TICK);
+    transition(thread, 'RUNNING', TICK);
+    return thread;
+  }
+
+  it('LOCK pada mutex bebas langsung berhasil dan pc maju', () => {
+    const a = makeNamed('A');
+    const sync = makeSync([a]);
+    const events = executeInstruction(a, 1, {}, sync);
+    expect(events).toContainEqual({ type: 'LOCK_ACQUIRED', tick: 1, thread: 'A', mutex: 'papan' });
+    expect(a.pc).toBe(1);
+    expect(a.state).toBe('RUNNING');
+  });
+
+  it('LOCK pada mutex terpakai: thread WAITING, pc tetap di LOCK, waitingOn terisi', () => {
+    const a = makeNamed('A');
+    const b = makeNamed('B');
+    const sync = makeSync([a, b]);
+    executeInstruction(a, 1, {}, sync);
+
+    const events = executeInstruction(b, 2, {}, sync);
+    expect(b.state).toBe('WAITING');
+    expect(b.pc).toBe(0);
+    expect(b.waitingOn).toBe('mutex:papan');
+    expect(events).toContainEqual({ type: 'BLOCKED', tick: 2, thread: 'B', on: 'mutex:papan' });
+    expect(sync.mutexes.get('papan')?.snapshot()).toEqual({
+      id: 'papan',
+      owner: 'A',
+      queue: ['B'],
+    });
+  });
+
+  it('UNLOCK menyerahkan mutex ke thread terdepan: dibangunkan, jadi pemilik, pc melewati LOCK', () => {
+    const a = makeNamed('A');
+    const b = makeNamed('B');
+    const sync = makeSync([a, b]);
+    executeInstruction(a, 1, {}, sync); // A LOCK
+    executeInstruction(b, 2, {}, sync); // B antre
+    executeInstruction(a, 3, {}, sync); // A WORK
+    const events = executeInstruction(a, 4, {}, sync); // A UNLOCK
+
+    expect(events).toContainEqual({ type: 'LOCK_RELEASED', tick: 4, thread: 'A', mutex: 'papan' });
+    expect(events).toContainEqual({ type: 'LOCK_ACQUIRED', tick: 4, thread: 'B', mutex: 'papan' });
+    expect(events).toContainEqual({
+      type: 'THREAD_STATE',
+      tick: 4,
+      thread: 'B',
+      from: 'WAITING',
+      to: 'READY',
+    });
+    expect(b.state).toBe('READY');
+    expect(b.waitingOn).toBeNull();
+    expect(b.pc).toBe(1);
+    expect(sync.mutexes.get('papan')?.snapshot().owner).toBe('B');
+  });
+
+  it('UNLOCK oleh thread yang bukan pemilik melempar error jelas', () => {
+    const a = makeNamed('A');
+    const sync = makeSync([a]);
+    const unlockOnly = createThread({
+      id: 'X',
+      label: 'X',
+      program: [{ op: 'UNLOCK', mutex: 'papan' }],
+    });
+    transition(unlockOnly, 'READY', TICK);
+    transition(unlockOnly, 'RUNNING', TICK);
+    expect(() => executeInstruction(unlockOnly, 1, {}, sync)).toThrow(/bukan miliknya/);
+  });
+
+  it('memakai mutex yang tidak ada melempar error jelas', () => {
+    const thread = makeRunning([{ op: 'LOCK', mutex: 'hantu' }, { op: 'WORK', ticks: 1 }]);
+    expect(() => executeInstruction(thread, 1, {})).toThrow(/mutex "hantu"/);
   });
 });
 

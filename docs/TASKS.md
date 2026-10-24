@@ -37,12 +37,12 @@
 - [x] **T-013** `P0` State machine thread (NEW/READY/RUNNING/WAITING/TERMINATED) + eksekusi instruksi `WORK`, `READ`, `COMPUTE`, `WRITE`.
 - [x] **T-014** `P0` `engine/scheduler.ts`: `RandomSeeded` dan `Scripted`, mendukung parameter `cores`.
 - [x] **T-015** `P0` `engine/engine.ts`: `load`, `step`, `reset`, `getSnapshot`, `isFinished`; pancarkan event per tick.
-- [ ] **T-016** `P0` `engine/metrics.ts`: throughput, `waitTicks`, `lostUpdates`.
-- [ ] **T-017** `P0` Tes: simulasi dua thread tanpa pengaman menghasilkan *lost update* pada seed tertentu; hasil identik pada seed sama.
+- [x] **T-016** `P0` `engine/metrics.ts`: throughput, `waitTicks`, `lostUpdates`.
+- [x] **T-017** `P0` Tes: simulasi dua thread tanpa pengaman menghasilkan *lost update* pada seed tertentu; hasil identik pada seed sama.
 
 ## Fase 2 — Mutex dan Alat Pemain (Minggu 1)
 
-- [ ] **T-018** `P0` `primitives/mutex.ts`: `LOCK`/`UNLOCK`, pemilik, antrean FIFO, thread menunggu berstatus WAITING.
+- [ ] **T-018** `P0` `primitives/mutex.ts`: `LOCK`/`UNLOCK`, pemilik, antrean FIFO, thread menunggu berstatus WAITING.  
 - [ ] **T-019** `P0` `engine/tools.ts`: `applyTools()` mengubah rentang pengaman menjadi `LOCK`/`UNLOCK` (fungsi murni).
 - [ ] **T-020** `P0` Tes mutex: tidak pernah dimiliki dua thread; `UNLOCK` oleh non-pemilik menghasilkan error jelas.
 - [ ] **T-021** `P0` Tes Level 1-1 dengan mutex: nilai akhir = target pada banyak seed (mis. 1.000).

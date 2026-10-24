@@ -21,6 +21,14 @@ export function validateConfig(config: EngineConfig): void {
     throw new Error(`maxTicks harus bilangan bulat >= 1, diterima: ${config.maxTicks}`);
   }
 
+  const mutexNames = new Set<string>();
+  for (const name of config.mutexes) {
+    if (mutexNames.has(name)) {
+      throw new Error(`Nama mutex ganda: "${name}"`);
+    }
+    mutexNames.add(name);
+  }
+
   const ids = new Set<string>();
   for (const thread of config.threads) {
     if (ids.has(thread.id)) {
@@ -56,6 +64,21 @@ export function validateConfig(config: EngineConfig): void {
           `WRITE pada thread "${thread.id}": variabel bersama "${instruction.to}" tidak ada`,
         );
       }
+      if (
+        (instruction.op === 'LOCK' || instruction.op === 'UNLOCK') &&
+        !mutexNames.has(instruction.mutex)
+      ) {
+        throw new Error(
+          `${instruction.op} pada thread "${thread.id}": mutex "${instruction.mutex}" tidak dideklarasikan`,
+        );
+      }
+    }
+
+    // Thread yang menunggu LOCK dilanjutkan oleh thread lain (handoff), jadi LOCK
+    // sebagai instruksi terakhir tidak masuk akal: tidak ada yang bisa di-UNLOCK.
+    const last = thread.program[thread.program.length - 1];
+    if (last !== undefined && last.op === 'LOCK') {
+      throw new Error(`Thread "${thread.id}": instruksi terakhir tidak boleh LOCK`);
     }
   }
 
