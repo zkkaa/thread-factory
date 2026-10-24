@@ -9,14 +9,21 @@ import type { ThreadState } from '../engine/types';
 /** Ukuran kanvas; harus sama dengan width/height di game/main.ts. */
 export const ARENA = { width: 1024, height: 768 } as const;
 
-/** Sisi satu ubin (dan kotak robot), dalam piksel. */
+/** Sisi satu ubin (satu ubin = satu instruksi), dalam piksel. */
 export const TILE_SIZE = 64;
 
-/** Susunan sementara robot: jumlah kolom dan jarak antar sel. */
-export const LAYOUT = {
-  columns: 6,
-  cellSize: 150,
-  topY: 200,
+/** Sisi kotak robot; lebih kecil dari ubin agar ubin di bawahnya tetap terbaca. */
+export const ROBOT_SIZE = 40;
+
+/**
+ * Tata letak jalur robot. Tiap robot punya satu jalur (baris):
+ * nama dan state di kiri (`labelX`), deretan ubin mulai dari `startX`.
+ */
+export const LANE = {
+  labelX: 120,
+  startX: 250,
+  topY: 190,
+  gapY: 110,
 } as const;
 
 /**
@@ -34,7 +41,9 @@ export const STATE_STYLE: Record<ThreadState, { color: number; label: string }> 
 
 export const COLORS = {
   background: '#1f2937',
-  tileBorder: 0xf9fafb,
+  tile: 0x374151,
+  tileBorder: 0x6b7280,
+  robotBorder: 0xf9fafb,
   text: '#f9fafb',
 } as const;
 
@@ -42,5 +51,13 @@ export const TEXT_STYLE = {
   fontFamily: 'Arial, sans-serif',
   fontSize: '16px',
   color: COLORS.text,
+  align: 'center',
+};
+
+/** Teks kecil nama instruksi di dalam ubin. */
+export const TILE_TEXT_STYLE = {
+  fontFamily: 'Arial, sans-serif',
+  fontSize: '11px',
+  color: '#d1d5db',
   align: 'center',
 };
