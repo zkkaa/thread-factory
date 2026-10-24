@@ -1,87 +1,126 @@
-import { GameObjects, Scene } from 'phaser';
-import type { Snapshot } from '../../engine/types';
-import { ARENA, COLORS, LAYOUT, STATE_STYLE, TEXT_STYLE, TILE_SIZE } from '../theme';
+import { GameObjects, Scene, Scenes } from 'phaser';
+import { buildEngineConfig } from '../../controller/buildEngineConfig';
+import {
+    TICK_INTERVAL_MS,
+    type ControllerState,
+    type SimulationController,
+} from '../../controller/SimulationController';
+import type { SimEvent, Snapshot, ThreadId } from '../../engine/types';
+import { ARENA, COLORS, TEXT_STYLE } from '../theme';
+import { BoardView } from '../views/BoardView';
+import { RobotView } from '../views/RobotView';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
 export interface LevelSceneData {
-    snapshot: Readonly<Snapshot>;
+    controller: SimulationController;
 }
 
 /**
- * Scene arena satu level. Tugasnya hanya MENGGAMBAR keadaan yang diberikan;
- * benar/salah, menang/kalah, dan metrik dihitung engine (aturan arsitektur 3).
+ * Scene arena satu level. Tugasnya hanya MENGGAMBAR dan MENGANIMASIKAN apa yang
+ * dilaporkan controller; benar/salah, menang/kalah, dan metrik dihitung engine
+ * (aturan arsitektur 3).
  *
- * T-026: membangun tampilan awal dari snapshot (kotak per robot + label state
- * + isi Papan Stok). Kotak sementara ini akan digantikan RobotView dan
- * BoardView di T-027 tanpa mengubah cara scene ini menerima data.
+ * Alurnya: controller memberi tahu scene lewat subscribe. Pada tick 0 (level
+ * dimuat, Reset, atau alat berubah) semua view dibangun ulang dari snapshot.
+ * Pada tick berikutnya, event INSTRUCTION menggerakkan robot ke ubinnya dan
+ * snapshot memperbarui warna, label, dan nilai papan.
  */
 export class LevelScene extends Scene {
-    private snapshot: Readonly<Snapshot> | null = null;
-    private views: GameObjects.GameObject[] = [];
+    private controller: SimulationController | null = null;
+    private robots: RobotView[] = [];
+    private board: BoardView | null = null;
+    private notice: GameObjects.Text | null = null;
 
     constructor() {
         super('LevelScene');
     }
 
     init(data: LevelSceneData): void {
-        this.snapshot = data.snapshot;
+        this.controller = data.controller;
     }
 
     create(): void {
         this.cameras.main.setBackgroundColor(COLORS.background);
-        if (this.snapshot === null) {
-            this.add
-                .text(ARENA.width / 2, ARENA.height / 2, 'Level belum dimuat', TEXT_STYLE)
-                .setOrigin(0.5);
+        const controller = this.controller;
+        if (controller === null) {
+            this.showNotice('Controller belum diberikan ke scene');
             return;
         }
-        this.rebuild(this.snapshot);
+
+        this.showNotice('Level belum dimuat');
+        this.handleState(controller.getState());
+        const unsubscribe = controller.subscribe((state) => this.handleState(state));
+        // Berhenti mendengarkan saat scene ditutup agar tidak ada listener yatim.
+        this.events.once(Scenes.Events.SHUTDOWN, unsubscribe);
+    }
+
+    private handleState(state: ControllerState): void {
+        const { level, snapshot } = state;
+        if (level === null || snapshot === null) return;
+
+        if (snapshot.tick === 0) {
+            this.rebuild(state);
+            return;
+        }
+        this.playEvents(state.events, TICK_INTERVAL_MS / state.speed);
+        this.refresh(snapshot);
     }
 
     /**
-     * Buang semua tampilan lama lalu bangun ulang dari snapshot.
-     * Dipakai saat Reset (T-030): scene tidak menyimpan keadaan sendiri.
+     * Buang semua view lama lalu bangun ulang dari keadaan controller.
+     * Program tiap jalur diambil dari konfigurasi engine (sudah memuat
+     * LOCK/UNLOCK dari alat pemain), supaya ubinnya cocok dengan index event.
      */
-    rebuild(snapshot: Readonly<Snapshot>): void {
-        this.snapshot = snapshot;
-        for (const view of this.views) view.destroy();
-        this.views = [];
+    private rebuild(state: ControllerState): void {
+        const { level, snapshot } = state;
+        if (level === null || snapshot === null) return;
 
-        this.views.push(this.buildBoardText(snapshot));
-        snapshot.threads.forEach((thread, index) => {
-            this.buildThreadView(thread.label, thread.state, index);
+        this.destroyViews();
+        const programs = buildEngineConfig(level, [...state.tools]).threads;
+
+        this.board = new BoardView(this, snapshot.sharedVars, ARENA.width / 2, 80);
+        this.robots = snapshot.threads.map((thread, laneIndex) => {
+            const program = programs.find((def) => def.id === thread.id)?.program ?? [];
+            return new RobotView(this, thread, program, laneIndex);
         });
     }
 
-    /** Teks Papan Stok: semua shared variable beserta nilainya. */
-    private buildBoardText(snapshot: Readonly<Snapshot>): GameObjects.Text {
-        const values = Object.entries(snapshot.sharedVars)
-            .map(([name, value]) => `${name}: ${value}`)
-            .join('     ');
-        return this.add
-            .text(ARENA.width / 2, 80, `Papan Stok     ${values}`, {
-                ...TEXT_STYLE,
-                fontSize: '24px',
-            })
-            .setOrigin(0.5);
+    /**
+     * Menggerakkan robot sesuai event. Pada kecepatan tinggi satu notifikasi
+     * bisa memuat beberapa tick; yang dipakai adalah instruksi terakhir tiap
+     * robot, jadi ubin di tengah dilewati (tween pada satu objek tidak boleh
+     * saling menimpa).
+     */
+    private playEvents(events: readonly SimEvent[], durationMs: number): void {
+        const lastIndex = new Map<ThreadId, number>();
+        for (const event of events) {
+            if (event.type === 'INSTRUCTION') lastIndex.set(event.thread, event.index);
+        }
+        for (const robot of this.robots) {
+            const index = lastIndex.get(robot.threadId);
+            if (index !== undefined) robot.moveToTile(index, durationMs);
+        }
     }
 
-    /** Satu robot = kotak berwarna + label nama dan state di bawahnya. */
-    private buildThreadView(label: string, state: keyof typeof STATE_STYLE, index: number): void {
-        const { columns, cellSize, topY } = LAYOUT;
-        const column = index % columns;
-        const row = Math.floor(index / columns);
-        const startX = (ARENA.width - columns * cellSize) / 2 + cellSize / 2;
-        const x = startX + column * cellSize;
-        const y = topY + row * cellSize;
-        const style = STATE_STYLE[state];
+    /** Memperbarui warna, label, dan nilai papan tanpa membangun ulang. */
+    private refresh(snapshot: Readonly<Snapshot>): void {
+        this.board?.update(snapshot.sharedVars);
+        snapshot.threads.forEach((thread, index) => this.robots[index]?.update(thread));
+    }
 
-        const box = this.add
-            .rectangle(x, y, TILE_SIZE, TILE_SIZE, style.color)
-            .setStrokeStyle(2, COLORS.tileBorder);
-        const caption = this.add
-            .text(x, y + TILE_SIZE / 2 + 8, `${label}\n${style.label}`, TEXT_STYLE)
-            .setOrigin(0.5, 0);
-        this.views.push(box, caption);
+    private destroyViews(): void {
+        this.notice?.destroy();
+        this.notice = null;
+        for (const robot of this.robots) robot.destroy();
+        this.robots = [];
+        this.board?.destroy();
+        this.board = null;
+    }
+
+    private showNotice(message: string): void {
+        this.notice?.destroy();
+        this.notice = this.add
+            .text(ARENA.width / 2, ARENA.height / 2, message, TEXT_STYLE)
+            .setOrigin(0.5);
     }
 }
