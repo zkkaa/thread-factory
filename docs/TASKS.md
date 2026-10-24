@@ -19,24 +19,24 @@
 
 ## Fase 0 — Setup Proyek (Minggu 1)
 
-- [ ] **T-001** `P0` Buat repo GitHub/GitLab (publik atau akses dosen), undang semua anggota, atur branch utama dan proteksi dasar.
-- [ ] **T-002** `P0` Inisialisasi dari template `phaserjs/template-react-ts`; pastikan `npm run dev` jalan.
-- [ ] **T-003** `P0` Tambah Tailwind CSS untuk UI React; pastikan tidak mengganggu arena Phaser.
-- [ ] **T-004** `P0` Tambah Vitest; satu tes contoh lulus.
-- [ ] **T-005** `P0` Konfigurasi ESLint, Prettier, dan `typecheck` (strict TS, tanpa `any`); tambahkan skrip di `package.json`.
-- [ ] **T-006** `P0` Buat struktur folder sesuai `ARCHITECTURE.md` bagian 3 (folder kosong boleh berisi `.gitkeep`).
-- [ ] **T-007** `P0` Masukkan `PRD.md`, `ARCHITECTURE.md`, `TASKS.md` ke `docs/`, `CLAUDE.md` ke akar repo, dan buat `docs/AI_USAGE.md`.
-- [ ] **T-008** `P0` Kunci versi dependency di `package.json`; isi daftar versi di `CLAUDE.md`.
-- [ ] **T-009** `P1` README awal: deskripsi, cara instalasi dan menjalankan, anggota tim, bagian "Kredit" (kosong dulu).
-- [ ] **T-010** `P1` Siapkan deploy situs statis (GitHub Pages atau Vercel) agar tiap merge bisa dilihat online.
+- [x] **T-001** `P0` Buat repo GitHub/GitLab (publik atau akses dosen), undang semua anggota, atur branch utama dan proteksi dasar.
+- [x] **T-002** `P0` Inisialisasi dari template `phaserjs/template-react-ts`; pastikan `npm run dev` jalan.
+- [x] **T-003** `P0` Tambah Tailwind CSS untuk UI React; pastikan tidak mengganggu arena Phaser.
+- [x] **T-004** `P0` Tambah Vitest; satu tes contoh lulus.
+- [x] **T-005** `P0` Konfigurasi ESLint, Prettier, dan `typecheck` (strict TS, tanpa `any`); tambahkan skrip di `package.json`.
+- [x] **T-006** `P0` Buat struktur folder sesuai `ARCHITECTURE.md` bagian 3 (folder kosong boleh berisi `.gitkeep`).
+- [x] **T-007** `P0` Masukkan `PRD.md`, `ARCHITECTURE.md`, `TASKS.md` ke `docs/`, `CLAUDE.md` ke akar repo, dan buat `docs/AI_USAGE.md`.
+- [x] **T-008** `P0` Kunci versi dependency di `package.json`; isi daftar versi di `CLAUDE.md`.
+- [x] **T-009** `P1` README awal: deskripsi, cara instalasi dan menjalankan, anggota tim, bagian "Kredit" (kosong dulu).
+- [x] **T-010** `P1` Siapkan deploy situs statis (GitHub Pages atau Vercel) agar tiap merge bisa dilihat online.
 
 ## Fase 1 — Engine Inti (Minggu 1)
 
-- [ ] **T-011** `P0` `engine/types.ts`: `ThreadState`, `Instruction`, `ThreadDef`, `Snapshot`, `SimEvent`, `StepResult`.
-- [ ] **T-012** `P0` `engine/prng.ts`: PRNG berbasis seed (mulberry32) + tes determinisme.
-- [ ] **T-013** `P0` State machine thread (NEW/READY/RUNNING/WAITING/TERMINATED) + eksekusi instruksi `WORK`, `READ`, `COMPUTE`, `WRITE`.
-- [ ] **T-014** `P0` `engine/scheduler.ts`: `RandomSeeded` dan `Scripted`, mendukung parameter `cores`.
-- [ ] **T-015** `P0` `engine/engine.ts`: `load`, `step`, `reset`, `getSnapshot`, `isFinished`; pancarkan event per tick.
+- [x] **T-011** `P0` `engine/types.ts`: `ThreadState`, `Instruction`, `ThreadDef`, `Snapshot`, `SimEvent`, `StepResult`.
+- [x] **T-012** `P0` `engine/prng.ts`: PRNG berbasis seed (mulberry32) + tes determinisme.
+- [x] **T-013** `P0` State machine thread (NEW/READY/RUNNING/WAITING/TERMINATED) + eksekusi instruksi `WORK`, `READ`, `COMPUTE`, `WRITE`.
+- [x] **T-014** `P0` `engine/scheduler.ts`: `RandomSeeded` dan `Scripted`, mendukung parameter `cores`.
+- [x] **T-015** `P0` `engine/engine.ts`: `load`, `step`, `reset`, `getSnapshot`, `isFinished`; pancarkan event per tick.
 - [ ] **T-016** `P0` `engine/metrics.ts`: throughput, `waitTicks`, `lostUpdates`.
 - [ ] **T-017** `P0` Tes: simulasi dua thread tanpa pengaman menghasilkan *lost update* pada seed tertentu; hasil identik pada seed sama.
 
