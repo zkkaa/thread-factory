@@ -4,6 +4,7 @@ import { level1_1 } from './levels/module1/level-1-1';
 import { ControlBar } from './ui/components/ControlBar';
 import { MetricsPanel } from './ui/components/MetricsPanel';
 import { ResultDialog } from './ui/components/ResultDialog';
+import { StepLog } from './ui/components/StepLog';
 import { Toolbox } from './ui/components/Toolbox';
 import { useSimulation } from './ui/hooks/useSimulation';
 
@@ -34,6 +35,7 @@ function App() {
         <ControlBar controller={controller} state={state} />
         <Toolbox controller={controller} state={state} />
         <MetricsPanel state={state} />
+        <StepLog controller={controller} />
       </aside>
 
       <ResultDialog controller={controller} state={state} />
