@@ -25,6 +25,12 @@ export interface LevelDefinition {
   title: string;
   /** Penjelasan situasi/tutorial oleh Pak Mandor. */
   intro: string;
+  /**
+   * Penjelasan konsep yang ditampilkan di dialog hasil (opsional).
+   * `pass` dipakai bila level lulus, `fail` bila gagal. Isinya harus benar secara
+   * konsep sisop (lihat CLAUDE.md bagian 7).
+   */
+  explanation?: { pass: string; fail: string };
   /** Konfigurasi thread (robot) awal sebelum dipasangi alat pemain. */
   threads: ThreadDef[];
   /** Nilai awal variabel bersama, mis. { stok: 0 }. */

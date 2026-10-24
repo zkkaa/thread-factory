@@ -43,6 +43,18 @@ export const level1_1: LevelDefinition = {
     'Setelah merakit satu produk, mereka mencatatnya di Papan Stok. ' +
     'Seharusnya total akhir adalah 10 produk. Tapi kenapa angkanya sering kurang dari 10? ' +
     'Pasang Pintu Mutex pada Papan Stok agar mereka tidak saling mendahului!',
+  explanation: {
+    pass:
+      'Mutex menjamin mutual exclusion: hanya satu robot yang boleh berada di critical section ' +
+      '(baca stok, tambah, tulis stok) pada satu waktu. Robot lain menunggu di depan pintu ' +
+      '(WAITING) sampai pintu dilepas, sehingga tidak ada pembaruan yang hilang. ' +
+      'Harganya adalah waktu tunggu.',
+    fail:
+      'Ini race condition: kedua robot bisa membaca angka stok yang sama sebelum salah satunya ' +
+      'menulis. Tulisan yang datang belakangan menimpa yang lebih dulu, sehingga satu pembaruan ' +
+      'hilang (lost update). Bagian baca-hitung-tulis adalah critical section dan harus dijaga ' +
+      'dengan mutex agar hanya satu robot yang memasukinya pada satu waktu.',
+  },
   threads: LEVEL_1_1_THREADS,
   sharedVars: {
     stok: 0,

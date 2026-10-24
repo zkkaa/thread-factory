@@ -1,34 +1,44 @@
+import { CANVAS, Game, Scale } from 'phaser';
+import type { SimulationController } from '../controller/SimulationController';
+import { CONTROLLER_KEY } from './registryKeys';
 import { Boot } from './scenes/Boot';
-import { GameOver } from './scenes/GameOver';
-import { Game as MainGame } from './scenes/Game';
-import { MainMenu } from './scenes/MainMenu';
-import { Game } from 'phaser';
-import { Preloader } from './scenes/Preloader';
 import { LevelScene } from './scenes/LevelScene';
+import { ARENA, COLORS } from './theme';
 
 //  Find out more information about the Game Config at:
 //  https://docs.phaser.io/api-documentation/typedef/types-core#gameconfig
 const config: Phaser.Types.Core.GameConfig = {
     // type: AUTO,
-    type: Phaser.CANVAS,
-    width: 1024,
-    height: 768,
+    type: CANVAS,
+    width: ARENA.width,
+    height: ARENA.height,
     parent: 'game-container',
-    backgroundColor: '#028af8',
-    scene: [
-        Boot,
-        Preloader,
-        MainMenu,
-        MainGame,
-        GameOver,
-        LevelScene
-    ]
+    backgroundColor: COLORS.background,
+    // Kanvas 1024x768 diperkecil/diperbesar agar muat di area kiri halaman,
+    // di samping panel kontrol React.
+    scale: {
+        mode: Scale.FIT,
+        autoCenter: Scale.CENTER_BOTH,
+    },
+    // Hanya dua scene yang dipakai. Scene bawaan template (Preloader, MainMenu,
+    // Game, GameOver) tidak lagi didaftarkan.
+    scene: [Boot, LevelScene],
 };
 
-const StartGame = (parent: string) => {
-
-    return new Game({ ...config, parent });
-
-}
+/**
+ * Memulai game di elemen `parent`. Controller dititipkan ke registry SEBELUM
+ * game boot (preBoot) supaya sudah tersedia saat scene Boot berjalan.
+ */
+const StartGame = (parent: string, controller: SimulationController) => {
+    return new Game({
+        ...config,
+        parent,
+        callbacks: {
+            preBoot: (game) => {
+                game.registry.set(CONTROLLER_KEY, controller);
+            },
+        },
+    });
+};
 
 export default StartGame;
