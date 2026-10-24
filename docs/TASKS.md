@@ -42,9 +42,9 @@
 
 ## Fase 2 — Mutex dan Alat Pemain (Minggu 1)
 
-- [ ] **T-018** `P0` `primitives/mutex.ts`: `LOCK`/`UNLOCK`, pemilik, antrean FIFO, thread menunggu berstatus WAITING.  
-- [ ] **T-019** `P0` `engine/tools.ts`: `applyTools()` mengubah rentang pengaman menjadi `LOCK`/`UNLOCK` (fungsi murni).
-- [ ] **T-020** `P0` Tes mutex: tidak pernah dimiliki dua thread; `UNLOCK` oleh non-pemilik menghasilkan error jelas.
+- [x] **T-018** `P0` `primitives/mutex.ts`: `LOCK`/`UNLOCK`, pemilik, antrean FIFO, thread menunggu berstatus WAITING.  
+- [x] **T-019** `P0` `engine/tools.ts`: `applyTools()` mengubah rentang pengaman menjadi `LOCK`/`UNLOCK` (fungsi murni).
+- [x] **T-020** `P0` Tes mutex: tidak pernah dimiliki dua thread; `UNLOCK` oleh non-pemilik menghasilkan error jelas.
 - [ ] **T-021** `P0` Tes Level 1-1 dengan mutex: nilai akhir = target pada banyak seed (mis. 1.000).
 
 ## Fase 3 — Level 1-1 sebagai Data dan Controller (Minggu 1)
