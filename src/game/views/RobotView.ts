@@ -8,6 +8,8 @@ import {
     TEXT_STYLE,
     TILE_SIZE,
     TILE_TEXT_STYLE,
+    laneCenterY,
+    tileCenterX,
 } from '../theme';
 
 /**
@@ -21,7 +23,6 @@ import {
 export class RobotView {
     readonly threadId: ThreadId;
     private readonly scene: Scene;
-    private readonly laneY: number;
     private readonly tileCount: number;
     private readonly tileObjects: GameObjects.GameObject[] = [];
     private readonly box: GameObjects.Rectangle;
@@ -35,32 +36,32 @@ export class RobotView {
     ) {
         this.scene = scene;
         this.threadId = thread.id;
-        this.laneY = LANE.topY + laneIndex * LANE.gapY;
         this.tileCount = program.length;
+        const y = laneCenterY(laneIndex);
 
         // Ubin digambar lebih dulu supaya kotak robot berada di atasnya.
         program.forEach((instruction, index) => {
-            const x = this.tileCenterX(index);
+            const x = tileCenterX(index);
             this.tileObjects.push(
                 scene.add
-                    .rectangle(x, this.laneY, TILE_SIZE - 4, TILE_SIZE - 4, COLORS.tile)
+                    .rectangle(x, y, TILE_SIZE - 4, TILE_SIZE - 4, COLORS.tile)
                     .setStrokeStyle(1, COLORS.tileBorder),
                 scene.add
-                    .text(x, this.laneY + TILE_SIZE / 2 - 10, instruction.op, TILE_TEXT_STYLE)
+                    .text(x, y + TILE_SIZE / 2 - 10, instruction.op, TILE_TEXT_STYLE)
                     .setOrigin(0.5),
             );
         });
 
         this.box = scene.add
             .rectangle(
-                this.tileCenterX(this.clampIndex(thread.pc)),
-                this.laneY,
+                tileCenterX(this.clampIndex(thread.pc)),
+                y,
                 ROBOT_SIZE,
                 ROBOT_SIZE,
                 STATE_STYLE[thread.state].color,
             )
             .setStrokeStyle(2, COLORS.robotBorder);
-        this.caption = scene.add.text(LANE.labelX, this.laneY, '', TEXT_STYLE).setOrigin(0.5);
+        this.caption = scene.add.text(LANE.labelX, y, '', TEXT_STYLE).setOrigin(0.5);
         this.update(thread);
     }
 
@@ -79,7 +80,7 @@ export class RobotView {
      * (tickInterval / speed) agar gerakan selesai sebelum tick berikutnya.
      */
     moveToTile(index: number, durationMs: number): void {
-        const x = this.tileCenterX(this.clampIndex(index));
+        const x = tileCenterX(this.clampIndex(index));
         this.scene.tweens.killTweensOf(this.box);
         if (durationMs <= 0) {
             this.box.setX(x);
@@ -94,10 +95,6 @@ export class RobotView {
         this.box.destroy();
         this.caption.destroy();
         for (const object of this.tileObjects) object.destroy();
-    }
-
-    private tileCenterX(index: number): number {
-        return LANE.startX + index * TILE_SIZE + TILE_SIZE / 2;
     }
 
     /** Menjaga indeks tetap di dalam jalur (program kosong dianggap ubin 0). */
