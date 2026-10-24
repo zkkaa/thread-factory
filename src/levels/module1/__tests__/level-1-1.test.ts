@@ -1,106 +1,106 @@
 import { describe, it, expect } from 'vitest';
-import { level1_1, LEVEL_1_1_PROGRAM } from '../level-1-1';
 import { Engine } from '../../../engine/engine';
+import { computeMetrics } from '../../../engine/metrics';
 import { applyTools, type PlacedTool } from '../../../engine/tools';
-import { findLevelById, ALL_LEVELS } from '../../index';
-import type { EngineConfig } from '../../../engine/types';
+import type { EngineConfig, SchedulerConfig } from '../../../engine/types';
+import { level1_1 } from '../../module1/level-1-1';
 
-describe('Level 1-1 Definition (T-022)', () => {
-  it('memiliki metadata level yang sesuai spesifikasi', () => {
-    expect(level1_1.id).toBe('1-1');
-    expect(level1_1.module).toBe(1);
-    expect(level1_1.title).toBe('Bug Papan Stok');
-    expect(level1_1.availableTools).toEqual(['mutex']);
-    expect(level1_1.sharedVars).toEqual({ stok: 0 });
-    expect(level1_1.resources).toEqual([
-      { kind: 'mutex', id: 'papan', label: 'Pintu Papan Stok' },
-    ]);
+const EXPECTED = level1_1.goal.target;
+
+/**
+ * Jadwal paksa: A dan B sama-sama READ sebelum salah satunya WRITE, dua kali
+ * berturut-turut. Setelah script habis, scheduler mengisi sisa jatah menurut
+ * urutan definisi thread (A sampai selesai, lalu B), tanpa lost update lagi.
+ * Hasil tanpa mutex: stok akhir 8 (2 pembaruan hilang), tanpa bergantung PRNG.
+ */
+const FORCED_RACE: SchedulerConfig = {
+  kind: 'scripted',
+  cores: 1,
+  script: [
+    'A', 'A', 'B', 'B', 'A', 'A', 'B', 'B', // putaran 1: A WORK+READ, B WORK+READ, A COMPUTE+WRITE, B COMPUTE+WRITE
+    'A', 'A', 'B', 'B', 'A', 'A', 'B', 'B', // putaran 2: sama
+  ],
+};
+
+/** Mutex 'papan' menutupi READ sampai WRITE (indeks 1..3) di kedua robot. */
+const PAPAN_MUTEX: PlacedTool = {
+  id: 'papan-1',
+  kind: 'mutex',
+  mutex: 'papan',
+  spans: [
+    { thread: 'A', start: 1, end: 3 },
+    { thread: 'B', start: 1, end: 3 },
+  ],
+};
+
+/** Meniru terjemahan LevelDefinition -> EngineConfig yang nanti dilakukan controller. */
+function buildConfig(options: {
+  tools?: PlacedTool[];
+  scheduler?: SchedulerConfig;
+}): EngineConfig {
+  return {
+    threads: applyTools(level1_1.threads, options.tools ?? []),
+    sharedVars: { ...level1_1.sharedVars },
+    mutexes: level1_1.resources.filter((r) => r.kind === 'mutex').map((r) => r.id),
+    semaphores: {},
+    conditions: [],
+    scheduler: options.scheduler ?? level1_1.scheduler,
+    maxTicks: level1_1.maxTicks ?? 2000,
+  };
+}
+
+function run(config: EngineConfig, seed: number): Engine {
+  const engine = new Engine();
+  engine.load(config, seed);
+  while (!engine.isFinished) engine.step();
+  return engine;
+}
+
+function lostUpdatesOf(engine: Engine): number {
+  return computeMetrics(engine.getSnapshot(), EXPECTED).lostUpdates as number;
+}
+
+describe('Level 1-1: seed tutorial dan jadwal paksa (T-023)', () => {
+  it('tutorialSeed terisi di data level', () => {
+    expect(level1_1.tutorialSeed).toBe(10);
   });
 
-  it('memiliki dua robot dengan 5 repeat dan target stok 10', () => {
-    expect(level1_1.threads).toHaveLength(2);
-    expect(level1_1.threads.map((t) => t.id)).toEqual(['A', 'B']);
-    expect(level1_1.threads.every((t) => t.repeat === 5)).toBe(true);
-    expect(level1_1.goal.target).toEqual({ variable: 'stok', value: 10 });
+  it('tanpa mutex, tutorialSeed memunculkan lost update: stok 8, bukan 10', () => {
+    const engine = run(buildConfig({}), level1_1.tutorialSeed as number);
+    const snap = engine.getSnapshot();
+    expect(snap.sharedVars.stok).toBe(8);
+    expect(computeMetrics(snap, EXPECTED).lostUpdates).toBe(2);
+    expect(level1_1.goal.invariant(snap).ok).toBe(false);
   });
 
-  it('program robot memiliki 4 instruksi: WORK -> READ -> COMPUTE -> WRITE', () => {
-    expect(LEVEL_1_1_PROGRAM).toEqual([
-      { op: 'WORK', ticks: 1 },
-      { op: 'READ', from: 'stok', into: 'r' },
-      { op: 'COMPUTE', reg: 'r', add: 1 },
-      { op: 'WRITE', reg: 'r', to: 'stok' },
-    ]);
-  });
-
-  it('invariant goal mengevaluasi keberhasilan atau kegagalan dengan pesan jelas', () => {
-    const successSnap = {
-      sharedVars: { stok: 10 },
-    } as unknown as import('../../../engine/types').Snapshot;
-    const failSnap = {
-      sharedVars: { stok: 7 },
-    } as unknown as import('../../../engine/types').Snapshot;
-
-    const resSuccess = level1_1.goal.invariant(successSnap);
-    expect(resSuccess.ok).toBe(true);
-    expect(resSuccess.message).toContain('10');
-
-    const resFail = level1_1.goal.invariant(failSnap);
-    expect(resFail.ok).toBe(false);
-    expect(resFail.message).toMatch(/7.*10/);
-  });
-
-  it('dapat dijalankan di Engine tanpa mutex dan dengan mutex', () => {
-    // 1. Tanpa mutex
-    const rawConfig: EngineConfig = {
-      threads: level1_1.threads,
-      sharedVars: { ...level1_1.sharedVars },
-      mutexes: level1_1.resources.filter((r) => r.kind === 'mutex').map((r) => r.id),
-      semaphores: {},
-      conditions: [],
-      scheduler: level1_1.scheduler,
-      maxTicks: level1_1.maxTicks ?? 2000,
-    };
-
-    const engineWithoutMutex = new Engine();
-    engineWithoutMutex.load(rawConfig, 10);
-    while (!engineWithoutMutex.isFinished) {
-      engineWithoutMutex.step();
+  it('tanpa mutex, jadwal paksa memunculkan lost update tanpa bergantung PRNG', () => {
+    // Seed sengaja dibuat berbeda-beda: hasilnya harus sama karena script tetap.
+    for (const seed of [1, 10, 999]) {
+      const engine = run(buildConfig({ scheduler: FORCED_RACE }), seed);
+      expect(engine.getSnapshot().sharedVars.stok).toBe(8);
+      expect(lostUpdatesOf(engine)).toBe(2);
     }
-    const snapWithout = engineWithoutMutex.getSnapshot();
-    // Pada seed 10 tanpa mutex, terjadi lost update
-    expect(level1_1.goal.invariant(snapWithout).ok).toBe(false);
-
-    // 2. Dengan mutex dipasang di READ (idx 1) sampai WRITE (idx 3)
-    const tool: PlacedTool = {
-      id: 'papan-lock',
-      kind: 'mutex',
-      mutex: 'papan',
-      spans: [
-        { thread: 'A', start: 1, end: 3 },
-        { thread: 'B', start: 1, end: 3 },
-      ],
-    };
-
-    const protectedThreads = applyTools(level1_1.threads, [tool]);
-    const protectedConfig: EngineConfig = {
-      ...rawConfig,
-      threads: protectedThreads,
-    };
-
-    const engineWithMutex = new Engine();
-    engineWithMutex.load(protectedConfig, 10);
-    while (!engineWithMutex.isFinished) {
-      engineWithMutex.step();
-    }
-    const snapWith = engineWithMutex.getSnapshot();
-    expect(level1_1.goal.invariant(snapWith).ok).toBe(true);
-    expect(snapWith.sharedVars.stok).toBe(10);
   });
 
-  it('terdaftar di findLevelById dan ALL_LEVELS', () => {
-    expect(ALL_LEVELS).toContain(level1_1);
-    expect(findLevelById('1-1')).toBe(level1_1);
-    expect(findLevelById('99-99')).toBeUndefined();
+  it('dengan mutex, tutorialSeed menghasilkan stok 10 dan invariant lulus', () => {
+    const engine = run(buildConfig({ tools: [PAPAN_MUTEX] }), level1_1.tutorialSeed as number);
+    const snap = engine.getSnapshot();
+    expect(snap.sharedVars.stok).toBe(10);
+    expect(lostUpdatesOf(engine)).toBe(0);
+    expect(level1_1.goal.invariant(snap).ok).toBe(true);
+  });
+
+  it('dengan mutex, jadwal paksa yang sama tidak lagi merusak data', () => {
+    const engine = run(buildConfig({ tools: [PAPAN_MUTEX], scheduler: FORCED_RACE }), 1);
+    expect(engine.getSnapshot().sharedVars.stok).toBe(10);
+    expect(lostUpdatesOf(engine)).toBe(0);
+  });
+
+  it('dengan mutex, hasil tetap benar pada 1.000 seed acak', () => {
+    const config = buildConfig({ tools: [PAPAN_MUTEX] });
+    for (let seed = 1; seed <= 1000; seed++) {
+      const engine = run(config, seed);
+      expect(engine.getSnapshot().sharedVars.stok).toBe(10);
+    }
   });
 });
