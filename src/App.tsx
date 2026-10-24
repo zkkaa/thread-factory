@@ -1,102 +1,44 @@
-import { useRef, useState } from "react";
-import { IRefPhaserGame, PhaserGame } from "./PhaserGame";
-import { MainMenu } from "./game/scenes/MainMenu";
+import { SimulationController } from './controller/SimulationController';
+import { PhaserGame } from './PhaserGame';
+import { level1_1 } from './levels/module1/level-1-1';
+import { ControlBar } from './ui/components/ControlBar';
+import { MetricsPanel } from './ui/components/MetricsPanel';
+import { ResultDialog } from './ui/components/ResultDialog';
+import { Toolbox } from './ui/components/Toolbox';
+import { useSimulation } from './ui/hooks/useSimulation';
+
+// Satu controller untuk seluruh aplikasi, dibuat di luar komponen supaya tidak
+// ikut terbuat ulang saat React me-render (termasuk StrictMode).
+// Level dipilih lewat LevelSelect pada T-062; sementara selalu Level 1-1.
+const controller = new SimulationController();
+controller.loadLevel(level1_1);
 
 function App() {
-    // The sprite can only be moved in the MainMenu Scene
-    const [canMoveSprite, setCanMoveSprite] = useState(true);
+  const state = useSimulation(controller);
 
-    //  References to the PhaserGame component (game and scene are exposed)
-    const phaserRef = useRef<IRefPhaserGame | null>(null);
-    const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
+  return (
+    <div className="flex h-screen bg-gray-900 text-gray-100">
+      <PhaserGame controller={controller} />
 
-    const changeScene = () => {
-        if (phaserRef.current) {
-            const scene = phaserRef.current.scene as MainMenu;
+      <aside className="h-screen w-[360px] shrink-0 space-y-5 overflow-y-auto border-l border-gray-700 p-4">
+        {state.level !== null && (
+          <header className="space-y-2">
+            <h1 className="text-lg font-bold">
+              Level {state.level.id}: {state.level.title}
+            </h1>
+            <p className="rounded bg-gray-800 p-2 text-sm leading-relaxed">
+              <strong>Pak Mandor:</strong> {state.level.intro}
+            </p>
+          </header>
+        )}
+        <ControlBar controller={controller} state={state} />
+        <Toolbox controller={controller} state={state} />
+        <MetricsPanel state={state} />
+      </aside>
 
-            if (scene) {
-                scene.changeScene();
-            }
-        }
-    };
-
-    const moveSprite = () => {
-        if (phaserRef.current) {
-            const scene = phaserRef.current.scene as MainMenu;
-
-            if (scene && scene.scene.key === "MainMenu") {
-                // Get the update logo position
-                scene.moveLogo(({ x, y }) => {
-                    setSpritePosition({ x, y });
-                });
-            }
-        }
-    };
-
-    const addSprite = () => {
-        if (phaserRef.current) {
-            const scene = phaserRef.current.scene;
-
-            if (scene) {
-                // Add more stars
-                const x = Phaser.Math.Between(64, scene.scale.width - 64);
-                const y = Phaser.Math.Between(64, scene.scale.height - 64);
-
-                //  `add.sprite` is a Phaser GameObjectFactory method and it returns a Sprite Game Object instance
-                const star = scene.add.sprite(x, y, "star");
-
-                //  ... which you can then act upon. Here we create a Phaser Tween to fade the star sprite in and out.
-                //  You could, of course, do this from within the Phaser Scene code, but this is just an example
-                //  showing that Phaser objects and systems can be acted upon from outside of Phaser itself.
-                scene.add.tween({
-                    targets: star,
-                    duration: 500 + Math.random() * 1000,
-                    alpha: 0,
-                    yoyo: true,
-                    repeat: -1,
-                });
-            }
-        }
-    };
-
-    // Event emitted from the PhaserGame component
-    const currentScene = (scene: Phaser.Scene) => {
-        setCanMoveSprite(scene.scene.key !== "MainMenu");
-    };
-
-    return (
-        <div id="app">
-            <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
-            <div>
-                <h1 className="text-red-500 font-bold text-2xl">
-                    Tailwind CSS Berhasil Dipasang!
-                </h1>
-                <div>
-                    <button className="button" onClick={changeScene}>
-                        Change Scene
-                    </button>
-                </div>
-                <div>
-                    <button
-                        disabled={canMoveSprite}
-                        className="button"
-                        onClick={moveSprite}
-                    >
-                        Toggle Movement
-                    </button>
-                </div>
-                <div className="spritePosition">
-                    Sprite Position:
-                    <pre>{`{\n  x: ${spritePosition.x}\n  y: ${spritePosition.y}\n}`}</pre>
-                </div>
-                <div>
-                    <button className="button" onClick={addSprite}>
-                        Add New Sprite
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
+      <ResultDialog controller={controller} state={state} />
+    </div>
+  );
 }
 
 export default App;
