@@ -1,6 +1,11 @@
 import { useMemo, useRef, useState } from 'react';
 import type { SimulationController } from '../controller/SimulationController';
-import { MODULES, findLevelById, findModuleOfLevel } from '../levels';
+import {
+  MODULES,
+  findLevelById,
+  findModuleById,
+  findModuleOfLevel,
+} from '../levels';
 import type { ProgressStore } from '../progress/progressStore';
 import { isLevelCleared } from '../progress/progressStore';
 import type { SettingsStore } from '../progress/settingsStore';
@@ -11,6 +16,7 @@ import { useSettings } from './hooks/useSettings';
 import type { Navigation } from './navigation';
 import { HomeScreen } from './screens/HomeScreen';
 import { ModeSelectScreen } from './screens/ModeSelectScreen';
+import { ModuleIntroScreen } from './screens/ModuleIntroScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { PlayScreen } from './screens/PlayScreen';
 import {
@@ -105,6 +111,15 @@ export function AppShell({
         getLevelTitle={(levelId) => findLevelById(levelId)?.title}
       />
     );
+  }
+
+  if (screen.id === 'moduleIntro') {
+    const moduleDef = findModuleById(screen.moduleId);
+    if (moduleDef !== undefined) {
+      return (
+        <ModuleIntroScreen navigation={navigation} moduleDef={moduleDef} />
+      );
+    }
   }
 
   if (screen.id === 'play') {
