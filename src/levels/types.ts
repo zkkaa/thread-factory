@@ -87,3 +87,19 @@ export interface LevelDefinition {
     };
   };
 }
+
+/** Satu modul pembelajaran: kumpulan level berurutan (data di levels/modules.ts). */
+export interface ModuleDefinition {
+  /** Nomor modul. */
+  id: 1 | 2;
+  /** Judul pendek, mis. 'Modul 1'. */
+  title: string;
+  /** Subjudul, mis. 'Sinkronisasi Dasar'. */
+  subtitle: string;
+  /** Deskripsi singkat untuk kartu modul dan kartu pembuka. */
+  description: string;
+  /** Konsep yang dipelajari di seluruh modul. */
+  concepts: string[];
+  /** Id level dalam urutan main. */
+  levelIds: string[];
+}

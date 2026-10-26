@@ -2,6 +2,7 @@ import { level1_1 } from './module1/level-1-1';
 import type { LevelDefinition } from './types';
 
 export * from './types';
+export * from './modules';
 export { level1_1 } from './module1/level-1-1';
 
 /** Daftar seluruh level yang tersedia dalam game. */
