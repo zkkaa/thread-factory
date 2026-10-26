@@ -30,6 +30,7 @@ import {
   replace,
   selectModeTab,
 } from './screenState';
+import { SettingsScreen } from './screens/SettingsScreen';
 
 interface AppShellProps {
   controller: SimulationController;
@@ -141,6 +142,17 @@ export function AppShell({
 
   if (screen.id === 'guide') {
     return <GuideScreen navigation={navigation} />;
+  }
+
+  if (screen.id === 'settings') {
+    return (
+      <SettingsScreen
+        navigation={navigation}
+        settings={settings}
+        onChange={(patch) => settingsStore.update(patch)}
+        onResetProgress={() => progressStore.reset()}
+      />
+    );
   }
 
   if (screen.id === 'play') {
