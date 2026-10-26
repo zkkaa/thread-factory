@@ -28,7 +28,8 @@ function App() {
               Level {state.level.id}: {state.level.title}
             </h1>
             <p className="rounded bg-gray-800 p-2 text-sm leading-relaxed">
-              <strong>Pak Mandor:</strong> {state.level.intro}
+              <strong>Pak Mandor:</strong>{' '}
+              {state.level.intro.map((page) => page.text).join(' ')}
             </p>
           </header>
         )}

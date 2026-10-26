@@ -12,11 +12,11 @@ Nama berkas di bawah adalah rencana dan boleh berubah saat aset dipilih.
 
 | Berkas | Kegunaan | Ukuran | Sumber | Lisensi | Status |
 |---|---|---|---|---|---|
-| public/assets/bg.png | Bawaan template, belum dipastikan dipakai | - | phaserjs/template-react-ts | MIT (repo template), belum diverifikasi per berkas | Perlu dicek |
-| public/assets/star.png | Bawaan template, belum dipastikan dipakai | - | phaserjs/template-react-ts | MIT (repo template), belum diverifikasi per berkas | Perlu dicek |
-| public/assets/logo.png | Bawaan template, belum dipastikan dipakai | - | phaserjs/template-react-ts | MIT (repo template), belum diverifikasi per berkas | Perlu dicek |
+| public/assets/bg.png | Bawaan template, belum dipastikan dipakai | - | phaserjs/template-react-ts | MIT (repo template), belum diverifikasi per berkas | Dihapus |
+| public/assets/star.png | Bawaan template, belum dipastikan dipakai | - | phaserjs/template-react-ts | MIT (repo template), belum diverifikasi per berkas | Dihapus |
+| public/assets/logo.png | Bawaan template, belum dipastikan dipakai | - | phaserjs/template-react-ts | MIT (repo template), belum diverifikasi per berkas | Dihapus |
 
-Bila ketiganya tidak dipakai kode (`grep -rn "bg.png\|star.png\|logo.png" src index.html`), hapus dan ubah status menjadi `Dihapus`.
+Ketiganya tidak dipakai kode (dicek 26 Okt 2026) dan sudah dihapus.
 
 ## Aset game
 

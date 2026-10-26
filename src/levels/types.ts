@@ -3,6 +3,17 @@ import type { SchedulerConfig, Snapshot, ThreadDef } from '../engine/types';
 /** Jenis alat sinkronisasi yang dapat disediakan atau ditaruh pemain. */
 export type ToolType = 'mutex' | 'semaphore' | 'condition';
 
+/** Ekspresi potret Pak Mandor (PRD bagian 18.3). */
+export type MandorMood = 'netral' | 'senang' | 'sedih' | 'berpikir';
+
+/** Satu halaman dialog Pak Mandor di layar Intro Level (PRD bagian 16, S4). */
+export interface IntroPage {
+  /** Isi gelembung dialog. */
+  text: string;
+  /** Ekspresi potret; bila kosong, tampilan memakai 'netral'. */
+  mood?: MandorMood;
+}
+
 /**
  * Definisi resource yang ada di level.
  * Digunakan untuk visualisasi awal dan inisialisasi controller/engine.
@@ -23,14 +34,30 @@ export interface LevelDefinition {
   module: 1 | 2;
   /** Judul level, mis. 'Bug Papan Stok'. */
   title: string;
-  /** Penjelasan situasi/tutorial oleh Pak Mandor. */
-  intro: string;
   /**
-   * Penjelasan konsep yang ditampilkan di dialog hasil (opsional).
+   * Dialog pembuka oleh Pak Mandor, 2 sampai 3 halaman: situasi, misi beserta
+   * kriteria bintang, dan cara memakai alat (PRD bagian 9).
+   */
+  intro: IntroPage[];
+  /**
+   * Petunjuk bertahap untuk tombol "Tanya Pak Mandor", urut dari samar sampai
+   * hampir jelas. Minimal 3 tingkat.
+   */
+  hints: string[];
+  /** Konsep yang dipelajari di level ini (dipakai layar Tamat Modul dan Tamat Game). */
+  concepts: string[];
+  /**
+   * Penjelasan konsep yang ditampilkan di dialog hasil (opsional di tipe, tetapi
+   * wajib terisi pada level asli; dijaga oleh tes data level).
    * `pass` dipakai bila level lulus, `fail` bila gagal. Isinya harus benar secara
    * konsep sisop (lihat CLAUDE.md bagian 7).
    */
   explanation?: { pass: string; fail: string };
+  /**
+   * Kunci tata letak arena di game/layouts/. Koordinat tidak disimpan di data
+   * level (CLAUDE.md bagian 4 aturan 9).
+   */
+  layoutId: string;
   /** Konfigurasi thread (robot) awal sebelum dipasangi alat pemain. */
   threads: ThreadDef[];
   /** Nilai awal variabel bersama, mis. { stok: 0 }. */
