@@ -10,6 +10,7 @@ import { useProgressRecorder } from './hooks/useProgressRecorder';
 import { useSettings } from './hooks/useSettings';
 import type { Navigation } from './navigation';
 import { HomeScreen } from './screens/HomeScreen';
+import { ModeSelectScreen } from './screens/ModeSelectScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { PlayScreen } from './screens/PlayScreen';
 import {
@@ -96,6 +97,16 @@ export function AppShell({
     );
   }
 
+  if (screen.id === 'mode') {
+    return (
+      <ModeSelectScreen
+        navigation={navigation}
+        context={unlockContext}
+        getLevelTitle={(levelId) => findLevelById(levelId)?.title}
+      />
+    );
+  }
+
   if (screen.id === 'play') {
     if (findLevelById(screen.levelId) === undefined) {
       return (
@@ -129,7 +140,9 @@ export function AppShell({
       navigation={navigation}
       modules={MODULES}
       settings={settings}
-      onToggleDemo={() => settingsStore.update({ demoMode: !settings.demoMode })}
+      onToggleDemo={() =>
+        settingsStore.update({ demoMode: !settings.demoMode })
+      }
       onResetProgress={() => progressStore.reset()}
     />
   );

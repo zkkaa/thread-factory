@@ -72,7 +72,9 @@ export function HomeScreen({ navigation, hasProgress }: HomeScreenProps) {
         <span aria-hidden="true" className="text-8xl">
           👷
         </span>
-        <span className="text-sm text-ink-300">Pak Mandor (gambar menyusul)</span>
+        <span className="text-sm text-ink-300">
+          Pak Mandor (gambar menyusul)
+        </span>
       </div>
     </main>
   );
