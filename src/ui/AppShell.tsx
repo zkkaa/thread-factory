@@ -1,10 +1,13 @@
-import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { SimulationController } from '../controller/SimulationController';
 import { MODULES, findLevelById, findModuleOfLevel } from '../levels';
 import type { ProgressStore } from '../progress/progressStore';
 import { isLevelCleared } from '../progress/progressStore';
 import type { SettingsStore } from '../progress/settingsStore';
 import type { UnlockContext } from '../progress/unlocks';
+import { useProgress } from './hooks/useProgress';
+import { useProgressRecorder } from './hooks/useProgressRecorder';
+import { useSettings } from './hooks/useSettings';
 import type { Navigation } from './navigation';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { PlayScreen } from './screens/PlayScreen';
@@ -26,21 +29,18 @@ interface AppShellProps {
 
 /**
  * Router layar. Menyimpan ScreenState, menyusun konteks buka-kunci dari
- * progres dan pengaturan, dan memuat level ke controller saat masuk Arena.
+ * progres dan pengaturan, memuat level ke controller saat masuk Arena, dan
+ * memasang pencatat bintang (aktif di semua layar).
  */
 export function AppShell({
   controller,
   progressStore,
   settingsStore,
 }: AppShellProps) {
-  const progress = useSyncExternalStore(
-    progressStore.subscribe,
-    progressStore.getState,
-  );
-  const settings = useSyncExternalStore(
-    settingsStore.subscribe,
-    settingsStore.getState,
-  );
+  const progress = useProgress(progressStore);
+  const settings = useSettings(settingsStore);
+  useProgressRecorder(controller, progressStore);
+
   const [screenState, setScreenState] =
     useState<ScreenState>(createScreenState);
   // Level yang terakhir dimuat ke controller; mencegah muat ulang saat kembali
