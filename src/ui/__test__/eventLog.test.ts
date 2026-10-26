@@ -36,12 +36,28 @@ describe('describeEvent', () => {
   it('menerjemahkan tiap jenis event menjadi kalimat Indonesia', () => {
     const cases: [SimEvent, string][] = [
       [
-        { type: 'THREAD_STATE', tick: 3, thread: 'A', from: 'RUNNING', to: 'WAITING' },
+        {
+          type: 'THREAD_STATE',
+          tick: 3,
+          thread: 'A',
+          from: 'RUNNING',
+          to: 'WAITING',
+        },
         'Robot A: RUNNING → WAITING',
       ],
-      [{ type: 'INSTRUCTION', tick: 3, thread: 'A', index: 1, op: 'READ' }, 'Robot A menjalankan READ'],
       [
-        { type: 'VAR_WRITTEN', tick: 3, thread: 'B', name: 'stok', oldValue: 4, newValue: 5 },
+        { type: 'INSTRUCTION', tick: 3, thread: 'A', index: 1, op: 'READ' },
+        'Robot A menjalankan READ',
+      ],
+      [
+        {
+          type: 'VAR_WRITTEN',
+          tick: 3,
+          thread: 'B',
+          name: 'stok',
+          oldValue: 4,
+          newValue: 5,
+        },
         'Robot B menulis stok: 4 → 5',
       ],
       [
@@ -52,7 +68,10 @@ describe('describeEvent', () => {
         { type: 'LOCK_RELEASED', tick: 3, thread: 'A', mutex: 'papan' },
         'Robot A melepas kunci pintu "papan"',
       ],
-      [{ type: 'BLOCKED', tick: 3, thread: 'B', on: 'mutex:papan' }, 'Robot B menunggu (mutex:papan)'],
+      [
+        { type: 'BLOCKED', tick: 3, thread: 'B', on: 'mutex:papan' },
+        'Robot B menunggu (mutex:papan)',
+      ],
       [
         { type: 'DEADLOCK_DETECTED', tick: 9, cycle: ['A', 'B'] },
         'Deadlock terdeteksi: Robot A → Robot B',
@@ -67,8 +86,14 @@ describe('describeEvent', () => {
   });
 
   it('hanya perpindahan NEW/READY/RUNNING yang dianggap minor', () => {
-    const state = (from: 'NEW' | 'READY' | 'RUNNING' | 'WAITING', to: 'READY' | 'RUNNING' | 'WAITING' | 'TERMINATED') =>
-      describeEvent({ type: 'THREAD_STATE', tick: 1, thread: 'A', from, to }, nameOf).minor;
+    const state = (
+      from: 'NEW' | 'READY' | 'RUNNING' | 'WAITING',
+      to: 'READY' | 'RUNNING' | 'WAITING' | 'TERMINATED',
+    ) =>
+      describeEvent(
+        { type: 'THREAD_STATE', tick: 1, thread: 'A', from, to },
+        nameOf,
+      ).minor;
     expect(state('READY', 'RUNNING')).toBe(true);
     expect(state('RUNNING', 'READY')).toBe(true);
     expect(state('NEW', 'READY')).toBe(true);
@@ -88,7 +113,9 @@ describe('EventLog dengan controller sungguhan', () => {
     controller.step();
     const entries = log.getEntries();
     expect(entries.length).toBeGreaterThan(0);
-    expect(entries.every((e, i) => i === 0 || e.tick >= (entries[i - 1]?.tick ?? 0))).toBe(true);
+    expect(
+      entries.every((e, i) => i === 0 || e.tick >= (entries[i - 1]?.tick ?? 0)),
+    ).toBe(true);
     expect(entries.some((e) => e.text.startsWith('Robot '))).toBe(true);
     expect(new Set(entries.map((e) => e.id)).size).toBe(entries.length);
   });
@@ -124,13 +151,26 @@ describe('EventLog dengan controller sungguhan', () => {
     const controller = makeController();
     controller.placeTool(MUTEX_PAS);
     const log = attach(controller);
-    for (let i = 0; i < 100 && controller.getState().runState !== 'finished'; i++) controller.step();
+    for (
+      let i = 0;
+      i < 100 && controller.getState().runState !== 'finished';
+      i++
+    )
+      controller.step();
 
     const kinds = new Set(log.getEntries().map((e) => e.kind));
-    for (const kind of ['lock', 'unlock', 'blocked', 'write', 'finished'] as const) {
+    for (const kind of [
+      'lock',
+      'unlock',
+      'blocked',
+      'write',
+      'finished',
+    ] as const) {
       expect(kinds.has(kind)).toBe(true);
     }
-    expect(log.getEntries().some((e) => e.text.includes('menunggu (mutex:papan)'))).toBe(true);
+    expect(
+      log.getEntries().some((e) => e.text.includes('menunggu (mutex:papan)')),
+    ).toBe(true);
     const entries = log.getEntries();
     expect(entries[entries.length - 1]?.text).toBe('Simulasi selesai');
   });
@@ -145,7 +185,11 @@ describe('EventLog dengan controller sungguhan', () => {
       { type: 'INSTRUCTION', tick: 2, thread: 'B', index: 0, op: 'WORK' },
       { type: 'INSTRUCTION', tick: 3, thread: 'A', index: 1, op: 'READ' },
     ];
-    log.push({ ...controller.getState(), snapshot: { ...snapshot, tick: 3 }, events });
+    log.push({
+      ...controller.getState(),
+      snapshot: { ...snapshot, tick: 3 },
+      events,
+    });
     expect(log.getEntries().map((e) => e.tick)).toEqual([1, 2, 3]);
   });
 

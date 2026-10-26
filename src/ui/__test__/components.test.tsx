@@ -36,7 +36,8 @@ function makeController(engine: Engine = new Engine()): SimulationController {
 }
 
 function finish(controller: SimulationController): void {
-  for (let i = 0; i < 200 && controller.getState().runState !== 'finished'; i++) controller.step();
+  for (let i = 0; i < 200 && controller.getState().runState !== 'finished'; i++)
+    controller.step();
 }
 
 /** Mengambil tag <button> yang isinya persis `label`. */
@@ -59,7 +60,9 @@ function tileTags(html: string): string[] {
 describe('ControlBar', () => {
   it('saat idle: Run, Step, Reset aktif; kecepatan dan seed tutorial tampil', () => {
     const controller = makeController();
-    const html = renderToStaticMarkup(<ControlBar controller={controller} state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <ControlBar controller={controller} state={controller.getState()} />,
+    );
     for (const label of ['Run', 'Step', 'Reset']) {
       expect(isDisabled(buttonTag(html, label))).toBe(false);
     }
@@ -73,7 +76,9 @@ describe('ControlBar', () => {
   it('setelah error engine: pesan tampil dan Run/Step nonaktif sampai Reset', () => {
     const controller = makeController(new ThrowingEngine());
     controller.step();
-    const html = renderToStaticMarkup(<ControlBar controller={controller} state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <ControlBar controller={controller} state={controller.getState()} />,
+    );
     expect(html).toContain('role="alert"');
     expect(html).toContain('boom');
     expect(isDisabled(buttonTag(html, 'Run'))).toBe(true);
@@ -84,7 +89,9 @@ describe('ControlBar', () => {
   it('saat selesai: Run dan Step nonaktif dan ada petunjuk Reset', () => {
     const controller = makeController();
     finish(controller);
-    const html = renderToStaticMarkup(<ControlBar controller={controller} state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <ControlBar controller={controller} state={controller.getState()} />,
+    );
     expect(isDisabled(buttonTag(html, 'Run'))).toBe(true);
     expect(isDisabled(buttonTag(html, 'Step'))).toBe(true);
     expect(html).toContain('Selesai');
@@ -95,7 +102,9 @@ describe('ControlBar', () => {
 describe('Toolbox', () => {
   it('menggambar ubin program asli tiap robot (4 ubin x 2 robot)', () => {
     const controller = makeController();
-    const html = renderToStaticMarkup(<Toolbox controller={controller} state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <Toolbox controller={controller} state={controller.getState()} />,
+    );
     expect(html).toContain('Pintu Papan Stok');
     expect(html.match(/aria-label="Robot [AB], ubin \d, /g)).toHaveLength(8);
     expect(tileTags(html).filter(isDisabled)).toHaveLength(0); // idle: semua ubin bisa diklik
@@ -106,7 +115,9 @@ describe('Toolbox', () => {
   it('ubin yang tertutup mutex diberi tanda teks (bukan hanya warna)', () => {
     const controller = makeController();
     controller.placeTool(MUTEX_PAS);
-    const html = renderToStaticMarkup(<Toolbox controller={controller} state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <Toolbox controller={controller} state={controller.getState()} />,
+    );
     expect(html.match(/tertutup pintu mutex/g)).toHaveLength(6); // ubin 2-4 pada dua robot
     expect(html).toContain('Lepas pintu');
   });
@@ -114,7 +125,9 @@ describe('Toolbox', () => {
   it('setelah simulasi dimulai: ubin nonaktif dan ada penjelasan terkunci', () => {
     const controller = makeController();
     controller.step();
-    const html = renderToStaticMarkup(<Toolbox controller={controller} state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <Toolbox controller={controller} state={controller.getState()} />,
+    );
     expect(html).toContain('Alat terkunci');
     expect(html).not.toContain('Lepas pintu');
     const tiles = tileTags(html);
@@ -126,7 +139,9 @@ describe('Toolbox', () => {
 describe('MetricsPanel', () => {
   it('sebelum selesai: nilai saat ini, tanda "-" untuk metrik akhir', () => {
     const controller = makeController();
-    const html = renderToStaticMarkup(<MetricsPanel state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <MetricsPanel state={controller.getState()} />,
+    );
     expect(html).toContain('Nilai stok');
     expect(html).toContain('target 10');
     expect(html).toContain('Waktu tunggu Robot A');
@@ -137,7 +152,9 @@ describe('MetricsPanel', () => {
   it('setelah selesai tanpa mutex: pembaruan hilang 2', () => {
     const controller = makeController();
     finish(controller);
-    const html = renderToStaticMarkup(<MetricsPanel state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <MetricsPanel state={controller.getState()} />,
+    );
     expect(html).toContain('<strong>8</strong>');
     expect(html).toContain('<dd>2</dd>');
   });
@@ -146,13 +163,19 @@ describe('MetricsPanel', () => {
 describe('ResultDialog', () => {
   it('tidak tampil sebelum simulasi selesai', () => {
     const controller = makeController();
-    expect(renderToStaticMarkup(<ResultDialog controller={controller} state={controller.getState()} />)).toBe('');
+    expect(
+      renderToStaticMarkup(
+        <ResultDialog controller={controller} state={controller.getState()} />,
+      ),
+    ).toBe('');
   });
 
   it('gagal: "Seharusnya 10, hasilnya 8", SALAH, penjelasan race condition', () => {
     const controller = makeController();
     finish(controller);
-    const html = renderToStaticMarkup(<ResultDialog controller={controller} state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <ResultDialog controller={controller} state={controller.getState()} />,
+    );
     expect(html).toContain('role="dialog"');
     expect(html).toContain('Seharusnya 10, hasilnya 8');
     expect(html).toContain('SALAH');
@@ -164,7 +187,9 @@ describe('ResultDialog', () => {
     const controller = makeController();
     controller.placeTool(MUTEX_PAS);
     finish(controller);
-    const html = renderToStaticMarkup(<ResultDialog controller={controller} state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <ResultDialog controller={controller} state={controller.getState()} />,
+    );
     expect(html).toContain('Seharusnya 10, hasilnya 10');
     expect(html).toContain('BENAR');
     expect(html).toContain('aria-label="3 dari 3 bintang"');
@@ -176,7 +201,9 @@ describe('ResultDialog', () => {
     controller.reset(11);
     controller.placeTool(MUTEX_PAS);
     finish(controller);
-    const html = renderToStaticMarkup(<ResultDialog controller={controller} state={controller.getState()} />);
+    const html = renderToStaticMarkup(
+      <ResultDialog controller={controller} state={controller.getState()} />,
+    );
     expect(html).toContain('Bintang hanya dinilai pada seed tutorial (10)');
     expect(html).not.toContain('dari 3 bintang');
   });

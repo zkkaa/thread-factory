@@ -6,7 +6,10 @@ import type { Clock } from '../clock';
 import { SimulationController } from '../SimulationController';
 
 /** Jam palsu: tes ini tidak butuh waktu berjalan, hanya status 'running'. */
-const fakeClock: Clock = { requestFrame: () => 1, cancelFrame: () => undefined };
+const fakeClock: Clock = {
+  requestFrame: () => 1,
+  cancelFrame: () => undefined,
+};
 
 function robot(id: string): ThreadDef {
   return {
@@ -57,7 +60,9 @@ function makeDoor(id = 'pintu-stok'): PlacedTool {
   };
 }
 
-function makeController(level: LevelDefinition = makeLevel()): SimulationController {
+function makeController(
+  level: LevelDefinition = makeLevel(),
+): SimulationController {
   const controller = new SimulationController(undefined, fakeClock);
   controller.loadLevel(level);
   return controller;
@@ -65,7 +70,11 @@ function makeController(level: LevelDefinition = makeLevel()): SimulationControl
 
 /** Jalankan tick demi tick sampai selesai, lalu kembalikan stok akhir. */
 function stepUntilFinished(controller: SimulationController): number {
-  for (let i = 0; i < 2000 && controller.getState().runState !== 'finished'; i++) {
+  for (
+    let i = 0;
+    i < 2000 && controller.getState().runState !== 'finished';
+    i++
+  ) {
     controller.step();
   }
   expect(controller.getState().runState).toBe('finished');

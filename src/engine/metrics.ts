@@ -55,8 +55,15 @@ export function computeMetrics(
 
   let lostUpdates: number | null = null;
   if (expected !== undefined) {
-    if (!Object.prototype.hasOwnProperty.call(snapshot.sharedVars, expected.variable)) {
-      throw new Error(`Variabel bersama "${expected.variable}" tidak ada di snapshot`);
+    if (
+      !Object.prototype.hasOwnProperty.call(
+        snapshot.sharedVars,
+        expected.variable,
+      )
+    ) {
+      throw new Error(
+        `Variabel bersama "${expected.variable}" tidak ada di snapshot`,
+      );
     }
     const allTerminated = threads.every((t) => t.state === 'TERMINATED');
     if (allTerminated) {

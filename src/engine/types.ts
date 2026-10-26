@@ -6,11 +6,7 @@ export type ThreadId = string;
  * WAITING = diblokir (menunggu mutex/semaphore/condition) dan TIDAK dipilih scheduler.
  */
 export type ThreadState =
-  | 'NEW'
-  | 'READY'
-  | 'RUNNING'
-  | 'WAITING'
-  | 'TERMINATED';
+  'NEW' | 'READY' | 'RUNNING' | 'WAITING' | 'TERMINATED';
 
 /**
  * Satu instruksi dalam program sebuah thread. Satu tick = satu instruksi.
@@ -147,7 +143,13 @@ export type SimEvent =
       from: ThreadState;
       to: ThreadState;
     }
-  | { type: 'INSTRUCTION'; tick: number; thread: ThreadId; index: number; op: Op }
+  | {
+      type: 'INSTRUCTION';
+      tick: number;
+      thread: ThreadId;
+      index: number;
+      op: Op;
+    }
   | {
       type: 'VAR_WRITTEN';
       tick: number;

@@ -20,7 +20,11 @@ function mutexOnBoth(start: number, end: number): PlacedTool {
   };
 }
 
-function finalSnapshot(level: LevelDefinition, tools: PlacedTool[], seed: number): Snapshot {
+function finalSnapshot(
+  level: LevelDefinition,
+  tools: PlacedTool[],
+  seed: number,
+): Snapshot {
   const engine = new Engine();
   engine.load(buildEngineConfig(level, tools), seed);
   while (!engine.isFinished) engine.step();
@@ -39,7 +43,10 @@ describe('evaluateLevel: lulus atau gagal', () => {
   });
 
   it('mutex pas (READ..WRITE) pada seed tutorial: lulus dengan 3 bintang', () => {
-    const result = evaluateLevel(level1_1, finalSnapshot(level1_1, [mutexOnBoth(1, 3)], SEED));
+    const result = evaluateLevel(
+      level1_1,
+      finalSnapshot(level1_1, [mutexOnBoth(1, 3)], SEED),
+    );
     expect(result.ok).toBe(true);
     expect(result.metrics.lostUpdates).toBe(0);
     expect(result.stars).toBe(3);
@@ -50,12 +57,17 @@ describe('evaluateLevel: lulus atau gagal', () => {
     const result = evaluateLevel(level1_1, snapshot);
     expect(result.ok).toBe(true);
     expect(result.stars).toBe(2);
-    expect(result.metrics.avgWaitTicks * 2).toBeGreaterThan(level1_1.goal.stars.lowWait);
+    expect(result.metrics.avgWaitTicks * 2).toBeGreaterThan(
+      level1_1.goal.stars.lowWait,
+    );
   });
 
   it('simulasi yang dipotong maxTicks: gagal walau belum ada yang rusak, dengan pesan jelas', () => {
     const cut: LevelDefinition = { ...level1_1, maxTicks: 10 };
-    const result = evaluateLevel(cut, finalSnapshot(cut, [mutexOnBoth(1, 3)], SEED));
+    const result = evaluateLevel(
+      cut,
+      finalSnapshot(cut, [mutexOnBoth(1, 3)], SEED),
+    );
     expect(result.ok).toBe(false);
     expect(result.message).toMatch(/berhenti sebelum semua robot selesai/);
     expect(result.stars).toBe(0);
@@ -72,28 +84,39 @@ describe('evaluateLevel: bintang bertingkat dari ambang level', () => {
 
   it('tick melewati ambang fast: berhenti di 1 bintang', () => {
     const level = withStars(59, 1000);
-    expect(evaluateLevel(level, finalSnapshot(level, tools, SEED)).stars).toBe(1);
+    expect(evaluateLevel(level, finalSnapshot(level, tools, SEED)).stars).toBe(
+      1,
+    );
   });
 
   it('tick tepat sama dengan ambang fast masih dihitung (batas maksimum)', () => {
     const level = withStars(60, 1000);
-    expect(evaluateLevel(level, finalSnapshot(level, tools, SEED)).stars).toBe(3);
+    expect(evaluateLevel(level, finalSnapshot(level, tools, SEED)).stars).toBe(
+      3,
+    );
   });
 
   it('waktu tunggu melewati ambang lowWait: 2 bintang', () => {
     const level = withStars(60, 22);
-    expect(evaluateLevel(level, finalSnapshot(level, tools, SEED)).stars).toBe(2);
+    expect(evaluateLevel(level, finalSnapshot(level, tools, SEED)).stars).toBe(
+      2,
+    );
   });
 
   it('bintang bertingkat: lowWait terpenuhi tapi fast tidak -> tetap 1 bintang', () => {
     const level = withStars(10, 1000);
-    expect(evaluateLevel(level, finalSnapshot(level, tools, SEED)).stars).toBe(1);
+    expect(evaluateLevel(level, finalSnapshot(level, tools, SEED)).stars).toBe(
+      1,
+    );
   });
 });
 
 describe('evaluateLevel: bintang hanya pada seed tutorial', () => {
   it('seed lain: tetap dinilai lulus/gagal, tetapi bintang null', () => {
-    const pass = evaluateLevel(level1_1, finalSnapshot(level1_1, [mutexOnBoth(1, 3)], 11));
+    const pass = evaluateLevel(
+      level1_1,
+      finalSnapshot(level1_1, [mutexOnBoth(1, 3)], 11),
+    );
     expect(pass.ok).toBe(true);
     expect(pass.stars).toBeNull();
 
@@ -104,7 +127,10 @@ describe('evaluateLevel: bintang hanya pada seed tutorial', () => {
 
   it('level tanpa tutorialSeed: bintang dinilai pada seed mana pun', () => {
     const level: LevelDefinition = { ...level1_1, tutorialSeed: undefined };
-    const result = evaluateLevel(level, finalSnapshot(level, [mutexOnBoth(1, 3)], 11));
+    const result = evaluateLevel(
+      level,
+      finalSnapshot(level, [mutexOnBoth(1, 3)], 11),
+    );
     expect(result.stars).not.toBeNull();
   });
 });

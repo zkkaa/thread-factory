@@ -30,7 +30,9 @@ export class Mutex {
       );
     }
     if (this.queue.includes(thread)) {
-      throw new Error(`Thread "${thread}" sudah mengantre di mutex "${this.id}"`);
+      throw new Error(
+        `Thread "${thread}" sudah mengantre di mutex "${this.id}"`,
+      );
     }
     if (this.owner === null) {
       this.owner = thread;
@@ -48,7 +50,8 @@ export class Mutex {
    */
   unlock(thread: ThreadId): ThreadId | null {
     if (this.owner !== thread) {
-      const holder = this.owner === null ? 'tidak ada (mutex bebas)' : `"${this.owner}"`;
+      const holder =
+        this.owner === null ? 'tidak ada (mutex bebas)' : `"${this.owner}"`;
       throw new Error(
         `Thread "${thread}" mencoba UNLOCK mutex "${this.id}" yang bukan miliknya (pemilik: ${holder})`,
       );

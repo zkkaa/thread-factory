@@ -30,7 +30,9 @@ export function StepLogView({ entries }: { entries: readonly LogEntry[] }) {
   return (
     <section aria-label="Log kejadian" className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-gray-300">Log Kejadian</h2>
+        <h2 className="text-sm font-bold uppercase tracking-wide text-gray-300">
+          Log Kejadian
+        </h2>
         <label className="flex items-center gap-1 text-xs text-gray-400">
           <input
             type="checkbox"
@@ -42,7 +44,9 @@ export function StepLogView({ entries }: { entries: readonly LogEntry[] }) {
       </div>
 
       {shown.length === 0 ? (
-        <p className="text-xs text-gray-400">Belum ada kejadian. Tekan Run atau Step.</p>
+        <p className="text-xs text-gray-400">
+          Belum ada kejadian. Tekan Run atau Step.
+        </p>
       ) : (
         <>
           <p className="text-xs text-gray-500">Terbaru di atas.</p>
@@ -52,7 +56,9 @@ export function StepLogView({ entries }: { entries: readonly LogEntry[] }) {
                 key={entry.id}
                 className={`flex gap-2 border-l-2 pl-2 text-xs ${KIND_STYLE[entry.kind].border}`}
               >
-                <span className="w-9 shrink-0 text-gray-500">t{entry.tick}</span>
+                <span className="w-9 shrink-0 text-gray-500">
+                  t{entry.tick}
+                </span>
                 <span aria-hidden="true">{KIND_STYLE[entry.kind].icon}</span>
                 <span>{entry.text}</span>
               </li>

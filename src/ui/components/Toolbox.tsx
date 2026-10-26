@@ -38,7 +38,9 @@ export function Toolbox({ controller, state }: ToolboxProps) {
 
   const editable = state.runState === 'idle';
   const activeAnchor = editable ? anchor : null;
-  const mutexes = level.resources.filter((resource) => resource.kind === 'mutex');
+  const mutexes = level.resources.filter(
+    (resource) => resource.kind === 'mutex',
+  );
 
   const change = (
     mutexId: string,
@@ -46,12 +48,17 @@ export function Toolbox({ controller, state }: ToolboxProps) {
     span: { thread: string; start: number; end: number } | null,
   ): void => {
     const toolId = mutexToolId(mutexId);
-    const previous = controller.getState().tools.find((tool) => tool.id === toolId) ?? null;
+    const previous =
+      controller.getState().tools.find((tool) => tool.id === toolId) ?? null;
     const next = buildMutexTool(previous, mutexId, threadId, span);
     setMessage(replaceTool(controller, toolId, next));
   };
 
-  const clickTile = (mutexId: string, threadId: string, index: number): void => {
+  const clickTile = (
+    mutexId: string,
+    threadId: string,
+    index: number,
+  ): void => {
     if (!editable) return;
     if (
       activeAnchor === null ||
@@ -72,12 +79,17 @@ export function Toolbox({ controller, state }: ToolboxProps) {
 
   return (
     <section aria-label="Toolbox" className="space-y-3">
-      <h2 className="text-sm font-bold uppercase tracking-wide text-gray-300">Toolbox: Pintu Mutex</h2>
+      <h2 className="text-sm font-bold uppercase tracking-wide text-gray-300">
+        Toolbox: Pintu Mutex
+      </h2>
 
       {mutexes.map((mutex) => {
         const tool = state.tools.find((t) => t.id === mutexToolId(mutex.id));
         return (
-          <div key={mutex.id} className="space-y-2 rounded border border-gray-700 p-2">
+          <div
+            key={mutex.id}
+            className="space-y-2 rounded border border-gray-700 p-2"
+          >
             <p className="text-sm font-semibold">{mutex.label ?? mutex.id}</p>
 
             {level.threads.map((thread) => {
@@ -85,7 +97,9 @@ export function Toolbox({ controller, state }: ToolboxProps) {
               return (
                 <div key={thread.id} className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-300">{thread.label}</span>
+                    <span className="text-xs text-gray-300">
+                      {thread.label}
+                    </span>
                     {span !== undefined && editable && (
                       <button
                         type="button"
@@ -120,7 +134,9 @@ export function Toolbox({ controller, state }: ToolboxProps) {
                               : 'border-gray-600 bg-gray-800 hover:bg-gray-700'
                           } ${isAnchor ? 'ring-2 ring-yellow-300' : ''}`}
                         >
-                          <span className="block text-[10px] text-gray-400">{index + 1}</span>
+                          <span className="block text-[10px] text-gray-400">
+                            {index + 1}
+                          </span>
                           {instruction.op}
                           {covered && <span aria-hidden="true"> 🔒</span>}
                         </button>
@@ -136,21 +152,27 @@ export function Toolbox({ controller, state }: ToolboxProps) {
 
       {activeAnchor !== null && (
         <p className="text-xs text-yellow-200">
-          Ubin awal dipilih. Klik ubin akhir pada robot yang sama (klik ubin yang sama untuk satu
-          ubin saja).{' '}
-          <button type="button" onClick={() => setAnchor(null)} className="underline">
+          Ubin awal dipilih. Klik ubin akhir pada robot yang sama (klik ubin
+          yang sama untuk satu ubin saja).{' '}
+          <button
+            type="button"
+            onClick={() => setAnchor(null)}
+            className="underline"
+          >
             Batal
           </button>
         </p>
       )}
       {!editable && (
         <p className="text-xs text-gray-400">
-          Alat terkunci karena simulasi sudah dimulai. Tekan Reset untuk mengubah pintu.
+          Alat terkunci karena simulasi sudah dimulai. Tekan Reset untuk
+          mengubah pintu.
         </p>
       )}
       {editable && activeAnchor === null && state.tools.length === 0 && (
         <p className="text-xs text-gray-400">
-          Pilih ubin awal dan akhir pada tiap robot untuk memasang pintu di sekelilingnya.
+          Pilih ubin awal dan akhir pada tiap robot untuk memasang pintu di
+          sekelilingnya.
         </p>
       )}
       {message !== null && (

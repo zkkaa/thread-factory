@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { Engine } from '../engine';
 import { computeMetrics } from '../metrics';
-import type { EngineConfig, Instruction, SchedulerConfig, SimEvent, ThreadDef } from '../types';
+import type {
+  EngineConfig,
+  Instruction,
+  SchedulerConfig,
+  SimEvent,
+  ThreadDef,
+} from '../types';
 
 const EXPECTED = { variable: 'stok', value: 10 };
 
@@ -53,7 +59,10 @@ function makeConfig(
   };
 }
 
-function run(config: EngineConfig, seed: number): { engine: Engine; events: SimEvent[] } {
+function run(
+  config: EngineConfig,
+  seed: number,
+): { engine: Engine; events: SimEvent[] } {
   const engine = new Engine();
   engine.load(config, seed);
   const events: SimEvent[] = [];
@@ -104,14 +113,20 @@ describe('Level 1-1 dengan mutex (inti T-021)', () => {
 
   it('mutex harus dilepas: snapshot akhir menunjukkan mutex bebas dan antrean kosong', () => {
     const { engine } = run(config, 3);
-    expect(engine.getSnapshot().mutexes).toEqual([{ id: 'papan', owner: null, queue: [] }]);
+    expect(engine.getSnapshot().mutexes).toEqual([
+      { id: 'papan', owner: null, queue: [] },
+    ]);
   });
 });
 
 describe('Engine + mutex: jalannya blokir dan handoff (jadwal terkontrol)', () => {
   // A: WORK, LOCK -> B: WORK, LOCK (diblokir) -> A: READ, COMPUTE, WRITE, UNLOCK
   const script = ['A', 'A', 'B', 'B', 'A', 'A', 'A', 'A'];
-  const config = makeConfig(safeProgram(), 1, { kind: 'scripted', cores: 1, script });
+  const config = makeConfig(safeProgram(), 1, {
+    kind: 'scripted',
+    cores: 1,
+    script,
+  });
 
   it('B diblokir saat mutex dipegang A: WAITING, menunggu mutex:papan, antre di mutex', () => {
     const engine = new Engine();
@@ -153,8 +168,18 @@ describe('Engine + mutex: jalannya blokir dan handoff (jadwal terkontrol)', () =
       if (i === 7) unlockEvents = events;
     }
 
-    expect(unlockEvents).toContainEqual({ type: 'LOCK_RELEASED', tick: 8, thread: 'A', mutex: 'papan' });
-    expect(unlockEvents).toContainEqual({ type: 'LOCK_ACQUIRED', tick: 8, thread: 'B', mutex: 'papan' });
+    expect(unlockEvents).toContainEqual({
+      type: 'LOCK_RELEASED',
+      tick: 8,
+      thread: 'A',
+      mutex: 'papan',
+    });
+    expect(unlockEvents).toContainEqual({
+      type: 'LOCK_ACQUIRED',
+      tick: 8,
+      thread: 'B',
+      mutex: 'papan',
+    });
 
     const snap = engine.getSnapshot();
     const b = snap.threads.find((t) => t.id === 'B');
@@ -179,13 +204,20 @@ describe('Engine + mutex: kesalahan dan batas', () => {
     ];
     const engine = new Engine();
     engine.load(
-      makeConfig(leaky, 1, { kind: 'scripted', cores: 1, script: ['A', 'A'] }, {
-        threads: [{ id: 'A', label: 'A', program: leaky }],
-      }),
+      makeConfig(
+        leaky,
+        1,
+        { kind: 'scripted', cores: 1, script: ['A', 'A'] },
+        {
+          threads: [{ id: 'A', label: 'A', program: leaky }],
+        },
+      ),
       1,
     );
     engine.step();
-    expect(() => engine.step()).toThrow(/masih memegang mutex "papan".*tidak seimbang/);
+    expect(() => engine.step()).toThrow(
+      /masih memegang mutex "papan".*tidak seimbang/,
+    );
   });
 
   it('dua thread yang saling menunggu: simulasi berhenti (belum ada deteksi deadlock sampai T-055)', () => {
@@ -195,13 +227,18 @@ describe('Engine + mutex: kesalahan dan batas', () => {
       { op: 'UNLOCK', mutex: second },
       { op: 'UNLOCK', mutex: first },
     ];
-    const config = makeConfig(lockOrder('m1', 'm2'), 1, { kind: 'scripted', cores: 1, script: ['A', 'B'] }, {
-      threads: [
-        { id: 'A', label: 'A', program: lockOrder('m1', 'm2') },
-        { id: 'B', label: 'B', program: lockOrder('m2', 'm1') },
-      ],
-      mutexes: ['m1', 'm2'],
-    });
+    const config = makeConfig(
+      lockOrder('m1', 'm2'),
+      1,
+      { kind: 'scripted', cores: 1, script: ['A', 'B'] },
+      {
+        threads: [
+          { id: 'A', label: 'A', program: lockOrder('m1', 'm2') },
+          { id: 'B', label: 'B', program: lockOrder('m2', 'm1') },
+        ],
+        mutexes: ['m1', 'm2'],
+      },
+    );
     const { engine } = run(config, 1);
     const snap = engine.getSnapshot();
     expect(snap.finished).toBe(true);
@@ -214,18 +251,33 @@ describe('Engine + mutex: kesalahan dan batas', () => {
     engine.load(makeConfig(safeProgram(), 5), 1);
     for (let i = 0; i < 12; i++) engine.step();
     engine.reset();
-    expect(engine.getSnapshot().mutexes).toEqual([{ id: 'papan', owner: null, queue: [] }]);
+    expect(engine.getSnapshot().mutexes).toEqual([
+      { id: 'papan', owner: null, queue: [] },
+    ]);
   });
 
   it('konfigurasi: mutex tidak dideklarasikan, nama ganda, dan LOCK sebagai instruksi terakhir ditolak', () => {
     const engine = new Engine();
-    expect(() => engine.load(makeConfig(safeProgram(), 1, undefined, { mutexes: [] }), 1))
-      .toThrow(/mutex "papan" tidak dideklarasikan/);
-    expect(() => engine.load(makeConfig(safeProgram(), 1, undefined, { mutexes: ['papan', 'papan'] }), 1))
-      .toThrow(/ganda/);
+    expect(() =>
+      engine.load(makeConfig(safeProgram(), 1, undefined, { mutexes: [] }), 1),
+    ).toThrow(/mutex "papan" tidak dideklarasikan/);
     expect(() =>
       engine.load(
-        makeConfig([{ op: 'WORK', ticks: 1 }, { op: 'LOCK', mutex: 'papan' }], 1),
+        makeConfig(safeProgram(), 1, undefined, {
+          mutexes: ['papan', 'papan'],
+        }),
+        1,
+      ),
+    ).toThrow(/ganda/);
+    expect(() =>
+      engine.load(
+        makeConfig(
+          [
+            { op: 'WORK', ticks: 1 },
+            { op: 'LOCK', mutex: 'papan' },
+          ],
+          1,
+        ),
         1,
       ),
     ).toThrow(/tidak boleh LOCK/);
@@ -233,18 +285,29 @@ describe('Engine + mutex: kesalahan dan batas', () => {
 });
 
 describe('Engine + mutex: harga pengaman terhadap total waktu (bahan Level 1-2)', () => {
-  const ticksOf = (program: Instruction[], cores: number, seed: number): number =>
-    run(makeConfig(program, 5, { kind: 'random', cores }), seed).engine.getSnapshot().tick;
+  const ticksOf = (
+    program: Instruction[],
+    cores: number,
+    seed: number,
+  ): number =>
+    run(
+      makeConfig(program, 5, { kind: 'random', cores }),
+      seed,
+    ).engine.getSnapshot().tick;
 
   it('cores = 1: mutex besar atau kecil memakan total tick yang sama (selalu ada thread yang jalan)', () => {
     for (let seed = 1; seed <= 20; seed++) {
-      expect(ticksOf(bigLockProgram(3), 1, seed)).toBe(ticksOf(safeProgram(3), 1, seed));
+      expect(ticksOf(bigLockProgram(3), 1, seed)).toBe(
+        ticksOf(safeProgram(3), 1, seed),
+      );
     }
   });
 
   it('cores = 2: mutex yang ikut menutupi WORK memperlambat simulasi', () => {
     for (let seed = 1; seed <= 20; seed++) {
-      expect(ticksOf(bigLockProgram(3), 2, seed)).toBeGreaterThan(ticksOf(safeProgram(3), 2, seed));
+      expect(ticksOf(bigLockProgram(3), 2, seed)).toBeGreaterThan(
+        ticksOf(safeProgram(3), 2, seed),
+      );
     }
   });
 });

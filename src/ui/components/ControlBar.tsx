@@ -46,7 +46,10 @@ function SeedField({
         if (parsed !== null) controller.reset(parsed);
       }}
     >
-      <label htmlFor="seed-input" className="block text-xs font-semibold text-gray-300">
+      <label
+        htmlFor="seed-input"
+        className="block text-xs font-semibold text-gray-300"
+      >
         Seed (seed sama = kejadian sama persis)
       </label>
       <div className="flex gap-2">
@@ -76,9 +79,13 @@ function SeedField({
         )}
       </div>
       {invalid && (
-        <p className="text-xs text-red-300">Seed harus bilangan bulat 0 atau lebih.</p>
+        <p className="text-xs text-red-300">
+          Seed harus bilangan bulat 0 atau lebih.
+        </p>
       )}
-      <p className="text-xs text-gray-400">Memakai seed otomatis me-reset simulasi.</p>
+      <p className="text-xs text-gray-400">
+        Memakai seed otomatis me-reset simulasi.
+      </p>
     </form>
   );
 }
@@ -87,7 +94,9 @@ function SeedField({
 export function ControlBar({ controller, state }: ControlBarProps) {
   const { level, runState, error, speed } = state;
   const canStart =
-    level !== null && error === null && (runState === 'idle' || runState === 'paused');
+    level !== null &&
+    error === null &&
+    (runState === 'idle' || runState === 'paused');
 
   return (
     <section aria-label="Kontrol simulasi" className="space-y-3">
@@ -132,7 +141,11 @@ export function ControlBar({ controller, state }: ControlBarProps) {
         </span>
       </div>
 
-      <div role="group" aria-label="Kecepatan" className="flex items-center gap-2">
+      <div
+        role="group"
+        aria-label="Kecepatan"
+        className="flex items-center gap-2"
+      >
         <span className="text-xs font-semibold text-gray-300">Kecepatan</span>
         {SPEEDS.map((value) => (
           <button
@@ -141,7 +154,9 @@ export function ControlBar({ controller, state }: ControlBarProps) {
             aria-pressed={speed === value}
             onClick={() => controller.setSpeed(value)}
             className={`${BUTTON} ${
-              speed === value ? 'bg-indigo-600' : 'bg-gray-700 hover:bg-gray-600'
+              speed === value
+                ? 'bg-indigo-600'
+                : 'bg-gray-700 hover:bg-gray-600'
             }`}
           >
             {value}x
@@ -157,12 +172,17 @@ export function ControlBar({ controller, state }: ControlBarProps) {
       />
 
       {error !== null && (
-        <p role="alert" className="rounded border border-red-500 bg-red-950 p-2 text-sm text-red-200">
+        <p
+          role="alert"
+          className="rounded border border-red-500 bg-red-950 p-2 text-sm text-red-200"
+        >
           {error} Tekan Reset untuk mengulang.
         </p>
       )}
       {runState === 'finished' && error === null && (
-        <p className="text-xs text-gray-400">Simulasi selesai. Tekan Reset untuk mengulang.</p>
+        <p className="text-xs text-gray-400">
+          Simulasi selesai. Tekan Reset untuk mengulang.
+        </p>
       )}
     </section>
   );

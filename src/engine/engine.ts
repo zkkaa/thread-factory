@@ -66,7 +66,9 @@ export class Engine implements SimulationEngine {
     this.threads = config.threads.map(createThread);
     const threadById = new Map(this.threads.map((t) => [t.def.id, t]));
     this.threadById = threadById;
-    this.mutexes = new Map(config.mutexes.map((name) => [name, new Mutex(name)]));
+    this.mutexes = new Map(
+      config.mutexes.map((name) => [name, new Mutex(name)]),
+    );
     this.sync = {
       mutexes: this.mutexes,
       getThread(id) {
@@ -140,7 +142,9 @@ export class Engine implements SimulationEngine {
         throw new Error(`Scheduler memilih thread yang tidak ada: "${id}"`);
       }
       push(transition(thread, 'RUNNING', tick));
-      events.push(...executeInstruction(thread, tick, this.sharedVars, this.sync));
+      events.push(
+        ...executeInstruction(thread, tick, this.sharedVars, this.sync),
+      );
       this.assertNoLockLeak(thread);
     }
 

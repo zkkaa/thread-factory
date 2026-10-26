@@ -8,21 +8,21 @@ import { ARENA, COLORS } from './theme';
 //  Find out more information about the Game Config at:
 //  https://docs.phaser.io/api-documentation/typedef/types-core#gameconfig
 const config: Phaser.Types.Core.GameConfig = {
-    // type: AUTO,
-    type: CANVAS,
-    width: ARENA.width,
-    height: ARENA.height,
-    parent: 'game-container',
-    backgroundColor: COLORS.background,
-    // Kanvas 1024x768 diperkecil/diperbesar agar muat di area kiri halaman,
-    // di samping panel kontrol React.
-    scale: {
-        mode: Scale.FIT,
-        autoCenter: Scale.CENTER_BOTH,
-    },
-    // Hanya dua scene yang dipakai. Scene bawaan template (Preloader, MainMenu,
-    // Game, GameOver) tidak lagi didaftarkan.
-    scene: [Boot, LevelScene],
+  // type: AUTO,
+  type: CANVAS,
+  width: ARENA.width,
+  height: ARENA.height,
+  parent: 'game-container',
+  backgroundColor: COLORS.background,
+  // Kanvas 1024x768 diperkecil/diperbesar agar muat di area kiri halaman,
+  // di samping panel kontrol React.
+  scale: {
+    mode: Scale.FIT,
+    autoCenter: Scale.CENTER_BOTH,
+  },
+  // Hanya dua scene yang dipakai. Scene bawaan template (Preloader, MainMenu,
+  // Game, GameOver) tidak lagi didaftarkan.
+  scene: [Boot, LevelScene],
 };
 
 /**
@@ -30,15 +30,15 @@ const config: Phaser.Types.Core.GameConfig = {
  * game boot (preBoot) supaya sudah tersedia saat scene Boot berjalan.
  */
 const StartGame = (parent: string, controller: SimulationController) => {
-    return new Game({
-        ...config,
-        parent,
-        callbacks: {
-            preBoot: (game) => {
-                game.registry.set(CONTROLLER_KEY, controller);
-            },
-        },
-    });
+  return new Game({
+    ...config,
+    parent,
+    callbacks: {
+      preBoot: (game) => {
+        game.registry.set(CONTROLLER_KEY, controller);
+      },
+    },
+  });
 };
 
 export default StartGame;

@@ -3,7 +3,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { StepLogView } from '../components/StepLog';
 import type { LogEntry } from '../eventLog';
 
-const entry = (id: number, tick: number, kind: LogEntry['kind'], text: string, minor = false): LogEntry => ({
+const entry = (
+  id: number,
+  tick: number,
+  kind: LogEntry['kind'],
+  text: string,
+  minor = false,
+): LogEntry => ({
   id,
   tick,
   kind,
@@ -52,7 +58,9 @@ describe('StepLogView', () => {
   });
 
   it('hanya 100 baris terbaru yang digambar', () => {
-    const many = Array.from({ length: 150 }, (_, i) => entry(i + 1, i + 1, 'instruction', `kejadian-${i + 1}`));
+    const many = Array.from({ length: 150 }, (_, i) =>
+      entry(i + 1, i + 1, 'instruction', `kejadian-${i + 1}`),
+    );
     const html = renderToStaticMarkup(<StepLogView entries={many} />);
     expect(html.match(/<li /g)).toHaveLength(100);
     expect(html).toContain('kejadian-150>'.replace('>', '<'));

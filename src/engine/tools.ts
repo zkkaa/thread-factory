@@ -26,13 +26,19 @@ const overlaps = (a: OrderedSpan, b: OrderedSpan): boolean =>
 const contains = (outer: OrderedSpan, inner: OrderedSpan): boolean =>
   outer.start <= inner.start && inner.end <= outer.end;
 
-function validateSpan(tool: PlacedTool, span: ToolSpan, thread: ThreadDef): void {
+function validateSpan(
+  tool: PlacedTool,
+  span: ToolSpan,
+  thread: ThreadDef,
+): void {
   const where = `Alat "${tool.id}" pada ${thread.label}`;
   if (!Number.isInteger(span.start) || !Number.isInteger(span.end)) {
     throw new Error(`${where}: start dan end harus bilangan bulat.`);
   }
   if (span.start > span.end) {
-    throw new Error(`${where}: start (${span.start}) lebih besar dari end (${span.end}).`);
+    throw new Error(
+      `${where}: start (${span.start}) lebih besar dari end (${span.end}).`,
+    );
   }
   if (span.start < 0 || span.end >= thread.program.length) {
     throw new Error(
@@ -61,7 +67,10 @@ function validatePairs(spans: OrderedSpan[], thread: ThreadDef): void {
   }
 }
 
-function buildProgram(program: Instruction[], spans: OrderedSpan[]): Instruction[] {
+function buildProgram(
+  program: Instruction[],
+  spans: OrderedSpan[],
+): Instruction[] {
   const result: Instruction[] = [];
   program.forEach((instruction, index) => {
     spans
@@ -79,7 +88,10 @@ function buildProgram(program: Instruction[], spans: OrderedSpan[]): Instruction
   return result;
 }
 
-export function applyTools(threads: ThreadDef[], placed: PlacedTool[]): ThreadDef[] {
+export function applyTools(
+  threads: ThreadDef[],
+  placed: PlacedTool[],
+): ThreadDef[] {
   const byThread = new Map<ThreadId, OrderedSpan[]>();
   const seenIds = new Set<string>();
 
@@ -92,7 +104,9 @@ export function applyTools(threads: ThreadDef[], placed: PlacedTool[]): ThreadDe
     for (const span of tool.spans) {
       const thread = threads.find((t) => t.id === span.thread);
       if (!thread) {
-        throw new Error(`Alat "${tool.id}" menunjuk thread "${span.thread}" yang tidak ada.`);
+        throw new Error(
+          `Alat "${tool.id}" menunjuk thread "${span.thread}" yang tidak ada.`,
+        );
       }
       validateSpan(tool, span, thread);
       const list = byThread.get(span.thread) ?? [];

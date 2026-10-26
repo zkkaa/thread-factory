@@ -11,19 +11,35 @@ function makeRobots(): ThreadDef[] {
     { op: 'WRITE', reg: 'r', to: 'stok' },
   ];
   return [
-    { id: 'A', label: 'Robot A', program: program.map((i) => ({ ...i })), repeat: 5 },
-    { id: 'B', label: 'Robot B', program: program.map((i) => ({ ...i })), repeat: 5 },
+    {
+      id: 'A',
+      label: 'Robot A',
+      program: program.map((i) => ({ ...i })),
+      repeat: 5,
+    },
+    {
+      id: 'B',
+      label: 'Robot B',
+      program: program.map((i) => ({ ...i })),
+      repeat: 5,
+    },
   ];
 }
 
 /** Ringkas program menjadi daftar teks agar mudah dibandingkan. */
 function labels(program: Instruction[]): string[] {
   return program.map((ins) =>
-    ins.op === 'LOCK' || ins.op === 'UNLOCK' ? `${ins.op}:${ins.mutex}` : ins.op,
+    ins.op === 'LOCK' || ins.op === 'UNLOCK'
+      ? `${ins.op}:${ins.mutex}`
+      : ins.op,
   );
 }
 
-function door(spans: PlacedTool['spans'], id = 't1', mutex = 'pintu'): PlacedTool {
+function door(
+  spans: PlacedTool['spans'],
+  id = 't1',
+  mutex = 'pintu',
+): PlacedTool {
   return { id, kind: 'mutex', mutex, spans };
 }
 
@@ -34,7 +50,14 @@ describe('applyTools', () => {
       { thread: 'B', start: 1, end: 3 },
     ]);
     const [a, b] = applyTools(makeRobots(), [tool]);
-    const expected = ['WORK', 'LOCK:pintu', 'READ', 'COMPUTE', 'WRITE', 'UNLOCK:pintu'];
+    const expected = [
+      'WORK',
+      'LOCK:pintu',
+      'READ',
+      'COMPUTE',
+      'WRITE',
+      'UNLOCK:pintu',
+    ];
     expect(labels(a.program)).toEqual(expected);
     expect(labels(b.program)).toEqual(expected);
   });
@@ -71,26 +94,34 @@ describe('applyTools', () => {
 
   it('hanya thread yang punya rentang yang berubah', () => {
     const threads = makeRobots();
-    const [a, b] = applyTools(threads, [door([{ thread: 'A', start: 1, end: 3 }])]);
+    const [a, b] = applyTools(threads, [
+      door([{ thread: 'A', start: 1, end: 3 }]),
+    ]);
     expect(a.program).toHaveLength(6);
     expect(b.program).toEqual(threads[1].program);
   });
 
   it('mempertahankan label dan repeat', () => {
-    const [a] = applyTools(makeRobots(), [door([{ thread: 'A', start: 1, end: 3 }])]);
+    const [a] = applyTools(makeRobots(), [
+      door([{ thread: 'A', start: 1, end: 3 }]),
+    ]);
     expect(a.label).toBe('Robot A');
     expect(a.repeat).toBe(5);
   });
 
   it('rentang di tepi program: LOCK paling awal, UNLOCK paling akhir', () => {
-    const [a] = applyTools(makeRobots(), [door([{ thread: 'A', start: 0, end: 3 }])]);
+    const [a] = applyTools(makeRobots(), [
+      door([{ thread: 'A', start: 0, end: 3 }]),
+    ]);
     const ops = labels(a.program);
     expect(ops[0]).toBe('LOCK:pintu');
     expect(ops[ops.length - 1]).toBe('UNLOCK:pintu');
   });
 
   it('rentang satu ubin (start = end) tetap valid', () => {
-    const [a] = applyTools(makeRobots(), [door([{ thread: 'A', start: 2, end: 2 }])]);
+    const [a] = applyTools(makeRobots(), [
+      door([{ thread: 'A', start: 2, end: 2 }]),
+    ]);
     expect(labels(a.program)).toEqual([
       'WORK',
       'READ',
@@ -201,7 +232,9 @@ describe('applyTools', () => {
         door([{ thread: 'A', start: 0, end: 1 }], 'sama', 'm1'),
         door([{ thread: 'B', start: 0, end: 1 }], 'sama', 'm2'),
       ];
-      expect(() => applyTools(makeRobots(), tools)).toThrow(/lebih dari sekali/);
+      expect(() => applyTools(makeRobots(), tools)).toThrow(
+        /lebih dari sekali/,
+      );
     });
   });
 });

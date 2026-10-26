@@ -67,7 +67,9 @@ describe('dua thread tanpa pengaman (T-017)', () => {
       const { engine } = simulate(seed);
       const stok = engine.getSnapshot().sharedVars.stok as number;
       expect(stok).toBeLessThanOrEqual(TARGET); // tidak mungkin melebihi target
-      expect(computeMetrics(engine.getSnapshot(), EXPECTED).lostUpdates).toBe(TARGET - stok);
+      expect(computeMetrics(engine.getSnapshot(), EXPECTED).lostUpdates).toBe(
+        TARGET - stok,
+      );
     }
   });
 

@@ -44,7 +44,10 @@ function stepUntilFinished(controller: SimulationController): number {
 
 describe('SimulationController: result', () => {
   it('result null sebelum dan selama simulasi, terisi saat finished', () => {
-    const controller = new SimulationController(new Engine(), new CountingClock());
+    const controller = new SimulationController(
+      new Engine(),
+      new CountingClock(),
+    );
     controller.loadLevel(level1_1);
     controller.placeTool(MUTEX_PAS);
     expect(controller.getState().result).toBeNull();
@@ -61,7 +64,10 @@ describe('SimulationController: result', () => {
   });
 
   it('tanpa mutex pada seed tutorial: gagal, "hasilnya 8", 2 pembaruan hilang', () => {
-    const controller = new SimulationController(new Engine(), new CountingClock());
+    const controller = new SimulationController(
+      new Engine(),
+      new CountingClock(),
+    );
     controller.loadLevel(level1_1);
     stepUntilFinished(controller);
     const result = controller.getState().result;
@@ -72,7 +78,10 @@ describe('SimulationController: result', () => {
   });
 
   it('seed selain tutorial: lulus tapi tidak dinilai bintang', () => {
-    const controller = new SimulationController(new Engine(), new CountingClock());
+    const controller = new SimulationController(
+      new Engine(),
+      new CountingClock(),
+    );
     controller.loadLevel(level1_1, 11);
     controller.placeTool(MUTEX_PAS);
     stepUntilFinished(controller);
@@ -81,7 +90,10 @@ describe('SimulationController: result', () => {
   });
 
   it('reset, loadLevel, dan perubahan alat menghapus result', () => {
-    const controller = new SimulationController(new Engine(), new CountingClock());
+    const controller = new SimulationController(
+      new Engine(),
+      new CountingClock(),
+    );
     controller.loadLevel(level1_1);
     stepUntilFinished(controller);
     expect(controller.getState().result).not.toBeNull();
@@ -98,8 +110,14 @@ describe('SimulationController: result', () => {
   });
 
   it('data level yang salah dilaporkan sebagai error, bukan melempar dari step()', () => {
-    const broken = { ...level1_1, goal: { ...level1_1.goal, target: { variable: 'hantu', value: 1 } } };
-    const controller = new SimulationController(new Engine(), new CountingClock());
+    const broken = {
+      ...level1_1,
+      goal: { ...level1_1.goal, target: { variable: 'hantu', value: 1 } },
+    };
+    const controller = new SimulationController(
+      new Engine(),
+      new CountingClock(),
+    );
     controller.loadLevel(broken);
     expect(() => stepUntilFinished(controller)).not.toThrow();
     expect(controller.getState().error).toMatch(/Gagal menilai hasil.*"hantu"/);

@@ -41,7 +41,10 @@ export function laneCenterY(laneIndex: number): number {
  * state tetap terbaca oleh pemain yang sulit membedakan warna.
  * Label memakai istilah teknis bahasa Inggris, sesuai PRD bagian 6.
  */
-export const STATE_STYLE: Record<ThreadState, { color: number; label: string }> = {
+export const STATE_STYLE: Record<
+  ThreadState,
+  { color: number; label: string }
+> = {
   NEW: { color: 0x9ca3af, label: 'NEW' },
   READY: { color: 0xf59e0b, label: 'READY' },
   RUNNING: { color: 0x22c55e, label: 'RUNNING' },

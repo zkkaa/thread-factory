@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { Engine } from '../engine';
 import { computeMetrics } from '../metrics';
-import type { EngineConfig, SchedulerConfig, Snapshot, ThreadDef } from '../types';
+import type {
+  EngineConfig,
+  SchedulerConfig,
+  Snapshot,
+  ThreadDef,
+} from '../types';
 
 function robot(id: string, repeat: number): ThreadDef {
   return {
@@ -71,7 +76,11 @@ describe('computeMetrics: throughput', () => {
   });
 
   it('pekerjaan yang belum selesai satu putaran tidak dihitung', () => {
-    const engine = makeEngine({ kind: 'scripted', cores: 1, script: ['A', 'A', 'A'] });
+    const engine = makeEngine({
+      kind: 'scripted',
+      cores: 1,
+      script: ['A', 'A', 'A'],
+    });
     engine.step();
     engine.step();
     engine.step();
@@ -114,7 +123,11 @@ describe('computeMetrics: lostUpdates', () => {
   it('jadwal selang-seling: satu pembaruan hilang', () => {
     // Dua robot, satu putaran: A READ, B READ, ... keduanya menulis 1 -> stok 1, bukan 2
     const engine = makeEngine(
-      { kind: 'scripted', cores: 1, script: ['A', 'A', 'B', 'B', 'A', 'B', 'A', 'B'] },
+      {
+        kind: 'scripted',
+        cores: 1,
+        script: ['A', 'A', 'B', 'B', 'A', 'B', 'A', 'B'],
+      },
       1,
       1,
     );
@@ -125,7 +138,11 @@ describe('computeMetrics: lostUpdates', () => {
 
   it('jadwal berurutan: tidak ada pembaruan hilang', () => {
     const engine = makeEngine(
-      { kind: 'scripted', cores: 1, script: ['A', 'A', 'A', 'A', 'B', 'B', 'B', 'B'] },
+      {
+        kind: 'scripted',
+        cores: 1,
+        script: ['A', 'A', 'A', 'A', 'B', 'B', 'B', 'B'],
+      },
       1,
       1,
     );
@@ -142,29 +159,37 @@ describe('computeMetrics: lostUpdates', () => {
   it('null selama simulasi belum selesai (nilai belum final)', () => {
     const engine = makeEngine({ kind: 'random', cores: 1 }, 5);
     for (let i = 0; i < 10; i++) engine.step();
-    expect(computeMetrics(engine.getSnapshot(), { variable: 'stok', value: 10 }).lostUpdates)
-      .toBeNull();
+    expect(
+      computeMetrics(engine.getSnapshot(), { variable: 'stok', value: 10 })
+        .lostUpdates,
+    ).toBeNull();
   });
 
   it('null bila simulasi dihentikan maxTicks sebelum semua thread selesai', () => {
     const engine = makeEngine({ kind: 'random', cores: 1 }, 5, 5, 10);
     runToEnd(engine);
     expect(engine.getSnapshot().finished).toBe(true);
-    expect(computeMetrics(engine.getSnapshot(), { variable: 'stok', value: 10 }).lostUpdates)
-      .toBeNull();
+    expect(
+      computeMetrics(engine.getSnapshot(), { variable: 'stok', value: 10 })
+        .lostUpdates,
+    ).toBeNull();
   });
 
   it('tidak pernah negatif', () => {
     const engine = makeEngine({ kind: 'random', cores: 1 }, 5);
     runToEnd(engine);
-    const m = computeMetrics(engine.getSnapshot(), { variable: 'stok', value: 0 });
+    const m = computeMetrics(engine.getSnapshot(), {
+      variable: 'stok',
+      value: 0,
+    });
     expect(m.lostUpdates).toBe(0);
   });
 
   it('variabel yang tidak ada melempar error jelas', () => {
     const engine = makeEngine({ kind: 'random', cores: 1 });
-    expect(() => computeMetrics(engine.getSnapshot(), { variable: 'hantu', value: 1 }))
-      .toThrow(/"hantu"/);
+    expect(() =>
+      computeMetrics(engine.getSnapshot(), { variable: 'hantu', value: 1 }),
+    ).toThrow(/"hantu"/);
   });
 });
 

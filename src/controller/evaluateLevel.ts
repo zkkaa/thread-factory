@@ -53,7 +53,10 @@ export function evaluateLevel(
     stars = 1;
     if (snapshot.tick <= level.goal.stars.fast) {
       stars = 2;
-      const totalWait = Object.values(metrics.waitTicksByThread).reduce((a, b) => a + b, 0);
+      const totalWait = Object.values(metrics.waitTicksByThread).reduce(
+        (a, b) => a + b,
+        0,
+      );
       if (totalWait <= level.goal.stars.lowWait) stars = 3;
     }
   }

@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ControllerState, SimulationController } from '../../controller/SimulationController';
+import type {
+  ControllerState,
+  SimulationController,
+} from '../../controller/SimulationController';
 import type { LevelResult } from '../../controller/evaluateLevel';
 
 interface ResultDialogProps {
@@ -11,7 +14,9 @@ function Criterion({ met, children }: { met: boolean; children: string }) {
   return (
     <li className={met ? 'text-emerald-300' : 'text-gray-400'}>
       <span aria-hidden="true">{met ? '✓' : '✕'}</span> {children}{' '}
-      <span className="sr-only">{met ? '(terpenuhi)' : '(tidak terpenuhi)'}</span>
+      <span className="sr-only">
+        {met ? '(terpenuhi)' : '(tidak terpenuhi)'}
+      </span>
     </li>
   );
 }
@@ -26,7 +31,11 @@ export function ResultDialog({ controller, state }: ResultDialogProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
 
   const { level, snapshot, result } = state;
-  const visible = result !== null && result !== dismissed && level !== null && snapshot !== null;
+  const visible =
+    result !== null &&
+    result !== dismissed &&
+    level !== null &&
+    snapshot !== null;
 
   useEffect(() => {
     if (visible) closeRef.current?.focus();
@@ -41,11 +50,15 @@ export function ResultDialog({ controller, state }: ResultDialogProps) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [visible, result]);
 
-  if (!visible || result === null || level === null || snapshot === null) return null;
+  if (!visible || result === null || level === null || snapshot === null)
+    return null;
 
   const { variable, value: target } = level.goal.target;
   const actual = snapshot.sharedVars[variable];
-  const totalWait = Object.values(result.metrics.waitTicksByThread).reduce((a, b) => a + b, 0);
+  const totalWait = Object.values(result.metrics.waitTicksByThread).reduce(
+    (a, b) => a + b,
+    0,
+  );
   const explanation = level.explanation
     ? result.ok
       ? level.explanation.pass
@@ -66,7 +79,9 @@ export function ResultDialog({ controller, state }: ResultDialogProps) {
 
         <p
           className={`inline-block rounded px-2 py-1 text-sm font-bold ${
-            result.ok ? 'bg-emerald-800 text-emerald-100' : 'bg-red-900 text-red-100'
+            result.ok
+              ? 'bg-emerald-800 text-emerald-100'
+              : 'bg-red-900 text-red-100'
           }`}
         >
           <span aria-hidden="true">{result.ok ? '✓ ' : '✕ '}</span>
@@ -76,13 +91,18 @@ export function ResultDialog({ controller, state }: ResultDialogProps) {
 
         {result.stars !== null ? (
           <div className="space-y-1">
-            <p className="text-2xl text-yellow-300" aria-label={`${result.stars} dari 3 bintang`}>
+            <p
+              className="text-2xl text-yellow-300"
+              aria-label={`${result.stars} dari 3 bintang`}
+            >
               {'★'.repeat(result.stars)}
               {'☆'.repeat(3 - result.stars)}
             </p>
             <ul className="space-y-0.5 text-sm">
               <Criterion met={result.ok}>Benar: tidak ada data rusak</Criterion>
-              <Criterion met={result.ok && result.metrics.tick <= level.goal.stars.fast}>
+              <Criterion
+                met={result.ok && result.metrics.tick <= level.goal.stars.fast}
+              >
                 {`Efisien: selesai dalam ${level.goal.stars.fast} tick atau kurang (tick: ${result.metrics.tick})`}
               </Criterion>
               <Criterion
@@ -98,18 +118,21 @@ export function ResultDialog({ controller, state }: ResultDialogProps) {
           </div>
         ) : (
           <p className="text-sm text-gray-300">
-            Bintang hanya dinilai pada seed tutorial ({level.tutorialSeed}). Seed sekarang:{' '}
-            {snapshot.seed}.
+            Bintang hanya dinilai pada seed tutorial ({level.tutorialSeed}).
+            Seed sekarang: {snapshot.seed}.
           </p>
         )}
 
         <p className="text-sm text-gray-300">
-          Pembaruan hilang: <strong>{result.metrics.lostUpdates ?? '-'}</strong> · Total tick:{' '}
-          <strong>{result.metrics.tick}</strong> · Total waktu tunggu: <strong>{totalWait}</strong>
+          Pembaruan hilang: <strong>{result.metrics.lostUpdates ?? '-'}</strong>{' '}
+          · Total tick: <strong>{result.metrics.tick}</strong> · Total waktu
+          tunggu: <strong>{totalWait}</strong>
         </p>
 
         {explanation !== null && (
-          <p className="rounded bg-gray-800 p-3 text-sm leading-relaxed">{explanation}</p>
+          <p className="rounded bg-gray-800 p-3 text-sm leading-relaxed">
+            {explanation}
+          </p>
         )}
 
         <div className="flex justify-end gap-2">
