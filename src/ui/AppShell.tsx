@@ -18,6 +18,7 @@ import { GuideScreen } from './screens/GuideScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { LevelMapScreen } from './screens/LevelMapScreen';
 import { ModeSelectScreen } from './screens/ModeSelectScreen';
+import { ModuleCompleteScreen } from './screens/ModuleCompleteScreen';
 import { ModuleIntroScreen } from './screens/ModuleIntroScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { PlayScreen } from './screens/PlayScreen';
@@ -31,6 +32,7 @@ import {
   selectModeTab,
 } from './screenState';
 import { SettingsScreen } from './screens/SettingsScreen';
+import { GameCompleteScreen } from './screens/GameCompleteScreen';
 
 interface AppShellProps {
   controller: SimulationController;
@@ -138,6 +140,32 @@ export function AppShell({
         />
       );
     }
+  }
+
+  if (screen.id === 'moduleComplete') {
+    const moduleDef = findModuleById(screen.moduleId);
+    if (moduleDef !== undefined) {
+      return (
+        <ModuleCompleteScreen
+          navigation={navigation}
+          moduleDef={moduleDef}
+          context={unlockContext}
+          progress={progress}
+          getLevelConcepts={(levelId) => findLevelById(levelId)?.concepts}
+        />
+      );
+    }
+  }
+
+  if (screen.id === 'gameComplete') {
+    return (
+      <GameCompleteScreen
+        navigation={navigation}
+        modules={MODULES}
+        progress={progress}
+        getLevelConcepts={(levelId) => findLevelById(levelId)?.concepts}
+      />
+    );
   }
 
   if (screen.id === 'guide') {

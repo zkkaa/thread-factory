@@ -62,6 +62,15 @@ describe('ModeSelectScreen', () => {
     expect(hitung(html, /disabled=""/g)).toBe(1);
   });
 
+  it('tab Kampanye: tiap kartu punya bar progres sesuai jumlah level selesai', () => {
+    const html = render('campaign', ['1-1']);
+    expect(hitung(html, /role="progressbar"/g)).toBe(2);
+    expect(html).toContain('aria-valuenow="1"');
+    expect(html).toContain('aria-valuemax="5"');
+    expect(html).toContain('width:20%');
+    expect(html).toContain('width:0%');
+  });
+
   it('tab Kampanye: mode demo membuka kedua modul', () => {
     const html = render('campaign', [], true);
     expect(html).not.toContain('Terkunci');
@@ -73,11 +82,13 @@ describe('ModeSelectScreen', () => {
     expect(html).toContain('Bug Papan Stok');
     expect(html).toContain('Selesaikan Level 1-1 dahulu');
     expect(hitung(html, /Segera hadir/g)).toBe(8);
+    expect(html).not.toContain('>Buka<');
   });
 
-  it('tab Bandingkan: Level 1-1 terbuka setelah selesai', () => {
+  it('tab Bandingkan: Level 1-1 terbuka setelah selesai dan berlabel Buka', () => {
     const html = render('compare', ['1-1']);
     expect(html).not.toContain('Selesaikan Level 1-1 dahulu');
+    expect(hitung(html, />Buka</g)).toBe(1);
     // 8 level tanpa data tetap nonaktif; baris 1-1 tidak.
     expect(hitung(html, /disabled=""/g)).toBe(8);
   });
