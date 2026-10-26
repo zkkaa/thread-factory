@@ -62,7 +62,10 @@ describe('buildEngineConfig', () => {
   });
 
   it('melempar error bila alat tidak valid (diteruskan dari applyTools)', () => {
-    const rusak: PlacedTool = { ...papan, spans: [{ thread: 'Z', start: 0, end: 1 }] };
+    const rusak: PlacedTool = {
+      ...papan,
+      spans: [{ thread: 'Z', start: 0, end: 1 }],
+    };
     expect(() => buildEngineConfig(level1_1, [rusak])).toThrow(/tidak ada/);
   });
 });

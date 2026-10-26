@@ -22,7 +22,9 @@ function makeRunning(program: Instruction[], repeat?: number): ThreadRuntime {
 
 describe('transition: state machine', () => {
   it('thread baru berstatus NEW', () => {
-    expect(createThread({ id: 'A', label: 'A', program: [] }).state).toBe('NEW');
+    expect(createThread({ id: 'A', label: 'A', program: [] }).state).toBe(
+      'NEW',
+    );
   });
 
   it('transisi sah menghasilkan event THREAD_STATE', () => {
@@ -109,7 +111,9 @@ describe('executeInstruction: READ, COMPUTE, WRITE', () => {
 
   it('READ dari variabel yang tidak ada melempar error jelas', () => {
     const thread = makeRunning([{ op: 'READ', from: 'hantu', into: 'r' }]);
-    expect(() => executeInstruction(thread, 1, {})).toThrow(/variabel bersama "hantu"/);
+    expect(() => executeInstruction(thread, 1, {})).toThrow(
+      /variabel bersama "hantu"/,
+    );
   });
 
   it('nama variabel bawaan objek (mis. toString) tidak dianggap ada', () => {
@@ -179,7 +183,9 @@ describe('executeInstruction: pengulangan dan terminasi', () => {
 describe('executeInstruction: instruksi yang belum didukung', () => {
   it('SEM_WAIT melempar error yang menyebut tugas terkait', () => {
     const thread = makeRunning([{ op: 'SEM_WAIT', sem: 'mesin' }]);
-    expect(() => executeInstruction(thread, 1, {})).toThrow(/belum didukung.*T-040/);
+    expect(() => executeInstruction(thread, 1, {})).toThrow(
+      /belum didukung.*T-040/,
+    );
   });
 });
 
@@ -212,7 +218,12 @@ describe('executeInstruction: LOCK dan UNLOCK', () => {
     const a = makeNamed('A');
     const sync = makeSync([a]);
     const events = executeInstruction(a, 1, {}, sync);
-    expect(events).toContainEqual({ type: 'LOCK_ACQUIRED', tick: 1, thread: 'A', mutex: 'papan' });
+    expect(events).toContainEqual({
+      type: 'LOCK_ACQUIRED',
+      tick: 1,
+      thread: 'A',
+      mutex: 'papan',
+    });
     expect(a.pc).toBe(1);
     expect(a.state).toBe('RUNNING');
   });
@@ -227,7 +238,12 @@ describe('executeInstruction: LOCK dan UNLOCK', () => {
     expect(b.state).toBe('WAITING');
     expect(b.pc).toBe(0);
     expect(b.waitingOn).toBe('mutex:papan');
-    expect(events).toContainEqual({ type: 'BLOCKED', tick: 2, thread: 'B', on: 'mutex:papan' });
+    expect(events).toContainEqual({
+      type: 'BLOCKED',
+      tick: 2,
+      thread: 'B',
+      on: 'mutex:papan',
+    });
     expect(sync.mutexes.get('papan')?.snapshot()).toEqual({
       id: 'papan',
       owner: 'A',
@@ -244,8 +260,18 @@ describe('executeInstruction: LOCK dan UNLOCK', () => {
     executeInstruction(a, 3, {}, sync); // A WORK
     const events = executeInstruction(a, 4, {}, sync); // A UNLOCK
 
-    expect(events).toContainEqual({ type: 'LOCK_RELEASED', tick: 4, thread: 'A', mutex: 'papan' });
-    expect(events).toContainEqual({ type: 'LOCK_ACQUIRED', tick: 4, thread: 'B', mutex: 'papan' });
+    expect(events).toContainEqual({
+      type: 'LOCK_RELEASED',
+      tick: 4,
+      thread: 'A',
+      mutex: 'papan',
+    });
+    expect(events).toContainEqual({
+      type: 'LOCK_ACQUIRED',
+      tick: 4,
+      thread: 'B',
+      mutex: 'papan',
+    });
     expect(events).toContainEqual({
       type: 'THREAD_STATE',
       tick: 4,
@@ -269,11 +295,16 @@ describe('executeInstruction: LOCK dan UNLOCK', () => {
     });
     transition(unlockOnly, 'READY', TICK);
     transition(unlockOnly, 'RUNNING', TICK);
-    expect(() => executeInstruction(unlockOnly, 1, {}, sync)).toThrow(/bukan miliknya/);
+    expect(() => executeInstruction(unlockOnly, 1, {}, sync)).toThrow(
+      /bukan miliknya/,
+    );
   });
 
   it('memakai mutex yang tidak ada melempar error jelas', () => {
-    const thread = makeRunning([{ op: 'LOCK', mutex: 'hantu' }, { op: 'WORK', ticks: 1 }]);
+    const thread = makeRunning([
+      { op: 'LOCK', mutex: 'hantu' },
+      { op: 'WORK', ticks: 1 },
+    ]);
     expect(() => executeInstruction(thread, 1, {})).toThrow(/mutex "hantu"/);
   });
 });

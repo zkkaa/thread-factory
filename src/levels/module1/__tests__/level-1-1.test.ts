@@ -17,8 +17,22 @@ const FORCED_RACE: SchedulerConfig = {
   kind: 'scripted',
   cores: 1,
   script: [
-    'A', 'A', 'B', 'B', 'A', 'A', 'B', 'B', // putaran 1: A WORK+READ, B WORK+READ, A COMPUTE+WRITE, B COMPUTE+WRITE
-    'A', 'A', 'B', 'B', 'A', 'A', 'B', 'B', // putaran 2: sama
+    'A',
+    'A',
+    'B',
+    'B',
+    'A',
+    'A',
+    'B',
+    'B', // putaran 1: A WORK+READ, B WORK+READ, A COMPUTE+WRITE, B COMPUTE+WRITE
+    'A',
+    'A',
+    'B',
+    'B',
+    'A',
+    'A',
+    'B',
+    'B', // putaran 2: sama
   ],
 };
 
@@ -41,7 +55,9 @@ function buildConfig(options: {
   return {
     threads: applyTools(level1_1.threads, options.tools ?? []),
     sharedVars: { ...level1_1.sharedVars },
-    mutexes: level1_1.resources.filter((r) => r.kind === 'mutex').map((r) => r.id),
+    mutexes: level1_1.resources
+      .filter((r) => r.kind === 'mutex')
+      .map((r) => r.id),
     semaphores: {},
     conditions: [],
     scheduler: options.scheduler ?? level1_1.scheduler,
@@ -83,7 +99,10 @@ describe('Level 1-1: seed tutorial dan jadwal paksa (T-023)', () => {
   });
 
   it('dengan mutex, tutorialSeed menghasilkan stok 10 dan invariant lulus', () => {
-    const engine = run(buildConfig({ tools: [PAPAN_MUTEX] }), level1_1.tutorialSeed as number);
+    const engine = run(
+      buildConfig({ tools: [PAPAN_MUTEX] }),
+      level1_1.tutorialSeed as number,
+    );
     const snap = engine.getSnapshot();
     expect(snap.sharedVars.stok).toBe(10);
     expect(lostUpdatesOf(engine)).toBe(0);
@@ -91,7 +110,10 @@ describe('Level 1-1: seed tutorial dan jadwal paksa (T-023)', () => {
   });
 
   it('dengan mutex, jadwal paksa yang sama tidak lagi merusak data', () => {
-    const engine = run(buildConfig({ tools: [PAPAN_MUTEX], scheduler: FORCED_RACE }), 1);
+    const engine = run(
+      buildConfig({ tools: [PAPAN_MUTEX], scheduler: FORCED_RACE }),
+      1,
+    );
     expect(engine.getSnapshot().sharedVars.stok).toBe(10);
     expect(lostUpdatesOf(engine)).toBe(0);
   });

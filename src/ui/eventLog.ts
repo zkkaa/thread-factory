@@ -51,7 +51,8 @@ export function describeEvent(
         kind: 'state',
         text: `${nameOf(event.thread)}: ${event.from} → ${event.to}`,
         minor:
-          SCHEDULER_STATES.includes(event.from) && SCHEDULER_STATES.includes(event.to),
+          SCHEDULER_STATES.includes(event.from) &&
+          SCHEDULER_STATES.includes(event.to),
       };
     case 'INSTRUCTION':
       return {
@@ -147,7 +148,9 @@ export class EventLog {
     this.lastEvents = events;
     if (snapshot === null || events.length === 0) return;
 
-    const labels = new Map(snapshot.threads.map((thread) => [thread.id, thread.label]));
+    const labels = new Map(
+      snapshot.threads.map((thread) => [thread.id, thread.label]),
+    );
     const nameOf: NameOf = (id) => labels.get(id) ?? id;
 
     const added = events.map((event) => ({

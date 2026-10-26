@@ -49,7 +49,10 @@ function makeConfig(withMutex: boolean): EngineConfig {
 const withMutex = makeConfig(true);
 const withoutMutex = makeConfig(false);
 
-function simulate(config: EngineConfig, seed: number): { events: SimEvent[]; engine: Engine } {
+function simulate(
+  config: EngineConfig,
+  seed: number,
+): { events: SimEvent[]; engine: Engine } {
   const engine = new Engine();
   engine.load(config, seed);
   const events: SimEvent[] = [];
@@ -65,12 +68,18 @@ describe('Level 1-1 dengan mutex (T-021)', () => {
 
       // Semua robot harus benar-benar selesai: bukan deadlock dan bukan mentok di maxTicks.
       const allTerminated = snap.threads.every((t) => t.state === 'TERMINATED');
-      expect(allTerminated, `seed ${seed}: ada robot yang belum TERMINATED`).toBe(true);
-      expect(snap.tick, `seed ${seed}: simulasi mentok di maxTicks`).toBeLessThan(
-        withMutex.maxTicks,
-      );
+      expect(
+        allTerminated,
+        `seed ${seed}: ada robot yang belum TERMINATED`,
+      ).toBe(true);
+      expect(
+        snap.tick,
+        `seed ${seed}: simulasi mentok di maxTicks`,
+      ).toBeLessThan(withMutex.maxTicks);
 
-      expect(snap.sharedVars.stok, `seed ${seed}: stok akhir salah`).toBe(TARGET);
+      expect(snap.sharedVars.stok, `seed ${seed}: stok akhir salah`).toBe(
+        TARGET,
+      );
       expect(
         computeMetrics(snap, EXPECTED).lostUpdates,
         `seed ${seed}: ada pembaruan hilang`,
@@ -105,7 +114,10 @@ describe('Level 1-1 dengan mutex (T-021)', () => {
   it('mutex punya harga: ada robot yang menunggu pada sebagian seed', () => {
     let seedsWithWaiting = 0;
     for (let seed = 1; seed <= 200; seed++) {
-      const metrics = computeMetrics(simulate(withMutex, seed).engine.getSnapshot(), EXPECTED);
+      const metrics = computeMetrics(
+        simulate(withMutex, seed).engine.getSnapshot(),
+        EXPECTED,
+      );
       if (metrics.maxWaitTicks > 0) seedsWithWaiting += 1;
     }
     expect(seedsWithWaiting).toBeGreaterThan(0);

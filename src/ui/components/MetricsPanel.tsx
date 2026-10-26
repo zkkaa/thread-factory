@@ -19,7 +19,9 @@ export function MetricsPanel({ state }: MetricsPanelProps) {
 
   return (
     <section aria-label="Metrik" className="space-y-2">
-      <h2 className="text-sm font-bold uppercase tracking-wide text-gray-300">Metrik</h2>
+      <h2 className="text-sm font-bold uppercase tracking-wide text-gray-300">
+        Metrik
+      </h2>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
         <dt className="text-gray-400">Nilai {variable}</dt>
         <dd>
@@ -30,7 +32,9 @@ export function MetricsPanel({ state }: MetricsPanelProps) {
         <dd>{metrics?.lostUpdates ?? '-'}</dd>
 
         <dt className="text-gray-400">Throughput</dt>
-        <dd>{metrics ? `${metrics.throughput.toFixed(2)} pekerjaan/tick` : '-'}</dd>
+        <dd>
+          {metrics ? `${metrics.throughput.toFixed(2)} pekerjaan/tick` : '-'}
+        </dd>
 
         {snapshot.threads.map((thread) => (
           <div key={thread.id} className="contents">

@@ -77,7 +77,10 @@ function createScriptedScheduler(
  * Membuat scheduler sesuai konfigurasi. Panggil ulang tiap load()/reset()
  * karena scheduler menyimpan keadaan (posisi script, PRNG).
  */
-export function createScheduler(config: SchedulerConfig, prng: Prng): Scheduler {
+export function createScheduler(
+  config: SchedulerConfig,
+  prng: Prng,
+): Scheduler {
   switch (config.kind) {
     case 'random':
       return createRandomScheduler(config.cores, prng);

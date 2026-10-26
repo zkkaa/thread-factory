@@ -4,7 +4,11 @@ import { Mutex } from '../primitives/mutex';
 
 describe('Mutex: kepemilikan', () => {
   it('mutex baru bebas', () => {
-    expect(new Mutex('m').snapshot()).toEqual({ id: 'm', owner: null, queue: [] });
+    expect(new Mutex('m').snapshot()).toEqual({
+      id: 'm',
+      owner: null,
+      queue: [],
+    });
   });
 
   it('LOCK pada mutex bebas langsung berhasil', () => {
@@ -70,11 +74,15 @@ describe('Mutex: pelanggaran penggunaan', () => {
   it('UNLOCK oleh bukan pemilik melempar error yang menyebut pemilik', () => {
     const m = new Mutex('papan');
     m.lock('A');
-    expect(() => m.unlock('B')).toThrow(/"B".*UNLOCK.*"papan".*bukan miliknya.*"A"/);
+    expect(() => m.unlock('B')).toThrow(
+      /"B".*UNLOCK.*"papan".*bukan miliknya.*"A"/,
+    );
   });
 
   it('UNLOCK pada mutex bebas melempar error', () => {
-    expect(() => new Mutex('papan').unlock('A')).toThrow(/bukan miliknya.*bebas/);
+    expect(() => new Mutex('papan').unlock('A')).toThrow(
+      /bukan miliknya.*bebas/,
+    );
   });
 
   it('UNLOCK yang gagal tidak mengubah keadaan mutex', () => {

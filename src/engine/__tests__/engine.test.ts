@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { Engine } from '../engine';
-import type { EngineConfig, SchedulerConfig, SimEvent, ThreadDef } from '../types';
+import type {
+  EngineConfig,
+  SchedulerConfig,
+  SimEvent,
+  ThreadDef,
+} from '../types';
 
 /** Dua robot seperti Level 1-1: WORK -> READ -> COMPUTE -> WRITE, diulang. */
 function robot(id: string, repeat: number, work = 1): ThreadDef {
@@ -61,11 +66,14 @@ describe('Engine: load dan snapshot awal', () => {
   it('snapshot awal: tick 0, thread NEW, variabel bersama sesuai konfigurasi', () => {
     const engine = new Engine();
     engine.load(
-      makeConfig({ kind: 'random', cores: 1 }, {
-        mutexes: ['papan'],
-        semaphores: { mesin: 3 },
-        conditions: ['sinyal'],
-      }),
+      makeConfig(
+        { kind: 'random', cores: 1 },
+        {
+          mutexes: ['papan'],
+          semaphores: { mesin: 3 },
+          conditions: ['sinyal'],
+        },
+      ),
       7,
     );
     const snap = engine.getSnapshot();
@@ -90,10 +98,17 @@ describe('Engine: load dan snapshot awal', () => {
   it('konfigurasi tidak valid ditolak dengan pesan jelas', () => {
     const engine = new Engine();
     expect(() =>
-      engine.load(makeConfig(undefined, { threads: [robot('A', 1), robot('A', 1)] }), 1),
+      engine.load(
+        makeConfig(undefined, { threads: [robot('A', 1), robot('A', 1)] }),
+        1,
+      ),
     ).toThrow(/ganda/);
-    expect(() => engine.load(makeConfig(undefined, { maxTicks: 0 }), 1)).toThrow(/maxTicks/);
-    expect(() => engine.load(makeConfig({ kind: 'random', cores: 0 }), 1)).toThrow(/cores/);
+    expect(() =>
+      engine.load(makeConfig(undefined, { maxTicks: 0 }), 1),
+    ).toThrow(/maxTicks/);
+    expect(() =>
+      engine.load(makeConfig({ kind: 'random', cores: 0 }), 1),
+    ).toThrow(/cores/);
     expect(() =>
       engine.load(makeConfig({ kind: 'scripted', cores: 1, script: ['Z'] }), 1),
     ).toThrow(/"Z"/);
@@ -104,7 +119,9 @@ describe('Engine: load dan snapshot awal', () => {
     const engine = new Engine();
     engine.load(makeConfig(), 1);
     engine.step();
-    expect(() => engine.load(makeConfig(undefined, { maxTicks: 0 }), 1)).toThrow();
+    expect(() =>
+      engine.load(makeConfig(undefined, { maxTicks: 0 }), 1),
+    ).toThrow();
     expect(engine.getSnapshot().tick).toBe(1);
   });
 });
@@ -121,7 +138,10 @@ describe('Engine: step dan state machine', () => {
     );
     expect(admitted).toHaveLength(2);
 
-    const states = engine.getSnapshot().threads.map((t) => t.state).sort();
+    const states = engine
+      .getSnapshot()
+      .threads.map((t) => t.state)
+      .sort();
     expect(states).toEqual(['READY', 'RUNNING']);
   });
 
@@ -139,17 +159,28 @@ describe('Engine: step dan state machine', () => {
     engine.load(makeConfig({ kind: 'random', cores: 2 }), 3);
     const { events } = engine.step();
     expect(events.filter((e) => e.type === 'INSTRUCTION')).toHaveLength(2);
-    const running = engine.getSnapshot().threads.filter((t) => t.state === 'RUNNING');
+    const running = engine
+      .getSnapshot()
+      .threads.filter((t) => t.state === 'RUNNING');
     expect(running).toHaveLength(2);
   });
 
   it('thread yang tidak terpilih turun ke READY (di-"bekukan")', () => {
     const engine = new Engine();
-    engine.load(makeConfig({ kind: 'scripted', cores: 1, script: ['A', 'B'] }), 1);
+    engine.load(
+      makeConfig({ kind: 'scripted', cores: 1, script: ['A', 'B'] }),
+      1,
+    );
     engine.step();
-    expect(engine.getSnapshot().threads.map((t) => t.state)).toEqual(['RUNNING', 'READY']);
+    expect(engine.getSnapshot().threads.map((t) => t.state)).toEqual([
+      'RUNNING',
+      'READY',
+    ]);
     const { events } = engine.step();
-    expect(engine.getSnapshot().threads.map((t) => t.state)).toEqual(['READY', 'RUNNING']);
+    expect(engine.getSnapshot().threads.map((t) => t.state)).toEqual([
+      'READY',
+      'RUNNING',
+    ]);
     expect(events).toContainEqual({
       type: 'THREAD_STATE',
       tick: 2,
@@ -173,10 +204,7 @@ describe('Engine: step dan state machine', () => {
 
   it('WORK dengan ticks > 1 memperpanjang waktu simulasi', () => {
     const engine = new Engine();
-    engine.load(
-      makeConfig(undefined, { threads: [robot('A', 1, 3)] }),
-      1,
-    );
+    engine.load(makeConfig(undefined, { threads: [robot('A', 1, 3)] }), 1);
     runToEnd(engine);
     expect(engine.getSnapshot().tick).toBe(6); // 3 (WORK) + READ + COMPUTE + WRITE
   });
@@ -212,7 +240,9 @@ describe('Engine: step dan state machine', () => {
     const engine = new Engine();
     engine.load(
       makeConfig(undefined, {
-        threads: [{ id: 'A', label: 'A', program: [{ op: 'SEM_WAIT', sem: 'mesin' }] }],
+        threads: [
+          { id: 'A', label: 'A', program: [{ op: 'SEM_WAIT', sem: 'mesin' }] },
+        ],
         semaphores: { mesin: 1 },
       }),
       1,

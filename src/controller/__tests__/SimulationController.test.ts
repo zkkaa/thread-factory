@@ -15,7 +15,11 @@ import {
 import { ManualClock } from './manualClock';
 
 /** Menjalankan `count` frame berurutan, masing-masing `ms` milidetik (maks. 250 agar tidak terkena batas frame). */
-function advanceFrames(clock: ManualClock, count: number, ms = TICK_INTERVAL_MS): void {
+function advanceFrames(
+  clock: ManualClock,
+  count: number,
+  ms = TICK_INTERVAL_MS,
+): void {
   for (let i = 0; i < count; i++) clock.advance(ms);
 }
 
@@ -49,7 +53,8 @@ class FakeEngine implements SimulationEngine {
   step(): StepResult {
     this.stepCalls += 1;
     this.tick += 1;
-    if (this.failAtTick === this.tick) throw new Error('UNLOCK oleh non-pemilik');
+    if (this.failAtTick === this.tick)
+      throw new Error('UNLOCK oleh non-pemilik');
     // Bentuk event tidak penting untuk tes controller; yang dihitung jumlahnya.
     const events: SimEvent[] = [{ type: 'FINISHED', tick: this.tick }];
     return { tick: this.tick, events, finished: this.isFinished };
@@ -82,7 +87,8 @@ function startRunning(s: ReturnType<typeof setup>): void {
   s.clock.advance(0);
 }
 
-const tickOf = (c: SimulationController): number => c.getState().snapshot?.tick ?? -1;
+const tickOf = (c: SimulationController): number =>
+  c.getState().snapshot?.tick ?? -1;
 
 describe('SimulationController: sebelum level dimuat', () => {
   it('semua perintah diabaikan tanpa error', () => {

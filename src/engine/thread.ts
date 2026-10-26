@@ -39,7 +39,9 @@ export interface SyncContext {
 const EMPTY_SYNC: SyncContext = {
   mutexes: new Map(),
   getThread(id) {
-    throw new Error(`Thread "${id}" tidak tersedia (tanpa konteks sinkronisasi)`);
+    throw new Error(
+      `Thread "${id}" tidak tersedia (tanpa konteks sinkronisasi)`,
+    );
   },
 };
 
@@ -116,15 +118,23 @@ function readNumber(
   kind: string,
 ): number {
   if (!hasKey(record, key)) {
-    throw new Error(`Thread "${threadId}" memakai ${kind} "${key}" yang tidak ada`);
+    throw new Error(
+      `Thread "${threadId}" memakai ${kind} "${key}" yang tidak ada`,
+    );
   }
   return record[key] as number;
 }
 
-function requireMutex(sync: SyncContext, name: string, threadId: string): Mutex {
+function requireMutex(
+  sync: SyncContext,
+  name: string,
+  threadId: string,
+): Mutex {
   const mutex = sync.mutexes.get(name);
   if (mutex === undefined) {
-    throw new Error(`Thread "${threadId}" memakai mutex "${name}" yang tidak ada`);
+    throw new Error(
+      `Thread "${threadId}" memakai mutex "${name}" yang tidak ada`,
+    );
   }
   return mutex;
 }
@@ -169,7 +179,9 @@ export function executeInstruction(
   const index = thread.pc;
   const instruction = thread.def.program[index];
   if (instruction === undefined) {
-    throw new Error(`Thread "${id}" tidak punya instruksi pada indeks ${index}`);
+    throw new Error(
+      `Thread "${id}" tidak punya instruksi pada indeks ${index}`,
+    );
   }
 
   const events: SimEvent[] = [
@@ -198,13 +210,28 @@ export function executeInstruction(
       break;
     }
     case 'COMPUTE': {
-      const current = readNumber(thread.registers, instruction.reg, id, 'register');
+      const current = readNumber(
+        thread.registers,
+        instruction.reg,
+        id,
+        'register',
+      );
       thread.registers[instruction.reg] = current + instruction.add;
       break;
     }
     case 'WRITE': {
-      const oldValue = readNumber(sharedVars, instruction.to, id, 'variabel bersama');
-      const newValue = readNumber(thread.registers, instruction.reg, id, 'register');
+      const oldValue = readNumber(
+        sharedVars,
+        instruction.to,
+        id,
+        'variabel bersama',
+      );
+      const newValue = readNumber(
+        thread.registers,
+        instruction.reg,
+        id,
+        'register',
+      );
       sharedVars[instruction.to] = newValue;
       events.push({
         type: 'VAR_WRITTEN',
@@ -219,7 +246,12 @@ export function executeInstruction(
     case 'LOCK': {
       const mutex = requireMutex(sync, instruction.mutex, id);
       if (mutex.lock(id)) {
-        events.push({ type: 'LOCK_ACQUIRED', tick, thread: id, mutex: instruction.mutex });
+        events.push({
+          type: 'LOCK_ACQUIRED',
+          tick,
+          thread: id,
+          mutex: instruction.mutex,
+        });
       } else {
         completed = false;
         const on = `mutex:${instruction.mutex}`;
@@ -232,12 +264,22 @@ export function executeInstruction(
     case 'UNLOCK': {
       const mutex = requireMutex(sync, instruction.mutex, id);
       const next = mutex.unlock(id); // melempar error bila bukan pemilik
-      events.push({ type: 'LOCK_RELEASED', tick, thread: id, mutex: instruction.mutex });
+      events.push({
+        type: 'LOCK_RELEASED',
+        tick,
+        thread: id,
+        mutex: instruction.mutex,
+      });
       if (next !== null) {
         // Handoff: thread terdepan kini pemilik, dibangunkan, dan LOCK-nya selesai.
         const woken = sync.getThread(next);
         push(transition(woken, 'READY', tick));
-        events.push({ type: 'LOCK_ACQUIRED', tick, thread: next, mutex: instruction.mutex });
+        events.push({
+          type: 'LOCK_ACQUIRED',
+          tick,
+          thread: next,
+          mutex: instruction.mutex,
+        });
         push(advancePc(woken, tick));
       }
       break;

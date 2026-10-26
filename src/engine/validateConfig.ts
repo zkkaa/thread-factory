@@ -18,7 +18,9 @@ export function validateConfig(config: EngineConfig): void {
     throw new Error('Konfigurasi harus punya minimal satu thread');
   }
   if (!isPositiveInt(config.maxTicks)) {
-    throw new Error(`maxTicks harus bilangan bulat >= 1, diterima: ${config.maxTicks}`);
+    throw new Error(
+      `maxTicks harus bilangan bulat >= 1, diterima: ${config.maxTicks}`,
+    );
   }
 
   const mutexNames = new Set<string>();
@@ -52,14 +54,22 @@ export function validateConfig(config: EngineConfig): void {
         );
       }
       if (instruction.op === 'COMPUTE' && !Number.isFinite(instruction.add)) {
-        throw new Error(`COMPUTE pada thread "${thread.id}": add harus bilangan hingga`);
+        throw new Error(
+          `COMPUTE pada thread "${thread.id}": add harus bilangan hingga`,
+        );
       }
-      if (instruction.op === 'READ' && !hasKey(config.sharedVars, instruction.from)) {
+      if (
+        instruction.op === 'READ' &&
+        !hasKey(config.sharedVars, instruction.from)
+      ) {
         throw new Error(
           `READ pada thread "${thread.id}": variabel bersama "${instruction.from}" tidak ada`,
         );
       }
-      if (instruction.op === 'WRITE' && !hasKey(config.sharedVars, instruction.to)) {
+      if (
+        instruction.op === 'WRITE' &&
+        !hasKey(config.sharedVars, instruction.to)
+      ) {
         throw new Error(
           `WRITE pada thread "${thread.id}": variabel bersama "${instruction.to}" tidak ada`,
         );
@@ -78,7 +88,9 @@ export function validateConfig(config: EngineConfig): void {
     // sebagai instruksi terakhir tidak masuk akal: tidak ada yang bisa di-UNLOCK.
     const last = thread.program[thread.program.length - 1];
     if (last !== undefined && last.op === 'LOCK') {
-      throw new Error(`Thread "${thread.id}": instruksi terakhir tidak boleh LOCK`);
+      throw new Error(
+        `Thread "${thread.id}": instruksi terakhir tidak boleh LOCK`,
+      );
     }
   }
 
@@ -90,7 +102,9 @@ export function validateConfig(config: EngineConfig): void {
   if (config.scheduler.kind === 'scripted') {
     for (const id of config.scheduler.script) {
       if (!ids.has(id)) {
-        throw new Error(`Script scheduler menyebut thread "${id}" yang tidak ada`);
+        throw new Error(
+          `Script scheduler menyebut thread "${id}" yang tidak ada`,
+        );
       }
     }
   }

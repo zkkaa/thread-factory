@@ -80,7 +80,8 @@ export const level1_1: LevelDefinition = {
       if (actual === 10) {
         return {
           ok: true,
-          message: 'Target tercapai! Stok akhir tepat 10 tanpa pembaruan hilang.',
+          message:
+            'Target tercapai! Stok akhir tepat 10 tanpa pembaruan hilang.',
         };
       }
       return {

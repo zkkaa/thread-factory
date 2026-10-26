@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { Engine } from '../../engine/engine';
 import { level1_1 } from '../../levels/module1/level-1-1';
-import { SimulationController, TICK_INTERVAL_MS } from '../SimulationController';
+import {
+  SimulationController,
+  TICK_INTERVAL_MS,
+} from '../SimulationController';
 import { ManualClock } from './manualClock';
 
 /** Controller sungguhan + Engine sungguhan + Level 1-1, jam tetap palsu. */
@@ -15,7 +18,11 @@ function setup() {
 function runToEnd(controller: SimulationController, clock: ManualClock): void {
   controller.run();
   clock.advance(0);
-  for (let i = 0; i < 5000 && controller.getState().runState === 'running'; i++) {
+  for (
+    let i = 0;
+    i < 5000 && controller.getState().runState === 'running';
+    i++
+  ) {
     clock.advance(TICK_INTERVAL_MS);
   }
 }
@@ -49,9 +56,15 @@ describe('SimulationController + Engine + Level 1-1', () => {
     runToEnd(a.controller, a.clock);
 
     const b = setup();
-    for (let i = 0; i < 5000 && b.controller.getState().runState !== 'finished'; i++) {
+    for (
+      let i = 0;
+      i < 5000 && b.controller.getState().runState !== 'finished';
+      i++
+    ) {
       b.controller.step();
     }
-    expect(b.controller.getState().snapshot).toEqual(a.controller.getState().snapshot);
+    expect(b.controller.getState().snapshot).toEqual(
+      a.controller.getState().snapshot,
+    );
   });
 });

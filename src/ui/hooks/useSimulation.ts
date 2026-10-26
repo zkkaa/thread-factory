@@ -10,7 +10,9 @@ import type {
  * Controller mengembalikan objek yang sama selama tidak ada perubahan, sehingga
  * komponen hanya dirender ulang bila state benar-benar berubah.
  */
-export function useSimulation(controller: SimulationController): ControllerState {
+export function useSimulation(
+  controller: SimulationController,
+): ControllerState {
   const subscribe = useCallback(
     (onChange: () => void) => controller.subscribe(onChange),
     [controller],

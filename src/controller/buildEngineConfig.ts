@@ -20,7 +20,8 @@ export function buildEngineConfig(
 
   for (const resource of level.resources) {
     if (resource.kind === 'mutex') mutexes.push(resource.id);
-    else if (resource.kind === 'semaphore') semaphores[resource.id] = resource.initialValue;
+    else if (resource.kind === 'semaphore')
+      semaphores[resource.id] = resource.initialValue;
     else conditions.push(resource.id);
   }
 

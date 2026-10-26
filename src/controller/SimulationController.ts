@@ -121,7 +121,9 @@ export class SimulationController {
   placeTool(tool: PlacedTool): void {
     const level = this.requireEditableLevel();
     if (!level.availableTools.includes(tool.kind)) {
-      throw new Error(`Alat "${tool.kind}" tidak tersedia di level ${level.id}.`);
+      throw new Error(
+        `Alat "${tool.kind}" tidak tersedia di level ${level.id}.`,
+      );
     }
     if (this.placedTools.some((placed) => placed.id === tool.id)) {
       throw new Error(`Alat dengan id "${tool.id}" sudah terpasang.`);
@@ -200,7 +202,11 @@ export class SimulationController {
    */
   private canStart(): boolean {
     const { level, runState, error } = this.state;
-    return level !== null && error === null && (runState === 'idle' || runState === 'paused');
+    return (
+      level !== null &&
+      error === null &&
+      (runState === 'idle' || runState === 'paused')
+    );
   }
 
   /**
@@ -212,7 +218,9 @@ export class SimulationController {
     const { level, runState } = this.state;
     if (level === null) throw new Error('Belum ada level yang dimuat.');
     if (runState !== 'idle') {
-      throw new Error('Alat terkunci karena simulasi sudah dimulai; tekan Reset dulu.');
+      throw new Error(
+        'Alat terkunci karena simulasi sudah dimulai; tekan Reset dulu.',
+      );
     }
     return level;
   }
@@ -255,7 +263,8 @@ export class SimulationController {
       error = e instanceof Error ? e.message : String(e);
     }
 
-    let runState: RunState = this.state.runState === 'running' ? 'running' : 'paused';
+    let runState: RunState =
+      this.state.runState === 'running' ? 'running' : 'paused';
     if (error !== null) runState = 'paused';
     else if (finished) runState = 'finished';
     if (runState !== 'running') this.stopClock();
@@ -300,7 +309,10 @@ export class SimulationController {
 
     // Frame pertama hanya menjadi titik acuan waktu.
     if (this.lastFrameTime !== null) {
-      const elapsed = Math.min(Math.max(time - this.lastFrameTime, 0), MAX_FRAME_MS);
+      const elapsed = Math.min(
+        Math.max(time - this.lastFrameTime, 0),
+        MAX_FRAME_MS,
+      );
       this.accumulator += elapsed * this.state.speed;
     }
     this.lastFrameTime = time;

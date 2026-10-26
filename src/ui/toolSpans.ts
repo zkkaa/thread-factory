@@ -63,7 +63,8 @@ export function replaceTool(
   id: string,
   next: PlacedTool | null,
 ): string | null {
-  const previous = editor.getState().tools.find((tool) => tool.id === id) ?? null;
+  const previous =
+    editor.getState().tools.find((tool) => tool.id === id) ?? null;
   try {
     if (previous !== null) editor.removeTool(id);
     if (next !== null) editor.placeTool(next);
