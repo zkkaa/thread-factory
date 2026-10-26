@@ -36,6 +36,31 @@ const TABS: readonly { id: ModeTab; label: string; hint: string }[] = [
 const FOCUS =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sun-400';
 
+interface ProgressBarProps {
+  cleared: number;
+  total: number;
+}
+
+/** Bar progres modul; angkanya juga tertulis di teks "x / y level". */
+function ProgressBar({ cleared, total }: ProgressBarProps) {
+  const percent = total === 0 ? 0 : Math.round((cleared / total) * 100);
+  return (
+    <span
+      role="progressbar"
+      aria-label="Progres level"
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-valuenow={cleared}
+      className="block h-2 w-full overflow-hidden rounded-full bg-navy-700"
+    >
+      <span
+        className="block h-full rounded-full bg-sun-400"
+        style={{ width: `${percent}%` }}
+      />
+    </span>
+  );
+}
+
 interface ModuleCardButtonProps {
   card: ModuleCard;
   disabled: boolean;
@@ -63,6 +88,7 @@ function ModuleCardButton({ card, disabled, onOpen }: ModuleCardButtonProps) {
       <span className="mt-2 block text-sm font-semibold text-ink-100">
         {card.clearedCount} / {card.totalCount} level
       </span>
+      <ProgressBar cleared={card.clearedCount} total={card.totalCount} />
       {card.lockedReason !== null && (
         <span className="block rounded-lg bg-navy-700 px-3 py-1 text-sm font-semibold text-ember-500">
           <span aria-hidden="true">🔒 </span>
@@ -94,11 +120,13 @@ function LevelRowButton({ row, disabled, onOpen }: LevelRowButtonProps) {
         Level {row.levelId}
         {row.title !== null && `: ${row.title}`}
       </span>
-      {row.note !== null && (
+      {row.note !== null ? (
         <span className="text-sm text-ember-500">
           <span aria-hidden="true">🔒 </span>
           {row.note}
         </span>
+      ) : (
+        <span className="text-sm font-bold text-sun-400">Buka</span>
       )}
     </button>
   );
