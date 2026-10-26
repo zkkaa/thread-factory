@@ -1,1 +1,14 @@
 @import 'tailwindcss';
+
+/* Palet Thread Factory (U-007): navy, kuning, oranye seperti mockup PRD. */
+@theme {
+  --color-navy-900: #0b1f3a;
+  --color-navy-800: #102a4c;
+  --color-navy-700: #163a66;
+  --color-navy-500: #2b5a9a;
+  --color-sun-400: #ffc93c;
+  --color-sun-500: #f5b50f;
+  --color-ember-500: #ff8a3d;
+  --color-ink-100: #f2f6fc;
+  --color-ink-300: #9fb3cc;
+}

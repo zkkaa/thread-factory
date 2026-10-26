@@ -9,6 +9,7 @@ import { useProgress } from './hooks/useProgress';
 import { useProgressRecorder } from './hooks/useProgressRecorder';
 import { useSettings } from './hooks/useSettings';
 import type { Navigation } from './navigation';
+import { HomeScreen } from './screens/HomeScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { PlayScreen } from './screens/PlayScreen';
 import {
@@ -86,6 +87,15 @@ export function AppShell({
 
   const screen = screenState.current;
 
+  if (screen.id === 'home') {
+    return (
+      <HomeScreen
+        navigation={navigation}
+        hasProgress={Object.keys(progress.levels).length > 0}
+      />
+    );
+  }
+
   if (screen.id === 'play') {
     if (findLevelById(screen.levelId) === undefined) {
       return (
@@ -119,9 +129,7 @@ export function AppShell({
       navigation={navigation}
       modules={MODULES}
       settings={settings}
-      onToggleDemo={() =>
-        settingsStore.update({ demoMode: !settings.demoMode })
-      }
+      onToggleDemo={() => settingsStore.update({ demoMode: !settings.demoMode })}
       onResetProgress={() => progressStore.reset()}
     />
   );
