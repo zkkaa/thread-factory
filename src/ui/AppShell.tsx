@@ -14,7 +14,9 @@ import { useProgress } from './hooks/useProgress';
 import { useProgressRecorder } from './hooks/useProgressRecorder';
 import { useSettings } from './hooks/useSettings';
 import type { Navigation } from './navigation';
+import { GuideScreen } from './screens/GuideScreen';
 import { HomeScreen } from './screens/HomeScreen';
+import { LevelMapScreen } from './screens/LevelMapScreen';
 import { ModeSelectScreen } from './screens/ModeSelectScreen';
 import { ModuleIntroScreen } from './screens/ModuleIntroScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
@@ -120,6 +122,25 @@ export function AppShell({
         <ModuleIntroScreen navigation={navigation} moduleDef={moduleDef} />
       );
     }
+  }
+
+  if (screen.id === 'levelMap') {
+    const moduleDef = findModuleById(screen.moduleId);
+    if (moduleDef !== undefined) {
+      return (
+        <LevelMapScreen
+          navigation={navigation}
+          moduleDef={moduleDef}
+          context={unlockContext}
+          progress={progress}
+          getLevelTitle={(levelId) => findLevelById(levelId)?.title}
+        />
+      );
+    }
+  }
+
+  if (screen.id === 'guide') {
+    return <GuideScreen navigation={navigation} />;
   }
 
   if (screen.id === 'play') {
