@@ -1,6 +1,7 @@
 import type { SimulationController } from '../../controller/SimulationController';
 import { PhaserGame } from '../../PhaserGame';
 import { ControlBar } from '../components/ControlBar';
+import { PlayLayout } from '../components/hud/PlayLayout';
 import { MetricsPanel } from '../components/MetricsPanel';
 import { ResultDialog } from '../components/ResultDialog';
 import { StepLog } from '../components/StepLog';
@@ -13,40 +14,67 @@ interface PlayScreenProps {
   onExit: () => void;
 }
 
-/** Tata letak sementara (panel kanan). Diganti HUD baru pada U-030 sampai U-064. */
+// Gaya panel HUD sementara; tiap komponen HUD final (U-031 sampai U-037)
+// menggantikan panel yang bersangkutan.
+const PANEL =
+  'rounded-lg border border-navy-500 bg-navy-900/90 p-3 shadow-lg overflow-y-auto';
+
+/**
+ * Layar Arena (S5): kanvas Phaser memenuhi layar, komponen lama dipasang
+ * sementara di slot HUD sampai penggantinya selesai (U-064 menghapus sisanya).
+ */
 export function PlayScreen({ controller, onExit }: PlayScreenProps) {
   const state = useSimulation(controller);
 
   return (
-    <div className="flex h-screen bg-gray-900 text-gray-100">
-      <PhaserGame controller={controller} />
-
-      <aside className="h-screen w-[360px] shrink-0 space-y-5 overflow-y-auto border-l border-gray-700 p-4">
-        <button
-          type="button"
-          onClick={onExit}
-          className="rounded bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600"
-        >
-          Peta Level
-        </button>
-        {state.level !== null && (
-          <header className="space-y-2">
-            <h1 className="text-lg font-bold">
-              Level {state.level.id}: {state.level.title}
-            </h1>
-            <p className="rounded bg-gray-800 p-2 text-sm leading-relaxed">
-              <strong>Pak Mandor:</strong>{' '}
-              {state.level.intro.map((page) => page.text).join(' ')}
-            </p>
-          </header>
-        )}
-        <ControlBar controller={controller} state={state} />
-        <Toolbox controller={controller} state={state} />
-        <MetricsPanel state={state} />
-        <StepLog controller={controller} />
-      </aside>
-
-      <ResultDialog controller={controller} state={state} />
-    </div>
+    <PlayLayout
+      canvas={<PhaserGame controller={controller} />}
+      topLeft={
+        <div className={`${PANEL} w-80 space-y-2`}>
+          <button
+            type="button"
+            onClick={onExit}
+            className="rounded bg-navy-700 px-3 py-1 text-sm hover:bg-navy-500"
+          >
+            Peta Level
+          </button>
+          {state.level !== null && (
+            <>
+              <h1 className="text-base font-bold">
+                Level {state.level.id}: {state.level.title}
+              </h1>
+              {/* Sementara; diganti chip Misi pada U-032. */}
+              <details className="text-sm">
+                <summary className="cursor-pointer">Misi</summary>
+                <p className="mt-1 leading-relaxed">
+                  {state.level.intro.map((page) => page.text).join(' ')}
+                </p>
+              </details>
+            </>
+          )}
+        </div>
+      }
+      topRight={
+        <div className={`${PANEL} max-h-[60vh] w-[340px]`}>
+          <ControlBar controller={controller} state={state} />
+        </div>
+      }
+      bottomLeft={
+        <div className={`${PANEL} max-h-56 w-80`}>
+          <StepLog controller={controller} />
+        </div>
+      }
+      bottomCenter={
+        <div className={`${PANEL} max-h-56 w-[420px]`}>
+          <Toolbox controller={controller} state={state} />
+        </div>
+      }
+      bottomRight={
+        <div className={`${PANEL} max-h-56 w-72`}>
+          <MetricsPanel state={state} />
+        </div>
+      }
+      overlay={<ResultDialog controller={controller} state={state} />}
+    />
   );
 }
