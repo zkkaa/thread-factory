@@ -1,6 +1,7 @@
 import type { SimulationController } from '../../controller/SimulationController';
 import { PhaserGame } from '../../PhaserGame';
 import { ControlHud } from '../components/hud/ControlHud';
+import { MissionChip } from '../components/hud/MissionChip';
 import { PlayLayout } from '../components/hud/PlayLayout';
 import { MetricsPanel } from '../components/MetricsPanel';
 import { ResultDialog } from '../components/ResultDialog';
@@ -30,28 +31,22 @@ export function PlayScreen({ controller, onExit }: PlayScreenProps) {
     <PlayLayout
       canvas={<PhaserGame controller={controller} />}
       topLeft={
-        <div className={`${PANEL} w-80 space-y-2`}>
-          <button
-            type="button"
-            onClick={onExit}
-            className="rounded bg-navy-700 px-3 py-1 text-sm hover:bg-navy-500"
-          >
-            Peta Level
-          </button>
-          {state.level !== null && (
-            <>
+        <div className="w-80 space-y-2">
+          <div className={`${PANEL} space-y-2`}>
+            <button
+              type="button"
+              onClick={onExit}
+              className="rounded bg-navy-700 px-3 py-1 text-sm hover:bg-navy-500"
+            >
+              Peta Level
+            </button>
+            {state.level !== null && (
               <h1 className="text-base font-bold">
                 Level {state.level.id}: {state.level.title}
               </h1>
-              {/* Sementara; diganti chip Misi pada U-032. */}
-              <details className="text-sm">
-                <summary className="cursor-pointer">Misi</summary>
-                <p className="mt-1 leading-relaxed">
-                  {state.level.intro.map((page) => page.text).join(' ')}
-                </p>
-              </details>
-            </>
-          )}
+            )}
+          </div>
+          {state.level !== null && <MissionChip level={state.level} />}
         </div>
       }
       topRight={<ControlHud controller={controller} state={state} />}
