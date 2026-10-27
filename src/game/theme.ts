@@ -104,6 +104,7 @@ export const CHECKPOINT = {
   fill: 0x1f2a44,
   stroke: 0xf5c542,
   hover: 0xffffff,
+  tooltipWidth: 220,
 } as const;
 
 /** Papan stok dan tautan ke READ/WRITE (U-057). */
@@ -111,6 +112,10 @@ export const BOARD_STYLE = {
   fill: 0x1f2a44,
   stroke: 0xf5c542,
   link: 0x93a4c8,
+  /** Jarak panah aliran dari checkpoint (piksel). */
+  arrowOffset: 80,
+  /** Skala angka papan saat berubah. */
+  popScale: 1.25,
 } as const;
 
 /** Label kecil di dekat robot dan tooltip checkpoint. */
@@ -122,3 +127,9 @@ export const LABEL_STYLE = {
   backgroundColor: 'rgba(15,24,48,0.8)',
   padding: { x: 6, y: 3 },
 };
+
+/** Durasi animasi kecil, dalam milidetik. */
+export const MOTION = { popMs: 120, minPulseMs: 200 } as const;
+
+/** Urutan tumpukan gambar; makin besar makin di depan. */
+export const DEPTH = { robot: 5, robotLabel: 6, tooltip: 100 } as const;

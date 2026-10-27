@@ -2,7 +2,7 @@ import { GameObjects, Scene } from 'phaser';
 import type { ThreadId, ThreadSnapshot } from '../../engine/types';
 import type { Anchor } from '../anchors';
 import { forwardEnd, pointAt, type SampledPath } from '../pathMath';
-import { COLORS, LABEL_STYLE, ROBOT_SIZE, STATE_STYLE } from '../theme';
+import { COLORS, LABEL_STYLE, DEPTH, ROBOT_SIZE, STATE_STYLE } from '../theme';
 
 export interface RobotViewOptions {
   path: SampledPath;
@@ -47,11 +47,11 @@ export class RobotView {
         STATE_STYLE[thread.state].color,
       )
       .setStrokeStyle(2, COLORS.robotBorder)
-      .setDepth(5);
+      .setDepth(DEPTH.robot);
     this.label = scene.add
       .text(start.x, start.y, '', LABEL_STYLE)
       .setOrigin(0.5, options.labelSide < 0 ? 1 : 0)
-      .setDepth(6);
+      .setDepth(DEPTH.robotLabel);
     this.place(this.cursor.t);
     this.update(thread);
   }

@@ -1,5 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
-import { BOARD_STYLE, TEXT_STYLE } from '../theme';
+import { BOARD_STYLE, MOTION, TEXT_STYLE } from '../theme';
 
 export interface BoardRect {
   x: number;
@@ -49,12 +49,12 @@ export class BoardView {
       g.lineStyle(4, BOARD_STYLE.link, 1);
       g.lineBetween(cx, cy, link.x, link.y);
 
-      // Panah 80 px dari checkpoint: write menuju papan, read menuju checkpoint.
+      // Panah arrowOffset dari checkpoint: write menuju papan, read menuju checkpoint.
       const len = Math.hypot(cx - link.x, cy - link.y) || 1;
       const ux = (cx - link.x) / len;
       const uy = (cy - link.y) / len;
-      const ax = link.x + ux * 80;
-      const ay = link.y + uy * 80;
+      const ax = link.x + ux * BOARD_STYLE.arrowOffset;
+      const ay = link.y + uy * BOARD_STYLE.arrowOffset;
       const sign = link.direction === 'write' ? 1 : -1;
       const tx = ux * sign;
       const ty = uy * sign;
@@ -96,8 +96,8 @@ export class BoardView {
       this.valueText.setScale(1);
       this.scene.tweens.add({
         targets: this.valueText,
-        scale: 1.25,
-        duration: 120,
+        scale: BOARD_STYLE.popScale,
+        duration: MOTION.popMs,
         yoyo: true,
       });
     }
@@ -112,7 +112,7 @@ export class BoardView {
       this.scene.tweens.add({
         targets: link.graphics,
         alpha: LINK_BASE_ALPHA,
-        duration: Math.max(durationMs, 200),
+        duration: Math.max(durationMs, MOTION.minPulseMs),
       });
     }
   }
