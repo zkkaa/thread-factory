@@ -1,6 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
 import { pointAt, type SampledPath } from '../pathMath';
-import { ROAD } from '../theme';
+  import { DEPTH, ROAD } from '../theme';
 
 const ARROW_COUNT = 12;
 
@@ -31,7 +31,7 @@ export class TrackView {
         p.y - dy * 6 - dx * 6,
       );
     }
-    this.graphics = g;
+    this.graphics = g.setDepth(DEPTH.track);
   }
 
   destroy(): void {
