@@ -24,7 +24,5 @@ export function PhaserGame({ controller }: PhaserGameProps) {
     };
   }, [controller]);
 
-  return (
-    <div id="game-container" className="h-screen min-w-0 flex-1 bg-gray-900" />
-  );
+  return <div id="game-container" className="h-full w-full" />;
 }
