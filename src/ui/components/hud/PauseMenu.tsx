@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { StatusLegend } from './StatusLegend';
 
 interface PauseMenuProps {
   onResume: () => void;
@@ -49,6 +50,7 @@ export function PauseMenu({
         <button type="button" onClick={onSettings} className={BUTTON}>
           Pengaturan
         </button>
+        <StatusLegend />
       </div>
     </div>
   );
