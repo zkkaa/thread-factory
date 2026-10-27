@@ -7,12 +7,13 @@ import {
 import { effectivePrograms } from '../../controller/effectivePrograms';
 import type { SimEvent, Snapshot, ThreadId } from '../../engine/types';
 import { computeAnchors } from '../anchors';
+import { buildDoorSpans } from '../doorSpans';
 import { getLayout } from '../layouts';
 import { pointAt, sampleClosedPath } from '../pathMath';
 import { ARENA, COLORS, DOOR_PANEL, TEXT_STYLE } from '../theme';
 import { BoardView, type BoardLinkPoint } from '../views/BoardView';
 import { CheckpointView } from '../views/CheckpointView';
-import { DoorView, type DoorGate, type NameOf } from '../views/DoorView';
+import { DoorView, type NameOf } from '../views/DoorView';
 import { RobotView } from '../views/RobotView';
 import { TrackView } from '../views/TrackView';
 
@@ -116,30 +117,9 @@ export class LevelScene extends Scene {
       this.checkpoints.push(new CheckpointView(this, p.x, p.y, instruction));
     });
 
-    // Gerbang: satu per (mutex, slot LOCK), dibagi semua robot di loop.
-    const gatesByMutex = new Map<string, DoorGate[]>();
-    const seen = new Set<string>();
-    for (const thread of effective) {
-      const origin = origins[thread.id] ?? [];
-      thread.program.forEach((instruction, index) => {
-        const from = origin[index];
-        if (
-          instruction.op !== 'LOCK' ||
-          from === undefined ||
-          from.kind !== 'inserted'
-        ) {
-          return;
-        }
-        const key = `${instruction.mutex}:${from.slot}`;
-        const fraction = layout.slots[from.slot];
-        if (seen.has(key) || fraction === undefined) return;
-        seen.add(key);
-        const p = pointAt(path, fraction, 0);
-        const list = gatesByMutex.get(instruction.mutex) ?? [];
-        list.push({ x: p.x, y: p.y });
-        gatesByMutex.set(instruction.mutex, list);
-      });
-    }
+        // Pintu: pasangan slot masuk (LOCK) dan keluar (UNLOCK) tiap mutex,
+    // dibagi semua robot di loop (satu pintu satu kunci).
+    const spansByMutex = buildDoorSpans(effective, origins, layout.slots);
     this.doors = snapshot.mutexes.map((mutex, doorIndex) => {
       const title =
         level.resources.find((r) => r.id === mutex.id)?.label ?? mutex.id;
@@ -148,7 +128,8 @@ export class LevelScene extends Scene {
         this,
         mutex,
         title,
-        gatesByMutex.get(mutex.id) ?? [],
+        path,
+        spansByMutex.get(mutex.id) ?? [],
         panelY,
         nameOf,
       );

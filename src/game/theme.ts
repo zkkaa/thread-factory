@@ -1,9 +1,9 @@
 import type { ThreadState } from '../engine/types';
 
 /**
- * Semua ukuran dan warna tampilan arena ada di sini, supaya mengganti gaya
- * (mis. dari kotak geometris ke sprite) cukup menyentuh satu tempat.
- * Isinya data dan dua fungsi posisi kecil; tidak ada aturan permainan.
+- Semua ukuran dan warna tampilan arena ada di sini, supaya mengganti gaya
+- (mis. dari kotak geometris ke sprite) cukup menyentuh satu tempat.
+- Isinya data dan dua fungsi posisi kecil; tidak ada aturan permainan.
  */
 
 /** Ukuran kanvas; harus sama dengan width/height di game/main.ts. */
@@ -13,11 +13,11 @@ export const ARENA = { width: 1280, height: 720 } as const;
 export const TILE_SIZE = 64;
 
 /** Sisi kotak robot; lebih kecil dari ubin agar ubin di bawahnya tetap terbaca. */
-export const ROBOT_SIZE = 32;
+export const ROBOT_SIZE = 24;
 
 /**
- * Tata letak jalur robot. Tiap robot punya satu jalur (baris):
- * nama dan state di kiri (`labelX`), deretan ubin mulai dari `startX`.
+- Tata letak jalur robot. Tiap robot punya satu jalur (baris):
+- nama dan state di kiri (`labelX`), deretan ubin mulai dari `startX`.
  */
 export const LANE = {
   labelX: 120,
@@ -37,9 +37,9 @@ export function laneCenterY(laneIndex: number): number {
 }
 
 /**
- * Gaya tiap state thread. Warna SELALU dipasangkan dengan label teks supaya
- * state tetap terbaca oleh pemain yang sulit membedakan warna.
- * Label memakai istilah teknis bahasa Inggris, sesuai PRD bagian 6.
+- Gaya tiap state thread. Warna SELALU dipasangkan dengan label teks supaya
+- state tetap terbaca oleh pemain yang sulit membedakan warna.
+- Label memakai istilah teknis bahasa Inggris, sesuai PRD bagian 6.
  */
 export const STATE_STYLE: Record<
   ThreadState,
@@ -65,6 +65,7 @@ export const DOOR_PANEL = {
   gapY: 130,
   width: 200,
   height: 110,
+  padding: 16,
 } as const;
 
 export const COLORS = {
@@ -132,4 +133,22 @@ export const LABEL_STYLE = {
 export const MOTION = { popMs: 120, minPulseMs: 200 } as const;
 
 /** Urutan tumpukan gambar; makin besar makin di depan. */
-export const DEPTH = { robot: 5, robotLabel: 6, tooltip: 100 } as const;
+export const DEPTH = {
+  track: -2,
+  segment: -1,
+  gate: 3,
+  lock: 4,
+  robot: 5,
+  robotLabel: 6,
+  tooltip: 100,
+} as const;
+
+/** Ukuran gerbang, segmen terlindungi, dan ikon gembok (U-058). */
+export const DOOR_GEOMETRY = {
+  barThickness: 8,
+  labelGap: 10,
+  panelStroke: 3,
+  segmentAlpha: 0.3,
+  segmentSteps: 24,
+  lockSize: 14,
+} as const;
