@@ -1,6 +1,6 @@
 import type { SimulationController } from '../../controller/SimulationController';
 import { PhaserGame } from '../../PhaserGame';
-import { ControlBar } from '../components/ControlBar';
+import { ControlHud } from '../components/hud/ControlHud';
 import { PlayLayout } from '../components/hud/PlayLayout';
 import { MetricsPanel } from '../components/MetricsPanel';
 import { ResultDialog } from '../components/ResultDialog';
@@ -54,11 +54,7 @@ export function PlayScreen({ controller, onExit }: PlayScreenProps) {
           )}
         </div>
       }
-      topRight={
-        <div className={`${PANEL} max-h-[60vh] w-[340px]`}>
-          <ControlBar controller={controller} state={state} />
-        </div>
-      }
+      topRight={<ControlHud controller={controller} state={state} />}
       bottomLeft={
         <div className={`${PANEL} max-h-56 w-80`}>
           <StepLog controller={controller} />
