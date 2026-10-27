@@ -3,7 +3,7 @@ import { PhaserGame } from '../../PhaserGame';
 import { ControlHud } from '../components/hud/ControlHud';
 import { MissionChip } from '../components/hud/MissionChip';
 import { PlayLayout } from '../components/hud/PlayLayout';
-import { MetricsPanel } from '../components/MetricsPanel';
+import { MetricsHud } from '../components/hud/MetricsHud';
 import { ResultDialog } from '../components/ResultDialog';
 import { LogHud } from '../components/hud/LogHud';
 import { ToolboxHud } from '../components/hud/ToolboxHud';
@@ -56,11 +56,7 @@ export function PlayScreen({ controller, onExit }: PlayScreenProps) {
           <ToolboxHud controller={controller} state={state} />
         </div>
       }
-      bottomRight={
-        <div className={`${PANEL} max-h-56 w-72`}>
-          <MetricsPanel state={state} />
-        </div>
-      }
+      bottomRight={<MetricsHud state={state} />}
       overlay={<ResultDialog controller={controller} state={state} />}
     />
   );
