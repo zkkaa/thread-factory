@@ -109,47 +109,47 @@ Centang semuanya sebelum lanjut ke fase berikutnya:
 
 ## Fase U0 — Kesepakatan Desain dan Perbaikan Teknis (26 sampai 28 Okt) *(baru)*
 
-- [ ] **U-001** `P0` Pasang dokumen revisi (`PRD.md`, `ARCHITECTURE.md`, `TASKS.md` ke `docs/`; `CLAUDE.md` ke akar). Pastikan `docs/` **tidak** diabaikan git (`git ls-files docs` tidak kosong; hapus `docs/` dari `.gitignore` dan `git add docs` bila perlu). Commit `docs: revisi PRD, ARCHITECTURE, TASKS, CLAUDE sesuai kesepakatan akhir`.
-- [ ] **U-002** `P0` Perbaikan teknis dari review: ganti nama `level1-1Mutext.test.ts` menjadi `level1-1Mutex.test.ts`; pasang Prettier (T-005 meminta, belum terpasang) dan `.editorconfig` 2 spasi; tambah skrip `format` dan `format:check`; format ulang seluruh `src/` sekali dalam satu commit terpisah (`refactor: format`). Minta persetujuan tim untuk menambah dev dependency Prettier. *Selesai bila:* `typecheck`, `lint`, `test` hijau dan `game/` berindentasi 2 spasi.
+- [x] **U-001** `P0` Pasang dokumen revisi (`PRD.md`, `ARCHITECTURE.md`, `TASKS.md` ke `docs/`; `CLAUDE.md` ke akar). Pastikan `docs/` **tidak** diabaikan git (`git ls-files docs` tidak kosong; hapus `docs/` dari `.gitignore` dan `git add docs` bila perlu). Commit `docs: revisi PRD, ARCHITECTURE, TASKS, CLAUDE sesuai kesepakatan akhir`.
+- [x] **U-002** `P0` Perbaikan teknis dari review: ganti nama `level1-1Mutext.test.ts` menjadi `level1-1Mutex.test.ts`; pasang Prettier (T-005 meminta, belum terpasang) dan `.editorconfig` 2 spasi; tambah skrip `format` dan `format:check`; format ulang seluruh `src/` sekali dalam satu commit terpisah (`refactor: format`). Minta persetujuan tim untuk menambah dev dependency Prettier. *Selesai bila:* `typecheck`, `lint`, `test` hijau dan `game/` berindentasi 2 spasi.
 - [ ] **U-003** `P0` Lengkapi `docs/AI_USAGE.md` untuk seluruh tugas T-011 sampai T-036 dan perubahan setelahnya (satu baris per tugas: tanggal, ID, berkas, peran AI, peninjau).
-- [ ] **U-004** `P0` Wireframe final: satu gambar per layar S1 sampai S13 (PRD bagian 16) dan satu gambar arena Level 1-1 yang menunjukkan jalan melengkung, posisi 4 checkpoint, 5 slot, papan tengah, dan gerbang. Simpan di `docs/wireframe/`. Disetujui tim sebelum U-050.
-- [ ] **U-005** `P0` Buat `docs/ASSETS.md`: tabel aset (nama berkas, kegunaan, ukuran, sumber, lisensi, status) dari PRD bagian 18.5, dan siapkan folder `public/assets/{characters,world,ui,audio}/`.
+- [x] **U-004** `P0` Wireframe final: satu gambar per layar S1 sampai S13 (PRD bagian 16) dan satu gambar arena Level 1-1 yang menunjukkan jalan melengkung, posisi 4 checkpoint, 5 slot, papan tengah, dan gerbang. Simpan di `docs/wireframe/`. Disetujui tim sebelum U-050.
+- [x] **U-005** `P0` Buat `docs/ASSETS.md`: tabel aset (nama berkas, kegunaan, ukuran, sumber, lisensi, status) dari PRD bagian 18.5, dan siapkan folder `public/assets/{characters,world,ui,audio}/`.
 - [ ] **U-006** `P1` Pastikan jadwal presentasi kelompok dari dosen atau kalender akademik; catat tanggalnya di bagian atas berkas ini dan hitung ulang tanggal pengumpulan (H-2).
-- [ ] **U-007** `P1` Sepakati palet warna dan gaya bingkai UI (navy, kuning, oranye seperti mockup), simpan sebagai token di `ui/` (variabel CSS atau konstanta Tailwind) dan `game/theme.ts`.
+- [x] **U-007** `P1` Sepakati palet warna dan gaya bingkai UI (navy, kuning, oranye seperti mockup), simpan sebagai token di `ui/` (variabel CSS atau konstanta Tailwind) dan `game/theme.ts`.
 
 ---
 
 ## Fase U1 — Kerangka Aplikasi, Penyimpanan, dan Layar (27 Okt sampai 1 Nov) *(baru)*
 
-- [ ] **U-010** `P0` `levels/modules.ts` (`ModuleDefinition`: id, judul, subjudul, deskripsi, konsep, `levelIds`) dan urutan level di `levels/index.ts`. Tes: semua `levelIds` ada di daftar level, tiap level termasuk tepat satu modul.
-- [ ] **U-011** `P0` `progress/storage.ts` dan `progress/progressStore.ts` (bintang terbaik per level, level selesai, `record`, `reset`) dengan `KeyValueStorage` yang disuntik. Semua akses try/catch; data rusak atau versi asing menghasilkan nilai awal. Tes: penyimpanan palsu, data rusak, penyimpanan penuh atau nonaktif, bintang hanya naik.
-- [ ] **U-012** `P0` `progress/unlocks.ts` (fungsi murni): level terbuka bila level sebelumnya selesai; Modul 2 terbuka setelah Level 1-4 selesai; Sandbox dan Bandingkan per level terbuka setelah level kampanyenya selesai; `demoMode` membuka semua. Tes tiap aturan.
-- [ ] **U-013** `P0` `progress/settingsStore.ts` (volume, kurangi animasi, mode demo) dengan tes serupa U-011.
-- [ ] **U-014** `P0` `ui/screenState.ts` (state machine layar murni + tumpukan kembali) dan `ui/AppShell.tsx`. Tanpa library router. Tes: semua transisi pada alur PRD bagian 16, tombol kembali, layar terkunci ditolak.
-- [ ] **U-015** `P0` Hook `useProgress`, `useSettings`, dan `useProgressRecorder(controller)`: saat `result.ok` dan `result.stars !== null`, simpan bintang terbaik. Tes integrasi dengan controller dan penyimpanan palsu.
-- [ ] **U-016** `P1` `HomeScreen` (S1): logo, Pak Mandor, Mulai Game/Lanjutkan, Panduan, Pengaturan, versi. Placeholder aset boleh.
-- [ ] **U-017** `P1` `ModeSelectScreen` (S2): tab Kampanye/Sandbox/Bandingkan, kartu modul dengan progres dan kunci, daftar level Sandbox/Bandingkan dengan syarat pembukaan.
-- [ ] **U-018** `P1` `ModuleIntroScreen` (S3 bagian A): judul, deskripsi, konsep; lanjut otomatis sekitar 3 detik; Lewati.
-- [ ] **U-019** `P1` `LevelMapScreen` (S3 bagian B): titik level, bintang, kunci, sorotan level berikutnya, tombol Mulai/Lanjut Level X, ulangi level lama.
-- [ ] **U-020** `P1` `GuideScreen` (S9): cara bermain 3 langkah, arti status robot, arti kontrol HUD, glosarium. Isi benar secara konsep (periksa terhadap materi kuliah).
-- [ ] **U-021** `P1` `SettingsScreen` (S10): volume, kurangi animasi, reset progres (konfirmasi), mode demo, Kredit (daftar aset dari `docs/ASSETS.md`).
-- [ ] **U-022** `P1` `ModuleCompleteScreen` (S7) dan `GameCompleteScreen` (S8) berdasarkan progres, bintang, dan `concepts` level.
-- [ ] **U-023** `P1` Komponen dasar: ikon SVG buatan sendiri (play, pause, step, reset, gear, kunci, tempat sampah, tanda tanya, menu, kembali, bintang, panah), `Tooltip`, dan `IconButton` (aria-label wajib). Tes render: setiap `IconButton` punya `aria-label`.
+- [x] **U-010** `P0` `levels/modules.ts` (`ModuleDefinition`: id, judul, subjudul, deskripsi, konsep, `levelIds`) dan urutan level di `levels/index.ts`. Tes: semua `levelIds` ada di daftar level, tiap level termasuk tepat satu modul.
+- [x] **U-011** `P0` `progress/storage.ts` dan `progress/progressStore.ts` (bintang terbaik per level, level selesai, `record`, `reset`) dengan `KeyValueStorage` yang disuntik. Semua akses try/catch; data rusak atau versi asing menghasilkan nilai awal. Tes: penyimpanan palsu, data rusak, penyimpanan penuh atau nonaktif, bintang hanya naik.
+- [x] **U-012** `P0` `progress/unlocks.ts` (fungsi murni): level terbuka bila level sebelumnya selesai; Modul 2 terbuka setelah Level 1-4 selesai; Sandbox dan Bandingkan per level terbuka setelah level kampanyenya selesai; `demoMode` membuka semua. Tes tiap aturan.
+- [x] **U-013** `P0` `progress/settingsStore.ts` (volume, kurangi animasi, mode demo) dengan tes serupa U-011.
+- [x] **U-014** `P0` `ui/screenState.ts` (state machine layar murni + tumpukan kembali) dan `ui/AppShell.tsx`. Tanpa library router. Tes: semua transisi pada alur PRD bagian 16, tombol kembali, layar terkunci ditolak.
+- [x] **U-015** `P0` Hook `useProgress`, `useSettings`, dan `useProgressRecorder(controller)`: saat `result.ok` dan `result.stars !== null`, simpan bintang terbaik. Tes integrasi dengan controller dan penyimpanan palsu.
+- [x] **U-016** `P1` `HomeScreen` (S1): logo, Pak Mandor, Mulai Game/Lanjutkan, Panduan, Pengaturan, versi. Placeholder aset boleh.
+- [x] **U-017** `P1` `ModeSelectScreen` (S2): tab Kampanye/Sandbox/Bandingkan, kartu modul dengan progres dan kunci, daftar level Sandbox/Bandingkan dengan syarat pembukaan.
+- [x] **U-018** `P1` `ModuleIntroScreen` (S3 bagian A): judul, deskripsi, konsep; lanjut otomatis sekitar 3 detik; Lewati.
+- [x] **U-019** `P1` `LevelMapScreen` (S3 bagian B): titik level, bintang, kunci, sorotan level berikutnya, tombol Mulai/Lanjut Level X, ulangi level lama.
+- [x] **U-020** `P1` `GuideScreen` (S9): cara bermain 3 langkah, arti status robot, arti kontrol HUD, glosarium. Isi benar secara konsep (periksa terhadap materi kuliah).
+- [x] **U-021** `P1` `SettingsScreen` (S10): volume, kurangi animasi, reset progres (konfirmasi), mode demo, Kredit (daftar aset dari `docs/ASSETS.md`).
+- [x] **U-022** `P1` `ModuleCompleteScreen` (S7) dan `GameCompleteScreen` (S8) berdasarkan progres, bintang, dan `concepts` level.
+- [x] **U-023** `P1` Komponen dasar: ikon SVG buatan sendiri (play, pause, step, reset, gear, kunci, tempat sampah, tanda tanya, menu, kembali, bintang, panah), `Tooltip`, dan `IconButton` (aria-label wajib). Tes render: setiap `IconButton` punya `aria-label`.
 
 ---
 
 ## Fase U2 — HUD, Dialog Pak Mandor, dan Popup Hasil (28 Okt sampai 2 Nov) *(baru)*
 
-- [ ] **U-030** `P0` `PlayScreen` (S5): kanvas Phaser memenuhi layar (skala FIT), HUD React ditumpuk dengan posisi tetap sesuai PRD bagian 17.1; layar minimal 1280 px tanpa scroll horizontal. Tes render komposisi dasar.
-- [ ] **U-031** `P0` Kontrol HUD (mengganti `ControlBar`): toggle Play/Pause, Step, Reset berupa ikon dengan tooltip; chip kecepatan 0.5x/1x/5x; chip seed (klik membuka isian, `parseSeed`, menerapkan seed me-reset); chip status dengan tick; Run dan Step nonaktif setelah error atau saat selesai. Tes render tiap keadaan (idle, running, paused, finished, error).
-- [ ] **U-032** `P0` Chip Misi: target dan kriteria bintang dari data level; dapat dilipat.
+- [x] **U-030** `P0` `PlayScreen` (S5): kanvas Phaser memenuhi layar (skala FIT), HUD React ditumpuk dengan posisi tetap sesuai PRD bagian 17.1; layar minimal 1280 px tanpa scroll horizontal. Tes render komposisi dasar.
+- [x] **U-031** `P0` Kontrol HUD (mengganti `ControlBar`): toggle Play/Pause, Step, Reset berupa ikon dengan tooltip; chip kecepatan 0.5x/1x/5x; chip seed (klik membuka isian, `parseSeed`, menerapkan seed me-reset); chip status dengan tick; Run dan Step nonaktif setelah error atau saat selesai. Tes render tiap keadaan (idle, running, paused, finished, error).
+- [x] **U-032** `P0` Chip Misi: target dan kriteria bintang dari data level; dapat dilipat.
 - [ ] **U-033** `P0` Toolbox bawah (mengganti tampilan `Toolbox`): hanya alat yang tersedia di level ditambah Hapus; terkunci saat simulasi dimulai (dengan keterangan). Mode klik slot tetap tersedia lewat toolbox ini.
 - [ ] **U-034** `P1` Log Kejadian kiri bawah (restyle `StepLog`): dapat dilipat, terbaru di atas, filter perpindahan READY/RUNNING; memakai `EventLog` yang sudah ada.
 - [ ] **U-035** `P1` Laci Metrik opsional dan badge waktu tunggu per robot (data dari snapshot).
 - [ ] **U-036** `P1` Menu Jeda (S13): Lanjut, Ulangi Level, Peta Level, Pengaturan.
 - [ ] **U-037** `P1` Legenda arti status robot (READY, RUNNING, WAITING, TERMINATED) yang dapat dibuka dari menu.
 - [ ] **U-038** `P0` `MandorDialog`: potret, gelembung, halaman, Lanjut/Mulai/Lewati, mood potret; menghormati pengaturan kurangi animasi; fokus keyboard terkelola; tes render.
-- [ ] **U-039** `P0` Perluas `LevelDefinition`: `intro: IntroPage[]`, `hints: string[]`, `concepts: string[]`, `layoutId`; migrasi `level-1-1.ts` dan kode yang membaca `intro`; tes data level (jumlah halaman, minimal 3 petunjuk, `layoutId` terdaftar).
+- [x] **U-039** `P0` Perluas `LevelDefinition`: `intro: IntroPage[]`, `hints: string[]`, `concepts: string[]`, `layoutId`; migrasi `level-1-1.ts` dan kode yang membaca `intro`; tes data level (jumlah halaman, minimal 3 petunjuk, `layoutId` terdaftar).
 - [ ] **U-040** `P1` Sistem petunjuk: tombol "Tanya Pak Mandor", petunjuk bertahap, tawaran otomatis setelah 2 kegagalan dalam sesi (`ui/hints.ts` murni) + tes.
 - [ ] **U-041** `P0` `ResultDialog` baru (S6): judul dari data level, badge SALAH/BENAR, potret sesuai mood, gelembung "Seharusnya X, hasilnya Y", tiga kartu angka, bintang muncul satu per satu (hormati kurangi animasi), rincian kriteria, pesan Pak Mandor, tombol Reset/Petunjuk/Tutup (salah) atau Lanjut/Ulangi/Tutup (benar). Tes render tiap keadaan.
 - [ ] **U-042** `P1` Panel error engine bergaya baru (pesan jelas, tombol Reset).
