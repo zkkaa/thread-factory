@@ -1,23 +1,20 @@
 import { GameObjects, Scene, Scenes } from 'phaser';
-import { buildEngineConfig } from '../../controller/buildEngineConfig';
 import {
   TICK_INTERVAL_MS,
   type ControllerState,
   type SimulationController,
 } from '../../controller/SimulationController';
+import { effectivePrograms } from '../../controller/effectivePrograms';
 import type { SimEvent, Snapshot, ThreadId } from '../../engine/types';
-import {
-  ARENA,
-  COLORS,
-  DOOR_PANEL,
-  TEXT_STYLE,
-  TILE_SIZE,
-  laneCenterY,
-  tileCenterX,
-} from '../theme';
-import { BoardView } from '../views/BoardView';
+import { computeAnchors } from '../anchors';
+import { getLayout } from '../layouts';
+import { pointAt, sampleClosedPath } from '../pathMath';
+import { ARENA, COLORS, DOOR_PANEL, TEXT_STYLE } from '../theme';
+import { BoardView, type BoardLinkPoint } from '../views/BoardView';
+import { CheckpointView } from '../views/CheckpointView';
 import { DoorView, type DoorGate, type NameOf } from '../views/DoorView';
 import { RobotView } from '../views/RobotView';
+import { TrackView } from '../views/TrackView';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
 export interface LevelSceneData {
@@ -27,15 +24,17 @@ export interface LevelSceneData {
 /**
  * Scene arena satu level. Tugasnya hanya MENGGAMBAR dan MENGANIMASIKAN apa yang
  * dilaporkan controller; benar/salah, menang/kalah, dan metrik dihitung engine
- * (aturan arsitektur 3).
+ * (aturan arsitektur 3). Tata letak (jalan, checkpoint, slot, papan) dibaca
+ * dari game/layouts/, bukan di-hardcode di sini.
  *
- * Alurnya: controller memberi tahu scene lewat subscribe. Pada tick 0 (level
- * dimuat, Reset, atau alat berubah) semua view dibangun ulang dari snapshot.
- * Pada tick berikutnya, event INSTRUCTION menggerakkan robot ke ubinnya dan
- * snapshot memperbarui warna, label, nilai papan, dan status pintu.
+ * Pada tick 0 (level dimuat, Reset, atau alat berubah) semua view dibangun
+ * ulang. Pada tick berikutnya, event INSTRUCTION menggerakkan robot ke jangkar
+ * instruksinya dan snapshot memperbarui label, papan, dan pintu.
  */
 export class LevelScene extends Scene {
   private controller: SimulationController | null = null;
+  private track: TrackView | null = null;
+  private checkpoints: CheckpointView[] = [];
   private robots: RobotView[] = [];
   private doors: DoorView[] = [];
   private board: BoardView | null = null;
@@ -62,7 +61,7 @@ export class LevelScene extends Scene {
     const unsubscribe = controller.subscribe((state) =>
       this.handleState(state),
     );
-    // Berhenti mendengarkan saat scene ditutup agar tidak ada listener yatim.
+    // game.destroy() memicu DESTROY, bukan SHUTDOWN.
     this.events.once(Scenes.Events.DESTROY, unsubscribe);
   }
 
@@ -78,65 +77,118 @@ export class LevelScene extends Scene {
     this.refresh(snapshot);
   }
 
-  /**
-   * Buang semua view lama lalu bangun ulang dari keadaan controller.
-   * Program tiap jalur diambil dari konfigurasi engine (sudah memuat
-   * LOCK/UNLOCK dari alat pemain), supaya ubinnya cocok dengan index event.
-   */
+  /** Buang semua view lama lalu bangun ulang dari layout dan keadaan controller. */
   private rebuild(state: ControllerState): void {
     const { level, snapshot } = state;
     if (level === null || snapshot === null) return;
 
     this.destroyViews();
-    const programs = buildEngineConfig(level, [...state.tools]).threads;
-    const programOf = (id: ThreadId) =>
-      programs.find((def) => def.id === id)?.program ?? [];
+    const layout = getLayout(level.layoutId);
+    if (layout === undefined || layout.kind !== 'loop') {
+      this.showNotice(`Layout "${level.layoutId}" belum tersedia`);
+      return;
+    }
+
+    const { threads: effective, origins } = effectivePrograms(
+      level,
+      state.tools,
+    );
+    const path = sampleClosedPath(layout.path);
     const nameOf = this.nameOf(snapshot);
 
-    this.board = new BoardView(this, snapshot.sharedVars, ARENA.width / 2, 80);
-    this.robots = snapshot.threads.map((thread, laneIndex) => {
-      return new RobotView(this, thread, programOf(thread.id), laneIndex);
+    this.track = new TrackView(this, path);
+
+    const links: BoardLinkPoint[] = [];
+    for (const link of layout.boardLinks) {
+      const fraction = layout.checkpoints[link.checkpoint];
+      if (fraction === undefined) continue;
+      const p = pointAt(path, fraction, 0);
+      links.push({ x: p.x, y: p.y, direction: link.direction });
+    }
+    this.board = new BoardView(this, layout.board, snapshot.sharedVars, links);
+
+    // Checkpoint: satu per instruksi program asli (semua robot berprogram sama).
+    const original = level.threads[0]?.program ?? [];
+    original.forEach((instruction, index) => {
+      const fraction = layout.checkpoints[index];
+      if (fraction === undefined) return;
+      const p = pointAt(path, fraction, 0);
+      this.checkpoints.push(new CheckpointView(this, p.x, p.y, instruction));
     });
 
-    this.doors = snapshot.mutexes.map((mutex, doorIndex) => {
-      // Gerbang berada di tepi kanan setiap ubin LOCK untuk mutex ini.
-      const gates: DoorGate[] = [];
-      snapshot.threads.forEach((thread, laneIndex) => {
-        programOf(thread.id).forEach((instruction, tileIndex) => {
-          if (instruction.op === 'LOCK' && instruction.mutex === mutex.id) {
-            gates.push({
-              x: tileCenterX(tileIndex) + TILE_SIZE / 2,
-              y: laneCenterY(laneIndex),
-            });
-          }
-        });
+    // Gerbang: satu per (mutex, slot LOCK), dibagi semua robot di loop.
+    const gatesByMutex = new Map<string, DoorGate[]>();
+    const seen = new Set<string>();
+    for (const thread of effective) {
+      const origin = origins[thread.id] ?? [];
+      thread.program.forEach((instruction, index) => {
+        const from = origin[index];
+        if (
+          instruction.op !== 'LOCK' ||
+          from === undefined ||
+          from.kind !== 'inserted'
+        ) {
+          return;
+        }
+        const key = `${instruction.mutex}:${from.slot}`;
+        const fraction = layout.slots[from.slot];
+        if (seen.has(key) || fraction === undefined) return;
+        seen.add(key);
+        const p = pointAt(path, fraction, 0);
+        const list = gatesByMutex.get(instruction.mutex) ?? [];
+        list.push({ x: p.x, y: p.y });
+        gatesByMutex.set(instruction.mutex, list);
       });
+    }
+    this.doors = snapshot.mutexes.map((mutex, doorIndex) => {
       const title =
         level.resources.find((r) => r.id === mutex.id)?.label ?? mutex.id;
       const panelY = DOOR_PANEL.topY + doorIndex * DOOR_PANEL.gapY;
-      return new DoorView(this, mutex, title, gates, panelY, nameOf);
+      return new DoorView(
+        this,
+        mutex,
+        title,
+        gatesByMutex.get(mutex.id) ?? [],
+        panelY,
+        nameOf,
+      );
+    });
+
+    // Robot paling akhir agar berada di atas jalan, checkpoint, dan gerbang.
+    this.robots = snapshot.threads.map((thread, laneIndex) => {
+      const anchors = computeAnchors(origins[thread.id] ?? [], layout);
+      const totalRounds =
+        level.threads.find((def) => def.id === thread.id)?.repeat ?? 1;
+      return new RobotView(this, thread, {
+        path,
+        anchors,
+        laneOffset: layout.laneOffsets[laneIndex] ?? 0,
+        labelSide: laneIndex === 0 ? -1 : 1,
+        totalRounds,
+      });
     });
   }
 
   /**
    * Menggerakkan robot sesuai event. Pada kecepatan tinggi satu notifikasi
    * bisa memuat beberapa tick; yang dipakai adalah instruksi terakhir tiap
-   * robot, jadi ubin di tengah dilewati (tween pada satu objek tidak boleh
-   * saling menimpa).
+   * robot. READ dan WRITE juga mengedipkan tautan papan.
    */
   private playEvents(events: readonly SimEvent[], durationMs: number): void {
     const lastIndex = new Map<ThreadId, number>();
     for (const event of events) {
-      if (event.type === 'INSTRUCTION')
-        lastIndex.set(event.thread, event.index);
+      if (event.type !== 'INSTRUCTION') continue;
+      lastIndex.set(event.thread, event.index);
+      if (event.op === 'READ') this.board?.pulse('read', durationMs);
+      if (event.op === 'WRITE') this.board?.pulse('write', durationMs);
     }
     for (const robot of this.robots) {
       const index = lastIndex.get(robot.threadId);
-      if (index !== undefined) robot.moveToTile(index, durationMs);
+      if (index !== undefined) robot.moveToInstruction(index, durationMs);
     }
   }
 
-  /** Memperbarui warna, label, nilai papan, dan status pintu tanpa membangun ulang. */
+  /** Memperbarui label, nilai papan, dan status pintu tanpa membangun ulang. */
   private refresh(snapshot: Readonly<Snapshot>): void {
     const nameOf = this.nameOf(snapshot);
     this.board?.update(snapshot.sharedVars);
@@ -160,6 +212,10 @@ export class LevelScene extends Scene {
   private destroyViews(): void {
     this.notice?.destroy();
     this.notice = null;
+    this.track?.destroy();
+    this.track = null;
+    for (const checkpoint of this.checkpoints) checkpoint.destroy();
+    this.checkpoints = [];
     for (const robot of this.robots) robot.destroy();
     this.robots = [];
     for (const door of this.doors) door.destroy();
