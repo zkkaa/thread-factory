@@ -20,6 +20,11 @@ interface OrderedSpan {
   order: number;
 }
 
+/** Asal satu instruksi pada program efektif (ARCHITECTURE 4.6). */
+export type InstructionOrigin =
+  | { kind: 'original'; index: number }
+  | { kind: 'inserted'; op: 'LOCK' | 'UNLOCK'; slot: number };
+
 const overlaps = (a: OrderedSpan, b: OrderedSpan): boolean =>
   a.start <= b.end && b.start <= a.end;
 
@@ -70,28 +75,39 @@ function validatePairs(spans: OrderedSpan[], thread: ThreadDef): void {
 function buildProgram(
   program: Instruction[],
   spans: OrderedSpan[],
-): Instruction[] {
+): { program: Instruction[]; origins: InstructionOrigin[] } {
   const result: Instruction[] = [];
+  const origins: InstructionOrigin[] = [];
   program.forEach((instruction, index) => {
     spans
       .filter((s) => s.start === index)
       .sort((a, b) => b.end - a.end || a.order - b.order)
-      .forEach((s) => result.push({ op: 'LOCK', mutex: s.mutex }));
+      .forEach((s) => {
+        result.push({ op: 'LOCK', mutex: s.mutex });
+        origins.push({ kind: 'inserted', op: 'LOCK', slot: s.start });
+      });
 
     result.push({ ...instruction });
+    origins.push({ kind: 'original', index });
 
     spans
       .filter((s) => s.end === index)
       .sort((a, b) => b.start - a.start || b.order - a.order)
-      .forEach((s) => result.push({ op: 'UNLOCK', mutex: s.mutex }));
+      .forEach((s) => {
+        result.push({ op: 'UNLOCK', mutex: s.mutex });
+        origins.push({ kind: 'inserted', op: 'UNLOCK', slot: s.end + 1 });
+      });
   });
-  return result;
+  return { program: result, origins };
 }
 
-export function applyTools(
+export function applyToolsDetailed(
   threads: ThreadDef[],
   placed: PlacedTool[],
-): ThreadDef[] {
+): {
+  threads: ThreadDef[];
+  origins: Record<ThreadId, InstructionOrigin[]>;
+} {
   const byThread = new Map<ThreadId, OrderedSpan[]>();
   const seenIds = new Set<string>();
 
@@ -115,9 +131,21 @@ export function applyTools(
     }
   });
 
-  return threads.map((thread) => {
+  const origins: Record<ThreadId, InstructionOrigin[]> = {};
+  const result = threads.map((thread) => {
     const spans = byThread.get(thread.id) ?? [];
     validatePairs(spans, thread);
-    return { ...thread, program: buildProgram(thread.program, spans) };
+    const built = buildProgram(thread.program, spans);
+    origins[thread.id] = built.origins;
+    return { ...thread, program: built.program };
   });
+  return { threads: result, origins };
+}
+
+/** Seperti applyToolsDetailed, tetapi hanya mengembalikan program efektif. */
+export function applyTools(
+  threads: ThreadDef[],
+  placed: PlacedTool[],
+): ThreadDef[] {
+  return applyToolsDetailed(threads, placed).threads;
 }
