@@ -7,13 +7,13 @@ import type { ThreadState } from '../engine/types';
  */
 
 /** Ukuran kanvas; harus sama dengan width/height di game/main.ts. */
-export const ARENA = { width: 1024, height: 768 } as const;
+export const ARENA = { width: 1280, height: 720 } as const;
 
 /** Sisi satu ubin (satu ubin = satu instruksi), dalam piksel. */
 export const TILE_SIZE = 64;
 
 /** Sisi kotak robot; lebih kecil dari ubin agar ubin di bawahnya tetap terbaca. */
-export const ROBOT_SIZE = 40;
+export const ROBOT_SIZE = 32;
 
 /**
  * Tata letak jalur robot. Tiap robot punya satu jalur (baris):
@@ -60,8 +60,8 @@ export const DOOR_STYLE = {
 
 /** Panel status pintu di sisi kanan arena; satu panel per mutex, disusun ke bawah. */
 export const DOOR_PANEL = {
-  x: 905,
-  topY: 190,
+  x: 1140,
+  topY: 230,
   gapY: 130,
   width: 200,
   height: 110,
@@ -88,4 +88,37 @@ export const TILE_TEXT_STYLE = {
   fontSize: '11px',
   color: '#d1d5db',
   align: 'center',
+};
+
+/** Jalan robot (U-053). Lebar cukup untuk dua jalur sejajar. */
+export const ROAD = {
+  width: 76,
+  color: 0x2b364f,
+  edge: 0x4b5b80,
+  arrow: 0x93a4c8,
+} as const;
+
+/** Checkpoint bulat (U-054). */
+export const CHECKPOINT = {
+  radius: 28,
+  fill: 0x1f2a44,
+  stroke: 0xf5c542,
+  hover: 0xffffff,
+} as const;
+
+/** Papan stok dan tautan ke READ/WRITE (U-057). */
+export const BOARD_STYLE = {
+  fill: 0x1f2a44,
+  stroke: 0xf5c542,
+  link: 0x93a4c8,
+} as const;
+
+/** Label kecil di dekat robot dan tooltip checkpoint. */
+export const LABEL_STYLE = {
+  fontFamily: 'Arial, sans-serif',
+  fontSize: '12px',
+  color: COLORS.text,
+  align: 'center',
+  backgroundColor: 'rgba(15,24,48,0.8)',
+  padding: { x: 6, y: 3 },
 };
