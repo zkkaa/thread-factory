@@ -97,6 +97,10 @@ export const level1_1: LevelDefinition = {
   sharedVars: {
     stok: 0,
   },
+  resultTitle: {
+    pass: 'Bagus! Sinkronisasi Berhasil!',
+    fail: 'Waduh, Stok Salah!',
+  },
   resources: [
     {
       kind: 'mutex',
