@@ -4,24 +4,18 @@ import { ROAD } from '../theme';
 
 const ARROW_COUNT = 12;
 
-/** Jalan robot: dua lapis garis tebal plus panah arah di tengah jalan. */
+/** Jalan robot: lingkaran bertumpuk di tiap titik sampel (tepi mulus) plus panah arah. */
 export class TrackView {
   private readonly graphics: GameObjects.Graphics;
 
   constructor(scene: Scene, path: SampledPath) {
     const g = scene.add.graphics();
-    const stroke = (width: number, color: number): void => {
-      g.lineStyle(width, color, 1);
-      for (let i = 1; i < path.points.length; i++) {
-        const a = path.points[i - 1];
-        const b = path.points[i];
-        if (a !== undefined && b !== undefined) {
-          g.lineBetween(a.x, a.y, b.x, b.y);
-        }
-      }
+    const dots = (radius: number, color: number): void => {
+      g.fillStyle(color, 1);
+      for (const p of path.points) g.fillCircle(p.x, p.y, radius);
     };
-    stroke(ROAD.width + 6, ROAD.edge);
-    stroke(ROAD.width, ROAD.color);
+    dots(ROAD.width / 2 + 3, ROAD.edge);
+    dots(ROAD.width / 2, ROAD.color);
 
     g.fillStyle(ROAD.arrow, 1);
     for (let k = 0; k < ARROW_COUNT; k++) {
