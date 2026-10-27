@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { level1_1 } from '../../levels/module1/level-1-1';
-import {
-  applyTools,
-  applyToolsDetailed,
-  type PlacedTool,
-} from '../tools';
+import { applyTools, applyToolsDetailed, type PlacedTool } from '../tools';
 
 const mutexTool: PlacedTool = {
   id: 't1',
@@ -65,8 +61,6 @@ describe('applyToolsDetailed', () => {
     const before = JSON.stringify(level1_1.threads);
     const detailed = applyToolsDetailed(level1_1.threads, [mutexTool]);
     expect(JSON.stringify(level1_1.threads)).toBe(before);
-    expect(applyTools(level1_1.threads, [mutexTool])).toEqual(
-      detailed.threads,
-    );
+    expect(applyTools(level1_1.threads, [mutexTool])).toEqual(detailed.threads);
   });
 });
