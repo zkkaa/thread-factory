@@ -1,3 +1,7 @@
+import { useState } from 'react';
+import { ICONS } from '../components/icons/registry';
+import { IconButton } from '../components/IconButton';
+import { PauseMenu } from '../components/hud/PauseMenu';
 import type { SimulationController } from '../../controller/SimulationController';
 import { PhaserGame } from '../../PhaserGame';
 import { ControlHud } from '../components/hud/ControlHud';
@@ -13,6 +17,7 @@ interface PlayScreenProps {
   controller: SimulationController;
   /** Keluar ke Peta Level. Sementara; diganti Menu Jeda pada U-036. */
   onExit: () => void;
+  onSettings: () => void;
 }
 
 // Gaya panel HUD sementara; tiap komponen HUD final (U-031 sampai U-037)
@@ -24,8 +29,24 @@ const PANEL =
  * Layar Arena (S5): kanvas Phaser memenuhi layar, komponen lama dipasang
  * sementara di slot HUD sampai penggantinya selesai (U-064 menghapus sisanya).
  */
-export function PlayScreen({ controller, onExit }: PlayScreenProps) {
+export function PlayScreen({
+  controller,
+  onExit,
+  onSettings,
+}: PlayScreenProps) {
   const state = useSimulation(controller);
+  const [menu, setMenu] = useState<{ wasRunning: boolean } | null>(null);
+  const Menu = ICONS.menu;
+
+  const openMenu = (): void => {
+    const wasRunning = state.runState === 'running';
+    if (wasRunning) controller.pause();
+    setMenu({ wasRunning });
+  };
+  const closeMenu = (): void => {
+    if (menu?.wasRunning) controller.run();
+    setMenu(null);
+  };
 
   return (
     <PlayLayout
@@ -33,13 +54,6 @@ export function PlayScreen({ controller, onExit }: PlayScreenProps) {
       topLeft={
         <div className="w-80 space-y-2">
           <div className={`${PANEL} space-y-2`}>
-            <button
-              type="button"
-              onClick={onExit}
-              className="rounded bg-navy-700 px-3 py-1 text-sm hover:bg-navy-500"
-            >
-              Peta Level
-            </button>
             {state.level !== null && (
               <h1 className="text-base font-bold">
                 Level {state.level.id}: {state.level.title}
@@ -49,7 +63,12 @@ export function PlayScreen({ controller, onExit }: PlayScreenProps) {
           {state.level !== null && <MissionChip level={state.level} />}
         </div>
       }
-      topRight={<ControlHud controller={controller} state={state} />}
+      topRight={
+        <div className="flex items-start gap-2">
+          <ControlHud controller={controller} state={state} />
+          <IconButton label="Menu" icon={<Menu />} onClick={openMenu} />
+        </div>
+      }
       bottomLeft={<LogHud controller={controller} />}
       bottomCenter={
         <div className="w-[420px]">
@@ -57,7 +76,22 @@ export function PlayScreen({ controller, onExit }: PlayScreenProps) {
         </div>
       }
       bottomRight={<MetricsHud state={state} />}
-      overlay={<ResultDialog controller={controller} state={state} />}
+      overlay={
+        <>
+          <ResultDialog controller={controller} state={state} />
+          {menu !== null && (
+            <PauseMenu
+              onResume={closeMenu}
+              onRestart={() => {
+                controller.reset();
+                setMenu(null);
+              }}
+              onMap={onExit}
+              onSettings={onSettings}
+            />
+          )}
+        </>
+      }
     />
   );
 }

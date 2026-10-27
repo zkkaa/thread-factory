@@ -207,6 +207,7 @@ export function AppShell({
             ? navigation.back()
             : navigation.go({ id: 'levelMap', moduleId })
         }
+        onSettings={() => navigation.go({ id: 'settings' })}
       />
     );
   }
