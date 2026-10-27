@@ -1,7 +1,13 @@
 import { GameObjects, Scene } from 'phaser';
 import type { Instruction } from '../../engine/types';
 import { describeOp } from '../opLabels';
-import { CHECKPOINT, COLORS, LABEL_STYLE, TILE_TEXT_STYLE } from '../theme';
+import {
+  CHECKPOINT,
+  COLORS,
+  DEPTH,
+  LABEL_STYLE,
+  TILE_TEXT_STYLE,
+} from '../theme';
 
 /** Checkpoint bulat satu instruksi, dengan tooltip penjelasan awam saat di-hover. */
 export class CheckpointView {
@@ -23,10 +29,10 @@ export class CheckpointView {
     this.tooltip = scene.add
       .text(x, y - CHECKPOINT.radius - 10, info.description, {
         ...LABEL_STYLE,
-        wordWrap: { width: 220 },
+        wordWrap: { width: CHECKPOINT.tooltipWidth },
       })
       .setOrigin(0.5, 1)
-      .setDepth(100)
+      .setDepth(DEPTH.tooltip)
       .setVisible(false);
 
     // Zona persegi agar area hover pasti terdefinisi.
