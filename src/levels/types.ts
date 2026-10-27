@@ -53,6 +53,8 @@ export interface LevelDefinition {
    * konsep sisop (lihat CLAUDE.md bagian 7).
    */
   explanation?: { pass: string; fail: string };
+  /** Judul popup hasil (S6). Bila kosong, tampilan memakai judul umum. */
+  resultTitle?: { pass: string; fail: string };
   /**
    * Kunci tata letak arena di game/layouts/. Koordinat tidak disimpan di data
    * level (CLAUDE.md bagian 4 aturan 9).

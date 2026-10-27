@@ -22,6 +22,7 @@ import { ModuleCompleteScreen } from './screens/ModuleCompleteScreen';
 import { ModuleIntroScreen } from './screens/ModuleIntroScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { PlayScreen } from './screens/PlayScreen';
+import { LevelIntroScreen } from './screens/LevelIntroScreen';
 import {
   type ScreenState,
   back,
@@ -182,7 +183,12 @@ export function AppShell({
       />
     );
   }
-
+  if (screen.id === 'levelIntro') {
+    const introLevel = findLevelById(screen.levelId);
+    if (introLevel !== undefined) {
+      return <LevelIntroScreen navigation={navigation} level={introLevel} />;
+    }
+  }
   if (screen.id === 'play') {
     if (findLevelById(screen.levelId) === undefined) {
       return (
@@ -198,7 +204,23 @@ export function AppShell({
         </main>
       );
     }
-    const moduleId = findModuleOfLevel(screen.levelId)?.id;
+    const moduleDef = findModuleOfLevel(screen.levelId);
+    const moduleId = moduleDef?.id;
+    const levelId = screen.levelId;
+    // Level berikutnya: intro level itu; modul habis -> Tamat Modul;
+    // level belum dibuat -> Peta Level.
+    const goNext = (): void => {
+      if (moduleDef === undefined) return navigation.back();
+      const nextId =
+        moduleDef.levelIds[moduleDef.levelIds.indexOf(levelId) + 1];
+      if (nextId === undefined) {
+        navigation.go({ id: 'moduleComplete', moduleId: moduleDef.id });
+      } else if (findLevelById(nextId) === undefined) {
+        navigation.go({ id: 'levelMap', moduleId: moduleDef.id });
+      } else {
+        navigation.go({ id: 'levelIntro', levelId: nextId });
+      }
+    };
     return (
       <PlayScreen
         controller={controller}
@@ -208,6 +230,8 @@ export function AppShell({
             : navigation.go({ id: 'levelMap', moduleId })
         }
         onSettings={() => navigation.go({ id: 'settings' })}
+        onNext={goNext}
+        reduceMotion={settings.reduceMotion}
       />
     );
   }
