@@ -6,7 +6,7 @@ import { PlayLayout } from '../components/hud/PlayLayout';
 import { MetricsPanel } from '../components/MetricsPanel';
 import { ResultDialog } from '../components/ResultDialog';
 import { StepLog } from '../components/StepLog';
-import { Toolbox } from '../components/Toolbox';
+import { ToolboxHud } from '../components/hud/ToolboxHud';
 import { useSimulation } from '../hooks/useSimulation';
 
 interface PlayScreenProps {
@@ -56,8 +56,8 @@ export function PlayScreen({ controller, onExit }: PlayScreenProps) {
         </div>
       }
       bottomCenter={
-        <div className={`${PANEL} max-h-56 w-[420px]`}>
-          <Toolbox controller={controller} state={state} />
+        <div className="w-[420px]">
+          <ToolboxHud controller={controller} state={state} />
         </div>
       }
       bottomRight={
