@@ -63,7 +63,7 @@ export class LevelScene extends Scene {
       this.handleState(state),
     );
     // Berhenti mendengarkan saat scene ditutup agar tidak ada listener yatim.
-    this.events.once(Scenes.Events.SHUTDOWN, unsubscribe);
+    this.events.once(Scenes.Events.DESTROY, unsubscribe);
   }
 
   private handleState(state: ControllerState): void {
