@@ -7,6 +7,7 @@ import { deriveControls, SPEEDS, type StatusKind } from '../../controlState';
 import { parseSeed } from '../../parseSeed';
 import { PauseIcon, PlayIcon, ResetIcon, StepIcon } from '../icons/glyphs';
 import { IconButton } from '../IconButton';
+import { ErrorPanel } from './ErrorPanel';
 import { Tooltip } from '../Tooltip';
 
 const CHIP =
@@ -199,14 +200,8 @@ export function ControlHud({ controller, state }: ControlHudProps) {
         </span>
       </div>
 
-      {/* Sementara; diganti panel error bergaya baru pada U-042. */}
       {state.error !== null && (
-        <p
-          role="alert"
-          className="rounded-lg border border-ember-500 bg-navy-900 p-2 text-sm text-ember-500"
-        >
-          {state.error} Tekan Reset untuk mengulang.
-        </p>
+        <ErrorPanel message={state.error} onReset={() => controller.reset()} />
       )}
     </section>
   );
