@@ -5,7 +5,7 @@ import { MissionChip } from '../components/hud/MissionChip';
 import { PlayLayout } from '../components/hud/PlayLayout';
 import { MetricsPanel } from '../components/MetricsPanel';
 import { ResultDialog } from '../components/ResultDialog';
-import { StepLog } from '../components/StepLog';
+import { LogHud } from '../components/hud/LogHud';
 import { ToolboxHud } from '../components/hud/ToolboxHud';
 import { useSimulation } from '../hooks/useSimulation';
 
@@ -50,11 +50,7 @@ export function PlayScreen({ controller, onExit }: PlayScreenProps) {
         </div>
       }
       topRight={<ControlHud controller={controller} state={state} />}
-      bottomLeft={
-        <div className={`${PANEL} max-h-56 w-80`}>
-          <StepLog controller={controller} />
-        </div>
-      }
+      bottomLeft={<LogHud controller={controller} />}
       bottomCenter={
         <div className="w-[420px]">
           <ToolboxHud controller={controller} state={state} />
