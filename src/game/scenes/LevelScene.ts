@@ -15,6 +15,8 @@ import { BoardView, type BoardLinkPoint } from '../views/BoardView';
 import { CheckpointView } from '../views/CheckpointView';
 import { DoorView, type NameOf } from '../views/DoorView';
 import { RobotView } from '../views/RobotView';
+import { slotPositions } from '../slots';
+import { SlotMarkerView } from '../views/SlotMarkerView';
 import { TrackView } from '../views/TrackView';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
@@ -39,6 +41,7 @@ export class LevelScene extends Scene {
   private robots: RobotView[] = [];
   private doors: DoorView[] = [];
   private board: BoardView | null = null;
+  private slotMarkers: SlotMarkerView | null = null;
   private notice: GameObjects.Text | null = null;
 
   constructor() {
@@ -117,7 +120,7 @@ export class LevelScene extends Scene {
       this.checkpoints.push(new CheckpointView(this, p.x, p.y, instruction));
     });
 
-        // Pintu: pasangan slot masuk (LOCK) dan keluar (UNLOCK) tiap mutex,
+    // Pintu: pasangan slot masuk (LOCK) dan keluar (UNLOCK) tiap mutex,
     // dibagi semua robot di loop (satu pintu satu kunci).
     const spansByMutex = buildDoorSpans(effective, origins, layout.slots);
     this.doors = snapshot.mutexes.map((mutex, doorIndex) => {
@@ -134,6 +137,11 @@ export class LevelScene extends Scene {
         nameOf,
       );
     });
+
+    this.slotMarkers = new SlotMarkerView(
+      this,
+      slotPositions(path, layout.slots),
+    );
 
     // Robot paling akhir agar berada di atas jalan, checkpoint, dan gerbang.
     this.robots = snapshot.threads.map((thread, laneIndex) => {
@@ -203,6 +211,8 @@ export class LevelScene extends Scene {
     this.doors = [];
     this.board?.destroy();
     this.board = null;
+    this.slotMarkers?.destroy();
+    this.slotMarkers = null;
   }
 
   private showNotice(message: string): void {

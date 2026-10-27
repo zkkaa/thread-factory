@@ -136,6 +136,7 @@ export const MOTION = { popMs: 120, minPulseMs: 200 } as const;
 export const DEPTH = {
   track: -2,
   segment: -1,
+  slot: 2,
   gate: 3,
   lock: 4,
   robot: 5,
@@ -151,4 +152,21 @@ export const DOOR_GEOMETRY = {
   segmentAlpha: 0.3,
   segmentSteps: 24,
   lockSize: 14,
+} as const;
+
+/**
+ * Penanda slot pemasangan pintu (U-060). Slot sah dibedakan dari yang lain
+ * lewat ukuran dan isi (bukan hanya warna); slot yang disorot diberi cincin.
+ */
+export const SLOT_STYLE = {
+  radius: 8,
+  validScale: 1.5,
+  hoverScale: 1.9,
+  /** Jarak terjauh (piksel) dari titik lepas ke slot agar dianggap mengena. */
+  hitRadius: 48,
+  idleAlpha: 0.3,
+  idleColor: 0xf5c542,
+  validColor: 0x22c55e,
+  hoverColor: 0xffffff,
+  ringWidth: 3,
 } as const;
