@@ -28,9 +28,8 @@ export const ASSET_CREDITS: readonly AssetCredit[] = [
 
 export const ICON_NOTE = 'Ikon antarmuka dibuat oleh tim.';
 
-/** Wajib ada (PRD bagian 12 dan 18.4); aset potretnya dibuat di U-074. */
 export const GENERATOR_NOTE =
-  'Potret Pak Mandor dibuat dengan bantuan generator gambar.';
+  'Potret Pak Mandor dibuat dengan bantuan generator gambar (ChatGPT, OpenAI), dan latarnya dihapus dengan Photoroom.';
 
 /** Ganti dengan nama enam anggota tim. */
 export const TEAM_MEMBERS: readonly string[] = [
