@@ -37,3 +37,31 @@ export function nearestSlot(
   }
   return best;
 }
+
+/** Kotak kanvas di layar (hasil getBoundingClientRect). */
+export interface ScreenRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Koordinat viewport (clientX/clientY) menjadi koordinat game, memperhitungkan
+ * skala FIT dan geseran kanvas. Kanvas berukuran nol menghasilkan NaN supaya
+ * tidak mengenai slot mana pun.
+ */
+export function clientToGame(
+  clientX: number,
+  clientY: number,
+  rect: ScreenRect,
+  arena: { width: number; height: number },
+): Point {
+  if (rect.width <= 0 || rect.height <= 0) {
+    return { x: Number.NaN, y: Number.NaN };
+  }
+  return {
+    x: ((clientX - rect.left) / rect.width) * arena.width,
+    y: ((clientY - rect.top) / rect.height) * arena.height,
+  };
+}

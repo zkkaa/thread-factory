@@ -7,6 +7,7 @@ import {
 import { effectivePrograms } from '../../controller/effectivePrograms';
 import type { SimEvent, Snapshot, ThreadId } from '../../engine/types';
 import { computeAnchors } from '../anchors';
+import { DoorDragSession } from '../doorDrag';
 import { buildDoorSpans } from '../doorSpans';
 import { getLayout } from '../layouts';
 import { pointAt, sampleClosedPath } from '../pathMath';
@@ -15,7 +16,8 @@ import { BoardView, type BoardLinkPoint } from '../views/BoardView';
 import { CheckpointView } from '../views/CheckpointView';
 import { DoorView, type NameOf } from '../views/DoorView';
 import { RobotView } from '../views/RobotView';
-import { slotPositions } from '../slots';
+import { clientToGame, slotPositions } from '../slots';
+import { toolBus } from '../toolBus';
 import { SlotMarkerView } from '../views/SlotMarkerView';
 import { TrackView } from '../views/TrackView';
 
@@ -42,6 +44,7 @@ export class LevelScene extends Scene {
   private doors: DoorView[] = [];
   private board: BoardView | null = null;
   private slotMarkers: SlotMarkerView | null = null;
+  private doorDrag: DoorDragSession | null = null;
   private notice: GameObjects.Text | null = null;
 
   constructor() {
@@ -66,7 +69,10 @@ export class LevelScene extends Scene {
       this.handleState(state),
     );
     // game.destroy() memicu DESTROY, bukan SHUTDOWN.
-    this.events.once(Scenes.Events.DESTROY, unsubscribe);
+    this.events.once(Scenes.Events.DESTROY, () => {
+      unsubscribe();
+      this.doorDrag?.dispose();
+    });
   }
 
   private handleState(state: ControllerState): void {
@@ -138,10 +144,20 @@ export class LevelScene extends Scene {
       );
     });
 
-    this.slotMarkers = new SlotMarkerView(
-      this,
-      slotPositions(path, layout.slots),
-    );
+    const positions = slotPositions(path, layout.slots);
+    this.slotMarkers = new SlotMarkerView(this, positions);
+    this.doorDrag = new DoorDragSession({
+      bus: toolBus,
+      positions,
+      toGame: (point) =>
+        clientToGame(
+          point.clientX,
+          point.clientY,
+          this.game.canvas.getBoundingClientRect(),
+          ARENA,
+        ),
+      setMarkers: (markers) => this.slotMarkers?.setState(markers),
+    });
 
     // Robot paling akhir agar berada di atas jalan, checkpoint, dan gerbang.
     this.robots = snapshot.threads.map((thread, laneIndex) => {
@@ -211,6 +227,8 @@ export class LevelScene extends Scene {
     this.doors = [];
     this.board?.destroy();
     this.board = null;
+    this.doorDrag?.dispose();
+    this.doorDrag = null;
     this.slotMarkers?.destroy();
     this.slotMarkers = null;
   }

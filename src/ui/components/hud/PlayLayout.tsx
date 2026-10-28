@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { DragEventHandler, ReactNode } from 'react';
 
 interface PlayLayoutProps {
   /** Kanvas Phaser; mengisi seluruh layar di lapisan paling bawah. */
@@ -10,6 +10,9 @@ interface PlayLayoutProps {
   bottomRight?: ReactNode;
   /** Dialog (mis. ResultDialog); dirender paling akhir agar di atas HUD. */
   overlay?: ReactNode;
+  /** Seret-lepas alat ke arena (U-061); diteruskan oleh PlayScreen. */
+  onDragOver?: DragEventHandler<HTMLDivElement>;
+  onDrop?: DragEventHandler<HTMLDivElement>;
 }
 
 type SlotName =
@@ -53,9 +56,15 @@ export function PlayLayout({
   bottomCenter,
   bottomRight,
   overlay,
+  onDragOver,
+  onDrop,
 }: PlayLayoutProps) {
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-navy-900 text-ink-100">
+    <div
+      className="relative h-screen w-full overflow-hidden bg-navy-900 text-ink-100"
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
       <div data-hud-slot="canvas" className="absolute inset-0">
         {canvas}
       </div>

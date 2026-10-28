@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SimulationController } from '../../controller/SimulationController';
 import { PhaserGame } from '../../PhaserGame';
+import { toolBus } from '../../game/toolBus';
 import { HintDialog } from '../components/dialogs/HintDialog';
 import { ResultDialog } from '../components/dialogs/ResultDialog';
 import { ControlHud } from '../components/hud/ControlHud';
@@ -81,6 +82,20 @@ export function PlayScreen({
   return (
     <PlayLayout
       canvas={<PhaserGame controller={controller} />}
+      onDragOver={(event) => {
+        event.preventDefault();
+        toolBus.emit('dragMove', {
+          clientX: event.clientX,
+          clientY: event.clientY,
+        });
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        toolBus.emit('drop', {
+          clientX: event.clientX,
+          clientY: event.clientY,
+        });
+      }}
       topLeft={
         <div className="w-80 space-y-2">
           <div className={`${PANEL} space-y-2`}>

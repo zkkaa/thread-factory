@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { layout1_1 } from '../layouts/level-1-1.layout';
 import { pointAt, sampleClosedPath } from '../pathMath';
-import { nearestSlot, slotPositions } from '../slots';
+import { clientToGame, nearestSlot, slotPositions } from '../slots';
 
 const positions = [
   { x: 0, y: 0 },
@@ -43,5 +43,26 @@ describe('slotPositions', () => {
     expect(result).toHaveLength(layout1_1.slots.length);
     const first = pointAt(path, layout1_1.slots[0] ?? 0, 0);
     expect(result[0]).toEqual({ x: first.x, y: first.y });
+  });
+});
+
+describe('clientToGame', () => {
+  const arena = { width: 1280, height: 720 };
+
+  it('kanvas tanpa skala dan geseran: koordinat sama', () => {
+    const rect = { left: 0, top: 0, width: 1280, height: 720 };
+    expect(clientToGame(300, 200, rect, arena)).toEqual({ x: 300, y: 200 });
+  });
+
+  it('kanvas diskalakan 0.5 dan bergeser: kembali ke koordinat game', () => {
+    const rect = { left: 100, top: 50, width: 640, height: 360 };
+    expect(clientToGame(420, 230, rect, arena)).toEqual({ x: 640, y: 360 });
+  });
+
+  it('kanvas berukuran nol: NaN, tidak mengenai slot mana pun', () => {
+    const rect = { left: 0, top: 0, width: 0, height: 0 };
+    const point = clientToGame(10, 10, rect, arena);
+    expect(Number.isNaN(point.x)).toBe(true);
+    expect(nearestSlot(point, positions, 1000)).toBeNull();
   });
 });

@@ -3,6 +3,7 @@ import type {
   ControllerState,
   SimulationController,
 } from '../../../controller/SimulationController';
+import { toolBus } from '../../../game/toolBus';
 import {
   buildSharedMutexTool,
   clickSlot,
@@ -12,6 +13,7 @@ import {
   type ClickState,
   type Door,
 } from '../../doorSlots';
+import { useDoorPlacement } from '../../hooks/useDoorPlacement';
 import { mutexToolId, replaceTool } from '../../toolSpans';
 
 interface ToolboxHudProps {
@@ -26,40 +28,68 @@ const BUTTON =
 
 /**
  * Toolbox bawah (PRD 17.2). Menampilkan hanya alat yang tersedia di level
- * ditambah Hapus. Pemasangan lewat mode klik slot: pintu masuk, lalu pintu
- * keluar; berlaku untuk semua robot di loop bersama. Terkunci setelah
- * simulasi dimulai. Seret-lepas ke arena menyusul di U-061.
+ * ditambah Hapus. Pintu dipasang dengan menyeret chip ke slot di arena
+ * (pintu masuk dahulu, lalu pintu keluar), atau lewat mode klik slot sebagai
+ * alternatif (touchpad dan aksesibilitas). Berlaku untuk semua robot di loop
+ * bersama. Terkunci setelah simulasi dimulai.
  */
 export function ToolboxHud({ controller, state }: ToolboxHudProps) {
-  const [open, setOpen] = useState(false);
-  const [click, setClick] = useState<ClickState>(IDLE);
-  const [message, setMessage] = useState<string | null>(null);
-
   const { level } = state;
   const mutex = level?.resources.find((resource) => resource.kind === 'mutex');
+  const first = level?.threads[0];
   if (
     level === null ||
     mutex === undefined ||
+    first === undefined ||
     !level.availableTools.includes('mutex')
   ) {
     return null;
   }
-  const first = level.threads[0];
-  if (first === undefined) return null;
+  return (
+    <MutexToolbox
+      controller={controller}
+      state={state}
+      mutexId={mutex.id}
+      threadIds={level.threads.map((thread) => thread.id)}
+      ops={first.program.map((instruction) => instruction.op)}
+    />
+  );
+}
 
-  const ops = first.program.map((instruction) => instruction.op);
-  const threadIds = level.threads.map((thread) => thread.id);
+interface MutexToolboxProps extends ToolboxHudProps {
+  mutexId: string;
+  threadIds: readonly string[];
+  ops: readonly string[];
+}
+
+function MutexToolbox({
+  controller,
+  state,
+  mutexId,
+  threadIds,
+  ops,
+}: MutexToolboxProps) {
+  const [open, setOpen] = useState(false);
+  const [click, setClick] = useState<ClickState>(IDLE);
+  const [message, setMessage] = useState<string | null>(null);
+
   const total = slotCount(ops.length);
   const editable = state.runState === 'idle';
   const activeClick = editable ? click : IDLE;
 
-  const toolId = mutexToolId(mutex.id);
+  const toolId = mutexToolId(mutexId);
   const door = readSharedDoor(state.tools.find((tool) => tool.id === toolId));
 
   const apply = (next: Door | null): void => {
-    const tool = buildSharedMutexTool(mutex.id, threadIds, next);
+    const tool = buildSharedMutexTool(mutexId, threadIds, next);
     setMessage(replaceTool(controller, toolId, tool));
   };
+
+  // Pintu lengkap dari seret-lepas di arena (lihat game/doorDrag.ts).
+  const phase = useDoorPlacement((placed) => {
+    setClick(IDLE);
+    apply(placed);
+  });
 
   const handleSlot = (slot: number): void => {
     if (!editable) return;
@@ -73,6 +103,13 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
     door === null
       ? 'belum dipasang'
       : `masuk slot ${door.entry}, keluar slot ${door.exit}`;
+
+  // Label chip tidak berubah saat dragstart (Chrome membatalkan seret bila
+  // DOM berubah di dragstart); baru berubah setelah pintu masuk dilepas.
+  const dragLabel =
+    phase.phase === 'holdingExit'
+      ? `Seret pintu keluar (masuk di slot ${phase.entry})`
+      : 'Seret pintu masuk';
 
   return (
     <section
@@ -154,6 +191,30 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
         >
           Pintu Mutex ({status})
         </button>
+        <span
+          draggable={editable}
+          title="Seret ke slot di jalan robot (atau pakai klik slot)"
+          onDragStart={(event) => {
+            event.dataTransfer.setData('text/plain', 'pintu-mutex');
+            event.dataTransfer.effectAllowed = 'copy';
+            toolBus.emit('dragStart', { kind: 'mutex' });
+          }}
+          onDragEnd={() => toolBus.emit('dragEnd', null)}
+          className={`${BUTTON} select-none border-sun-400 bg-navy-700 ${
+            editable ? 'cursor-grab' : 'cursor-not-allowed opacity-50'
+          }`}
+        >
+          {dragLabel}
+        </span>
+        {phase.phase === 'holdingExit' && (
+          <button
+            type="button"
+            onClick={() => toolBus.emit('cancel', null)}
+            className={`${BUTTON} border-navy-500 hover:bg-navy-500`}
+          >
+            Batal
+          </button>
+        )}
         <button
           type="button"
           disabled={!editable || door === null}
