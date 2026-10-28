@@ -81,8 +81,7 @@ export function PlayScreen({
 
   return (
     <PlayLayout
-      canvas={<PhaserGame controller={controller} />}
-      onDragOver={(event) => {
+        canvas={<PhaserGame controller={controller} reduceMotion={reduceMotion} />}      onDragOver={(event) => {
         event.preventDefault();
         toolBus.emit('dragMove', {
           clientX: event.clientX,
