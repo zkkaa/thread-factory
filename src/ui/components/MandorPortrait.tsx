@@ -1,16 +1,40 @@
 import type { MandorMood } from '../../levels/types';
+import {
+  MANDOR_PORTRAITS,
+  portraitSrcFor,
+  type PortraitSources,
+} from '../mandorPortraits';
 
 interface MandorPortraitProps {
   mood: MandorMood;
   className?: string;
+  /** Daftar gambar; bawaannya data aktual (diganti hanya oleh tes). */
+  sources?: PortraitSources;
 }
 
 /**
- * Potret Pak Mandor. Sementara berupa kotak placeholder; gambar asli (4
- * ekspresi) menggantikannya di U-074. Potret hanya dipakai di lapisan UI
+ * Potret Pak Mandor. Memakai gambar bila ada (U-074); bila belum, tampil
+ * placeholder bertuliskan ekspresinya. Potret hanya dipakai di lapisan UI
  * (CLAUDE.md aturan 12).
  */
-export function MandorPortrait({ mood, className = '' }: MandorPortraitProps) {
+export function MandorPortrait({
+  mood,
+  className = '',
+  sources = MANDOR_PORTRAITS,
+}: MandorPortraitProps) {
+  const src = portraitSrcFor(mood, sources);
+
+  if (src !== null) {
+    return (
+      <img
+        src={src}
+        alt={`Pak Mandor, ekspresi ${mood}`}
+        draggable={false}
+        className={`rounded-2xl border-2 border-navy-500 bg-navy-800 object-contain object-bottom p-1 ${className}`}
+      />
+    );
+  }
+
   return (
     <div
       role="img"
