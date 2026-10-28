@@ -109,6 +109,11 @@ export const CHECKPOINT = {
   stroke: 0xf5c542,
   hover: 0xffffff,
   tooltipWidth: 220,
+  /** Ikon instruksi di dalam lingkaran (U-073). */
+  iconSize: 32,
+  /** Ikon digeser ke atas dari pusat, teks diturunkan, supaya muat berdua. */
+  iconLift: 12,
+  labelDrop: 22,
 } as const;
 
 /** Papan stok dan tautan ke READ/WRITE (U-057). */
@@ -120,6 +125,12 @@ export const BOARD_STYLE = {
   arrowOffset: 80,
   /** Skala angka papan saat berubah. */
   popScale: 1.25,
+  /** Ikon peti yang mengapit angka stok. */
+  crateSize: 32,
+  /** Jarak ikon peti dari tepi kiri dan kanan papan. */
+  crateInset: 28,
+  /** Ikon sejajar dengan angka (angka digeser turun sebesar ini dari pusat). */
+  crateDrop: 12,
 } as const;
 
 /** Label kecil di dekat robot dan tooltip checkpoint. */
