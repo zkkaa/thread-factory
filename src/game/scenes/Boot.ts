@@ -3,9 +3,8 @@ import type { SimulationController } from '../../controller/SimulationController
 import { CONTROLLER_KEY } from '../registryKeys';
 
 /**
- * Scene pertama: mengambil controller dari registry lalu langsung memulai
- * LevelScene. Tidak ada aset yang perlu dimuat karena arena memakai bentuk
- * geometris (PRD bagian 15).
+ * Scene pertama: mengambil controller dari registry lalu menyerahkannya ke
+ * Preloader, yang memuat aset sebelum LevelScene dimulai.
  */
 export class Boot extends Scene {
   constructor() {
@@ -20,6 +19,6 @@ export class Boot extends Scene {
         'Controller belum dititipkan ke registry (lihat game/main.ts).',
       );
     }
-    this.scene.start('LevelScene', { controller });
+    this.scene.start('Preloader', { controller });
   }
 }
