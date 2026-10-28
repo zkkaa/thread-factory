@@ -1,9 +1,9 @@
 import { CANVAS, Game, Scale } from 'phaser';
 import type { SimulationController } from '../controller/SimulationController';
-import { CONTROLLER_KEY } from './registryKeys';
 import { Boot } from './scenes/Boot';
 import { LevelScene } from './scenes/LevelScene';
 import { ARENA, COLORS } from './theme';
+import { CONTROLLER_KEY, REDUCE_MOTION_KEY } from './registryKeys';
 
 //  Find out more information about the Game Config at:
 //  https://docs.phaser.io/api-documentation/typedef/types-core#gameconfig
@@ -29,13 +29,18 @@ const config: Phaser.Types.Core.GameConfig = {
  * Memulai game di elemen `parent`. Controller dititipkan ke registry SEBELUM
  * game boot (preBoot) supaya sudah tersedia saat scene Boot berjalan.
  */
-const StartGame = (parent: string, controller: SimulationController) => {
+const StartGame = (
+  parent: string,
+  controller: SimulationController,
+  reduceMotion: boolean,
+) => {
   return new Game({
     ...config,
     parent,
     callbacks: {
       preBoot: (game) => {
         game.registry.set(CONTROLLER_KEY, controller);
+        game.registry.set(REDUCE_MOTION_KEY, reduceMotion);
       },
     },
   });
