@@ -6,6 +6,7 @@ import type {
 } from '../../../controller/SimulationController';
 import { deriveResultView, type ResultView } from '../../resultView';
 import { MandorPortrait } from '../MandorPortrait';
+import { starClass } from '../../motion';
 
 interface ResultDialogProps {
   controller: SimulationController;
@@ -104,8 +105,15 @@ function ResultCard({ view, reduceMotion, actions, onClose }: ResultCardProps) {
               aria-label={`${total} dari 3 bintang`}
               className="text-3xl text-sun-400"
             >
-              {'★'.repeat(shown)}
-              {'☆'.repeat(3 - shown)}
+              {[0, 1, 2].map((index) => (
+                <span
+                  key={index}
+                  aria-hidden="true"
+                  className={starClass(index, shown, reduceMotion)}
+                >
+                  {index < shown ? '★' : '☆'}
+                </span>
+              ))}
             </p>
             <ul className="space-y-0.5 text-sm">
               {view.criteria.map((c) => (
@@ -163,8 +171,8 @@ function ResultCard({ view, reduceMotion, actions, onClose }: ResultCardProps) {
 }
 
 /**
- * Popup hasil (S6). Semua angka dan penilaian berasal dari state.result;
- * komponen ini hanya menampilkan (lihat resultView.ts).
+- Popup hasil (S6). Semua angka dan penilaian berasal dari state.result;
+- komponen ini hanya menampilkan (lihat resultView.ts).
  */
 export function ResultDialog({
   controller,

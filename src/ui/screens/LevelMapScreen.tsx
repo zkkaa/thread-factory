@@ -1,4 +1,5 @@
 import type { ModuleDefinition } from '../../levels/types';
+import { pulseClass } from '../motion';
 import type { ProgressData } from '../../progress/progressStore';
 import type { UnlockContext } from '../../progress/unlocks';
 import { type LevelNode, buildLevelMap } from '../levelMap';
@@ -12,6 +13,8 @@ interface LevelMapScreenProps {
   progress: Readonly<ProgressData>;
   /** Judul level, atau undefined bila datanya belum dibuat. */
   getLevelTitle: (levelId: string) => string | undefined;
+  /** Pengaturan "kurangi animasi": mematikan denyut sorotan level berikutnya. */
+  reduceMotion?: boolean;
 }
 
 const FOCUS =
@@ -47,10 +50,11 @@ function StarRow({ stars }: { stars: number }) {
 interface NodeButtonProps {
   node: LevelNode;
   disabled: boolean;
+  reduceMotion: boolean;
   onOpen: () => void;
 }
 
-function NodeButton({ node, disabled, onOpen }: NodeButtonProps) {
+function NodeButton({ node, disabled, reduceMotion, onOpen }: NodeButtonProps) {
   const tone =
     node.status === 'cleared'
       ? 'border-sun-500 bg-sun-400 text-navy-900'
@@ -58,7 +62,10 @@ function NodeButton({ node, disabled, onOpen }: NodeButtonProps) {
         ? 'border-ember-500 bg-navy-800 text-ink-100 hover:bg-navy-700'
         : 'border-navy-700 bg-navy-900 text-ink-300 opacity-60';
   const ring = node.isNext
-    ? 'ring-4 ring-ember-500 ring-offset-2 ring-offset-navy-900'
+    ? `ring-4 ring-ember-500 ring-offset-2 ring-offset-navy-900 ${pulseClass(
+        true,
+        reduceMotion,
+      )}`
     : '';
   const locked = node.status === 'locked' || node.status === 'comingSoon';
   return (
@@ -81,8 +88,8 @@ function NodeButton({ node, disabled, onOpen }: NodeButtonProps) {
 /**
  * Peta Level (S3 bagian B): titik level berurutan dengan bintang tertinggi,
  * kunci, sorotan level berikutnya, dan tombol Mulai/Lanjut. Ikon kunci
- * sementara berupa emoji; diganti ikon SVG di U-023. Denyut pada level
- * berikutnya menyusul di U-076 supaya ikut pengaturan "kurangi animasi".
+ * sementara berupa emoji; diganti ikon SVG di U-023.
+ * Sorotan level berikutnya berdenyut kecuali "kurangi animasi" aktif (U-076).
  */
 export function LevelMapScreen({
   navigation,
@@ -90,6 +97,7 @@ export function LevelMapScreen({
   context,
   progress,
   getLevelTitle,
+  reduceMotion = false,
 }: LevelMapScreenProps) {
   const view = buildLevelMap(moduleDef, context, progress, getLevelTitle);
   const intro = (levelId: string): Screen => ({ id: 'levelIntro', levelId });
@@ -138,6 +146,7 @@ export function LevelMapScreen({
                     (node.status !== 'open' && node.status !== 'cleared') ||
                     !navigation.canGo(intro(node.levelId))
                   }
+                  reduceMotion={reduceMotion}
                   onOpen={() => navigation.go(intro(node.levelId))}
                 />
                 <span className="text-sm font-bold">Level {node.levelId}</span>
