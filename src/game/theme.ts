@@ -134,6 +134,7 @@ export const MOTION = { popMs: 120, minPulseMs: 200 } as const;
 
 /** Urutan tumpukan gambar; makin besar makin di depan. */
 export const DEPTH = {
+  floor: -10,
   track: -2,
   segment: -1,
   slot: 2,

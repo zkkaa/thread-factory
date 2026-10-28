@@ -4,6 +4,7 @@ import { Boot } from './scenes/Boot';
 import { LevelScene } from './scenes/LevelScene';
 import { ARENA, COLORS } from './theme';
 import { CONTROLLER_KEY, REDUCE_MOTION_KEY } from './registryKeys';
+import { Preloader } from './scenes/Preloader';
 
 //  Find out more information about the Game Config at:
 //  https://docs.phaser.io/api-documentation/typedef/types-core#gameconfig
@@ -20,9 +21,9 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Scale.FIT,
     autoCenter: Scale.CENTER_BOTH,
   },
-  // Hanya dua scene yang dipakai. Scene bawaan template (Preloader, MainMenu,
-  // Game, GameOver) tidak lagi didaftarkan.
-  scene: [Boot, LevelScene],
+  // Tiga scene: Boot (ambil controller), Preloader (muat dan besarkan aset),
+  // LevelScene (arena). Tanpa pixelArt global: lihat ARCHITECTURE bagian 15.
+  scene: [Boot, Preloader, LevelScene],
 };
 
 /**

@@ -20,6 +20,7 @@ import { clientToGame, slotPositions } from '../slots';
 import { toolBus } from '../toolBus';
 import { SlotMarkerView } from '../views/SlotMarkerView';
 import { TrackView } from '../views/TrackView';
+import { FloorView } from '../views/FloorView';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
 export interface LevelSceneData {
@@ -57,6 +58,8 @@ export class LevelScene extends Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor(COLORS.background);
+    const floor = new FloorView(this);
+    this.events.once(Scenes.Events.DESTROY, () => floor.destroy());
     const controller = this.controller;
     if (controller === null) {
       this.showNotice('Controller belum diberikan ke scene');
