@@ -35,6 +35,10 @@ export const FLOOR_TEXTURE_KEY = 'arena-floor';
 export const TINY_FRAMES = {
   floorBase: 3,
   floorDebris: 32,
+  iconWork: 122,
+  iconCompute: 114,
+  iconTransfer: 130,
+  crate: 73,
 } as const;
 
 /** Satu dari tiap sekian ubin lantai memakai variasi berserpihan. */

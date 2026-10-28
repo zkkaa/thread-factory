@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
 import { BOARD_STYLE, MOTION, TEXT_STYLE } from '../theme';
+import { TINY_FACTORY, TINY_FRAMES } from '../assetManifest';
 
 export interface BoardRect {
   x: number;
@@ -27,6 +28,7 @@ export class BoardView {
   private readonly panel: GameObjects.Rectangle;
   private readonly title: GameObjects.Text;
   private readonly valueText: GameObjects.Text;
+  private readonly crates: GameObjects.Image[] = [];
   private readonly links: {
     direction: 'read' | 'write';
     graphics: GameObjects.Graphics;
@@ -80,6 +82,21 @@ export class BoardView {
     this.valueText = scene.add
       .text(cx, cy + 12, '', { ...TEXT_STYLE, fontSize: '28px' })
       .setOrigin(0.5);
+    // Ikon peti di kedua sisi angka sebagai penanda "stok"; hanya bila aset termuat.
+    if (scene.textures.exists(TINY_FACTORY.key)) {
+      for (const side of [-1, 1]) {
+        this.crates.push(
+          scene.add
+            .image(
+              cx + side * (rect.width / 2 - BOARD_STYLE.crateInset),
+              cy + BOARD_STYLE.crateDrop,
+              TINY_FACTORY.key,
+              TINY_FRAMES.crate,
+            )
+            .setDisplaySize(BOARD_STYLE.crateSize, BOARD_STYLE.crateSize),
+        );
+      }
+    }
     this.update(sharedVars);
   }
 
@@ -126,5 +143,6 @@ export class BoardView {
     this.panel.destroy();
     this.title.destroy();
     this.valueText.destroy();
+    for (const crate of this.crates) crate.destroy();
   }
 }
