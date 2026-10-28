@@ -12,8 +12,11 @@ export const ARENA = { width: 1280, height: 720 } as const;
 /** Sisi satu ubin (satu ubin = satu instruksi), dalam piksel. */
 export const TILE_SIZE = 64;
 
-/** Sisi kotak robot; lebih kecil dari ubin agar ubin di bawahnya tetap terbaca. */
-export const ROBOT_SIZE = 24;
+/**
+ * Sisi sprite robot. Frame sprite 64 px (ubin 16 px diskalakan 4x), jadi 32
+ * berarti pengecilan tepat setengah dan tetap tajam.
+ */
+export const ROBOT_SIZE = 32;
 
 /**
 - Tata letak jalur robot. Tiap robot punya satu jalur (baris):
@@ -141,6 +144,7 @@ export const DEPTH = {
   gate: 3,
   lock: 4,
   robot: 5,
+  robotSprite: 5.2,
   robotLabel: 6,
   tooltip: 100,
   robotGlow: 4.5,
@@ -190,6 +194,12 @@ export const ROBOT_FX = {
   zzzGap: 4,
   zzzFloat: 6,
   zzzFloatMs: 900,
+} as const;
+
+/** Sprite robot (U-072): pelat berwarna state di bawah sprite. */
+export const ROBOT_SPRITE = {
+  /** Tambahan ukuran pelat di tiap sisi sprite (piksel). */
+  platePadding: 3,
 } as const;
 
 export const ROBOT_FX_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
