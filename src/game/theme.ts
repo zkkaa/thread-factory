@@ -142,6 +142,8 @@ export const DEPTH = {
   robot: 5,
   robotLabel: 6,
   tooltip: 100,
+  robotGlow: 4.5,
+  robotFx: 6.5,
 } as const;
 
 /** Ukuran gerbang, segmen terlindungi, dan ikon gembok (U-058). */
@@ -170,3 +172,28 @@ export const SLOT_STYLE = {
   hoverColor: 0xffffff,
   ringWidth: 3,
 } as const;
+/** Efek visual Si Penjadwal pada robot (U-059). */
+export const ROBOT_FX = {
+  /** Cincin RUNNING: tambahan ukuran di tiap sisi robot. */
+  glowPadding: 8,
+  glowColor: 0xbbf7d0,
+  glowFillAlpha: 0.25,
+  glowStroke: 3,
+  pulseScale: 1.18,
+  pulseMs: 600,
+  /** READY dibekukan: pudar dan bergaris tepi biru es. */
+  frozenAlpha: 0.55,
+  iceColor: 0x93c5fd,
+  iceStroke: 3,
+  /** Penanda zzz: jarak dari tepi robot dan jarak melayang (piksel). */
+  zzzGap: 4,
+  zzzFloat: 6,
+  zzzFloatMs: 900,
+} as const;
+
+export const ROBOT_FX_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
+  fontFamily: 'monospace',
+  fontSize: '14px',
+  fontStyle: 'bold',
+  color: '#bfdbfe',
+};
