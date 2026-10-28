@@ -116,6 +116,9 @@ export const CHECKPOINT = {
   labelDrop: 22,
 } as const;
 
+/** Kilau gerbang saat kunci dipegang atau dilepas (U-076). */
+export const DOOR_FX = { flashFromAlpha: 0.3, flashMs: 280 } as const;
+
 /** Papan stok dan tautan ke READ/WRITE (U-057). */
 export const BOARD_STYLE = {
   fill: 0x1f2a44,

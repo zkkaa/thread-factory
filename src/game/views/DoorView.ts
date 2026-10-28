@@ -5,6 +5,7 @@ import { pointAt, type SampledPath } from '../pathMath';
 import {
   COLORS,
   DEPTH,
+  DOOR_FX,
   DOOR_GEOMETRY,
   DOOR_PANEL,
   DOOR_STYLE,
@@ -12,6 +13,7 @@ import {
   TEXT_STYLE,
   TILE_TEXT_STYLE,
 } from '../theme';
+import { REDUCE_MOTION_KEY } from '../registryKeys';
 
 /** Cara mengubah id thread menjadi nama tampilan (mis. 'A' -> 'Robot A'). */
 export type NameOf = (id: ThreadId) => string;
@@ -23,18 +25,21 @@ interface GateView {
 }
 
 /**
- * Tampilan satu pintu kunci (mutex): pintu masuk (LOCK) dan pintu keluar
- * (UNLOCK) berupa batang melintang di jalan, segmen terlindungi di antaranya
- * diwarnai, plus panel status (pemegang dan antrean) di sisi kanan arena.
+- Tampilan satu pintu kunci (mutex): pintu masuk (LOCK) dan pintu keluar
+- (UNLOCK) berupa batang melintang di jalan, segmen terlindungi di antaranya
+- diwarnai, plus panel status (pemegang dan antrean) di sisi kanan arena.
  *
- * Warna (hijau/merah) selalu disertai label teks BEBAS/TERKUNCI. View ini
- * hanya menggambar MutexSnapshot; siapa yang memegang dan mengantre
- * ditentukan oleh engine. Robot yang menunggu LOCK berhenti di pintu masuk
- * karena jangkarnya ada di sana (lihat anchors.ts).
+- Warna (hijau/merah) selalu disertai label teks BEBAS/TERKUNCI. View ini
+- hanya menggambar MutexSnapshot; siapa yang memegang dan mengantre
+- ditentukan oleh engine. Robot yang menunggu LOCK berhenti di pintu masuk
+- karena jangkarnya ada di sana (lihat anchors.ts).
  */
 export class DoorView {
   readonly mutexId: string;
   private readonly path: SampledPath;
+  private readonly scene: Scene;
+  /** Keadaan kunci pada pembaruan sebelumnya, untuk mendeteksi perubahan. */
+  private wasLocked: boolean;
   private readonly spans: readonly DoorSpan[];
   private readonly title: string;
   private readonly segments: GameObjects.Graphics;
@@ -53,6 +58,8 @@ export class DoorView {
     nameOf: NameOf,
   ) {
     this.mutexId = mutex.id;
+    this.scene = scene;
+    this.wasLocked = mutex.owner !== null;
     this.title = title;
     this.path = path;
     this.spans = spans;
@@ -88,6 +95,11 @@ export class DoorView {
     const locked = mutex.owner !== null;
     const style = locked ? DOOR_STYLE.locked : DOOR_STYLE.free;
 
+    if (locked !== this.wasLocked) {
+      this.wasLocked = locked;
+      this.flashGates();
+    }
+
     this.drawSegments(style.color);
     for (const gate of this.gates) {
       gate.bar.setFillStyle(style.color);
@@ -104,8 +116,23 @@ export class DoorView {
     this.panelText.setText(lines.join('\n'));
   }
 
+  /** Kilau singkat pada batang gerbang saat kunci dipegang atau dilepas. */
+  private flashGates(): void {
+    if (this.scene.registry.get(REDUCE_MOTION_KEY) === true) return;
+    for (const gate of this.gates) {
+      this.scene.tweens.killTweensOf(gate.bar);
+      gate.bar.setAlpha(DOOR_FX.flashFromAlpha);
+      this.scene.tweens.add({
+        targets: gate.bar,
+        alpha: 1,
+        duration: DOOR_FX.flashMs,
+      });
+    }
+  }
+
   destroy(): void {
     for (const gate of this.gates) {
+      this.scene.tweens.killTweensOf(gate.bar);
       gate.bar.destroy();
       gate.label.destroy();
     }

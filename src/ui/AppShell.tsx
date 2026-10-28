@@ -137,6 +137,7 @@ export function AppShell({
           moduleDef={moduleDef}
           context={unlockContext}
           progress={progress}
+          reduceMotion={settings.reduceMotion}
           getLevelTitle={(levelId) => findLevelById(levelId)?.title}
         />
       );
