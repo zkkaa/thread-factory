@@ -1,9 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
-import type {
-  ThreadId,
-  ThreadSnapshot,
-  ThreadState,
-} from '../../engine/types';
+import type { ThreadId, ThreadSnapshot, ThreadState } from '../../engine/types';
 import type { Anchor } from '../anchors';
 import { forwardEnd, pointAt, type SampledPath } from '../pathMath';
 import {
@@ -73,7 +69,7 @@ export class RobotView {
       .text(start.x, start.y, '', LABEL_STYLE)
       .setOrigin(0.5, options.labelSide < 0 ? 1 : 0)
       .setDepth(DEPTH.robotLabel);
-          const ringSize = ROBOT_SIZE + ROBOT_FX.glowPadding * 2;
+    const ringSize = ROBOT_SIZE + ROBOT_FX.glowPadding * 2;
     this.ring = scene.add
       .rectangle(
         start.x,
@@ -166,7 +162,7 @@ export class RobotView {
     return pointAt(this.options.path, fraction, this.options.laneOffset);
   }
 
-    private place(fraction: number): void {
+  private place(fraction: number): void {
     const p = this.positionAt(fraction);
     this.pos = { x: p.x, y: p.y };
     this.box.setPosition(p.x, p.y);

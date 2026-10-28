@@ -14,7 +14,7 @@ const config: Phaser.Types.Core.GameConfig = {
   height: ARENA.height,
   parent: 'game-container',
   backgroundColor: COLORS.background,
-  // Kanvas 1024x768 diskalakan (FIT) mengikuti wadah yang memenuhi layar;
+  // Kanvas 1280x720 diskalakan (FIT) mengikuti wadah yang memenuhi layar;
   // HUD React ditumpuk di atasnya (lihat ui/components/hud/PlayLayout.tsx).
   scale: {
     mode: Scale.FIT,
