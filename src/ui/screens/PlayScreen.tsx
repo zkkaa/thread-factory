@@ -36,7 +36,7 @@ interface PlayScreenProps {
 
 type Overlay = { kind: 'menu' | 'hint'; wasRunning: boolean };
 
-// Gaya panel HUD sementara; U-064 merapikan sisanya.
+// Gaya panel judul level (kiri atas); komponen HUD lain membawa gayanya sendiri.
 const PANEL =
   'rounded-lg border border-navy-500 bg-navy-900/90 p-3 shadow-lg overflow-y-auto';
 
@@ -81,7 +81,10 @@ export function PlayScreen({
 
   return (
     <PlayLayout
-        canvas={<PhaserGame controller={controller} reduceMotion={reduceMotion} />}      onDragOver={(event) => {
+      canvas={
+        <PhaserGame controller={controller} reduceMotion={reduceMotion} />
+      }
+      onDragOver={(event) => {
         event.preventDefault();
         toolBus.emit('dragMove', {
           clientX: event.clientX,

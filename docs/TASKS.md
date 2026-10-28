@@ -143,33 +143,33 @@ Centang semuanya sebelum lanjut ke fase berikutnya:
 - [x] **U-030** `P0` `PlayScreen` (S5): kanvas Phaser memenuhi layar (skala FIT), HUD React ditumpuk dengan posisi tetap sesuai PRD bagian 17.1; layar minimal 1280 px tanpa scroll horizontal. Tes render komposisi dasar.
 - [x] **U-031** `P0` Kontrol HUD (mengganti `ControlBar`): toggle Play/Pause, Step, Reset berupa ikon dengan tooltip; chip kecepatan 0.5x/1x/5x; chip seed (klik membuka isian, `parseSeed`, menerapkan seed me-reset); chip status dengan tick; Run dan Step nonaktif setelah error atau saat selesai. Tes render tiap keadaan (idle, running, paused, finished, error).
 - [x] **U-032** `P0` Chip Misi: target dan kriteria bintang dari data level; dapat dilipat.
-- [ ] **U-033** `P0` Toolbox bawah (mengganti tampilan `Toolbox`): hanya alat yang tersedia di level ditambah Hapus; terkunci saat simulasi dimulai (dengan keterangan). Mode klik slot tetap tersedia lewat toolbox ini.
-- [ ] **U-034** `P1` Log Kejadian kiri bawah (restyle `StepLog`): dapat dilipat, terbaru di atas, filter perpindahan READY/RUNNING; memakai `EventLog` yang sudah ada.
-- [ ] **U-035** `P1` Laci Metrik opsional dan badge waktu tunggu per robot (data dari snapshot).
-- [ ] **U-036** `P1` Menu Jeda (S13): Lanjut, Ulangi Level, Peta Level, Pengaturan.
-- [ ] **U-037** `P1` Legenda arti status robot (READY, RUNNING, WAITING, TERMINATED) yang dapat dibuka dari menu.
-- [ ] **U-038** `P0` `MandorDialog`: potret, gelembung, halaman, Lanjut/Mulai/Lewati, mood potret; menghormati pengaturan kurangi animasi; fokus keyboard terkelola; tes render.
+- [x] **U-033** `P0` Toolbox bawah (mengganti tampilan `Toolbox`): hanya alat yang tersedia di level ditambah Hapus; terkunci saat simulasi dimulai (dengan keterangan). Mode klik slot tetap tersedia lewat toolbox ini.
+- [x] **U-034** `P1` Log Kejadian kiri bawah (restyle `StepLog`): dapat dilipat, terbaru di atas, filter perpindahan READY/RUNNING; memakai `EventLog` yang sudah ada.
+- [x] **U-035** `P1` Laci Metrik opsional dan badge waktu tunggu per robot (data dari snapshot).
+- [x] **U-036** `P1` Menu Jeda (S13): Lanjut, Ulangi Level, Peta Level, Pengaturan.
+- [x] **U-037** `P1` Legenda arti status robot (READY, RUNNING, WAITING, TERMINATED) yang dapat dibuka dari menu.
+- [x] **U-038** `P0` `MandorDialog`: potret, gelembung, halaman, Lanjut/Mulai/Lewati, mood potret; menghormati pengaturan kurangi animasi; fokus keyboard terkelola; tes render.
 - [x] **U-039** `P0` Perluas `LevelDefinition`: `intro: IntroPage[]`, `hints: string[]`, `concepts: string[]`, `layoutId`; migrasi `level-1-1.ts` dan kode yang membaca `intro`; tes data level (jumlah halaman, minimal 3 petunjuk, `layoutId` terdaftar).
-- [ ] **U-040** `P1` Sistem petunjuk: tombol "Tanya Pak Mandor", petunjuk bertahap, tawaran otomatis setelah 2 kegagalan dalam sesi (`ui/hints.ts` murni) + tes.
-- [ ] **U-041** `P0` `ResultDialog` baru (S6): judul dari data level, badge SALAH/BENAR, potret sesuai mood, gelembung "Seharusnya X, hasilnya Y", tiga kartu angka, bintang muncul satu per satu (hormati kurangi animasi), rincian kriteria, pesan Pak Mandor, tombol Reset/Petunjuk/Tutup (salah) atau Lanjut/Ulangi/Tutup (benar). Tes render tiap keadaan.
-- [ ] **U-042** `P1` Panel error engine bergaya baru (pesan jelas, tombol Reset).
+- [x] **U-040** `P1` Sistem petunjuk: tombol "Tanya Pak Mandor", petunjuk bertahap, tawaran otomatis setelah 2 kegagalan dalam sesi (`ui/hints.ts` murni) + tes.
+- [x] **U-041** `P0` `ResultDialog` baru (S6): judul dari data level, badge SALAH/BENAR, potret sesuai mood, gelembung "Seharusnya X, hasilnya Y", tiga kartu angka, bintang muncul satu per satu (hormati kurangi animasi), rincian kriteria, pesan Pak Mandor, tombol Reset/Petunjuk/Tutup (salah) atau Lanjut/Ulangi/Tutup (benar). Tes render tiap keadaan.
+- [x] **U-042** `P1` Panel error engine bergaya baru (pesan jelas, tombol Reset).
 
 ---
 
 ## Fase U3 — Arena Phaser (29 Okt sampai 8 Nov) *(baru)*
 
-- [ ] **U-050** `P0` `game/layouts/types.ts` (`ArenaLayout`: `loop`, dan tipe lain saat dibutuhkan) dan `layouts/index.ts`; fungsi validasi layout terhadap level. Tes: jumlah checkpoint sama dengan panjang program asli, slot = n+1, fraksi menaik, koordinat di dalam `ARENA`.
-- [ ] **U-051** `P0` Layout Level 1-1: loop bersama melengkung (dua jalur sejajar), 4 checkpoint, 5 slot, papan di tengah dengan tautan ke READ dan WRITE.
-- [ ] **U-052** `P0` `tools.ts`: `applyToolsDetailed` yang mengembalikan peta asal instruksi (`original`/`inserted`); `applyTools` tetap ada. Tes: setiap instruksi efektif punya asal, slot `LOCK`/`UNLOCK` benar, masukan tidak termutasi. Lalu `game/anchors.ts` (murni) dan tesnya.
-- [ ] **U-053** `P0` `TrackView`: gambar jalan dari `Curves.Path` dengan panah arah.
-- [ ] **U-054** `P0` `CheckpointView`: lingkaran dengan ikon dan label instruksi, tooltip penjelasan awam saat di-hover.
-- [ ] **U-055** `P0` `RobotView` v2: sprite (placeholder bentuk dahulu), nama di atas, badge status, badge waktu tunggu, penghitung putaran, catatan di tangan (register), efek RUNNING/READY dibekukan/WAITING.
-- [ ] **U-056** `P0` Gerak robot sepanjang jalan antar jangkar: durasi `tickInterval / speed`, putaran berikutnya melewati ujung jalan, notifikasi batch memakai jangkar terakhir, tween tidak saling menimpa.
-- [ ] **U-057** `P0` `BoardView` di tengah dengan panah aliran saat READ dan WRITE serta animasi perubahan angka.
-- [ ] **U-058** `P0` `DoorView` v2: gerbang melintang di jalan (terbuka/tertutup), pemegang kunci, robot yang menunggu berbaris di depan pintu.
-- [ ] **U-059** `P1` Visual Si Penjadwal: sorot robot RUNNING, bekukan robot READY.
-- [ ] **U-060** `P0` `game/slots.ts` (`nearestSlot`, daftar slot sah) dan `SlotMarkerView` (penanda dan sorotan saat seret). Tes `slots.ts`.
-- [ ] **U-061** `P0` Seret-lepas pintu: HTML5 DnD dari toolbox, `EventBus` (`tool-drag-start/move/drop/end`), `LevelScene` mencari slot, `game/doorPlacement.ts` (state machine murni: pintu masuk lalu pintu keluar, Esc membatalkan), `controller.placeTool/removeTool`; pindah pintu, seret ke Hapus; mode klik sebagai alternatif. Tes `doorPlacement` dan konversi slot menjadi `ToolSpan` (`start = s`, `end = e - 1`, untuk semua robot di loop).
+- [x] **U-050** `P0` `game/layouts/types.ts` (`ArenaLayout`: `loop`, dan tipe lain saat dibutuhkan) dan `layouts/index.ts`; fungsi validasi layout terhadap level. Tes: jumlah checkpoint sama dengan panjang program asli, slot = n+1, fraksi menaik, koordinat di dalam `ARENA`.
+- [x] **U-051** `P0` Layout Level 1-1: loop bersama melengkung (dua jalur sejajar), 4 checkpoint, 5 slot, papan di tengah dengan tautan ke READ dan WRITE.
+- [x] **U-052** `P0` `tools.ts`: `applyToolsDetailed` yang mengembalikan peta asal instruksi (`original`/`inserted`); `applyTools` tetap ada. Tes: setiap instruksi efektif punya asal, slot `LOCK`/`UNLOCK` benar, masukan tidak termutasi. Lalu `game/anchors.ts` (murni) dan tesnya.
+- [x] **U-053** `P0` `TrackView`: gambar jalan dari `Curves.Path` dengan panah arah.
+- [x] **U-054** `P0` `CheckpointView`: lingkaran dengan ikon dan label instruksi, tooltip penjelasan awam saat di-hover.
+- [x] **U-055** `P0` `RobotView` v2: sprite (placeholder bentuk dahulu), nama di atas, badge status, badge waktu tunggu, penghitung putaran, catatan di tangan (register), efek RUNNING/READY dibekukan/WAITING.
+- [x] **U-056** `P0` Gerak robot sepanjang jalan antar jangkar: durasi `tickInterval / speed`, putaran berikutnya melewati ujung jalan, notifikasi batch memakai jangkar terakhir, tween tidak saling menimpa.
+- [x] **U-057** `P0` `BoardView` di tengah dengan panah aliran saat READ dan WRITE serta animasi perubahan angka.
+- [x] **U-058** `P0` `DoorView` v2: gerbang melintang di jalan (terbuka/tertutup), pemegang kunci, robot yang menunggu berbaris di depan pintu.
+- [x] **U-059** `P1` Visual Si Penjadwal: sorot robot RUNNING, bekukan robot READY.
+- [x] **U-060** `P0` `game/slots.ts` (`nearestSlot`, daftar slot sah) dan `SlotMarkerView` (penanda dan sorotan saat seret). Tes `slots.ts`.
+- [x] **U-061** `P0` Seret-lepas pintu: HTML5 DnD dari toolbox, `EventBus` (`tool-drag-start/move/drop/end`), `LevelScene` mencari slot, `game/doorPlacement.ts` (state machine murni: pintu masuk lalu pintu keluar, Esc membatalkan), `controller.placeTool/removeTool`; pindah pintu, seret ke Hapus; mode klik sebagai alternatif. Tes `doorPlacement` dan konversi slot menjadi `ToolSpan` (`start = s`, `end = e - 1`, untuk semua robot di loop).
 - [ ] **U-062** `P1` Skala FIT, HiDPI, dan perubahan ukuran jendela; uji manual pada 1280x720 dan 1920x1080.
 - [ ] **U-063** `P1` Uji kinerja arena Level 1-1 (sekitar 60 fps) dan catat hasilnya.
 - [ ] **U-064** `P0` Sambungkan seluruh komponen baru ke `PlayScreen`; hapus `ControlBar`, `Toolbox` lama, dan tampilan panel kanan setelah pengganti stabil; perbarui tes.
