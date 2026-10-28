@@ -21,6 +21,7 @@ import { toolBus } from '../toolBus';
 import { SlotMarkerView } from '../views/SlotMarkerView';
 import { TrackView } from '../views/TrackView';
 import { FloorView } from '../views/FloorView';
+import { robotFrameFor } from '../assetManifest';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
 export interface LevelSceneData {
@@ -173,6 +174,7 @@ export class LevelScene extends Scene {
         laneOffset: layout.laneOffsets[laneIndex] ?? 0,
         labelSide: laneIndex === 0 ? -1 : 1,
         totalRounds,
+        spriteFrame: robotFrameFor(laneIndex),
       });
     });
   }

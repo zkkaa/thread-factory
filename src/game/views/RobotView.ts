@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import type { ThreadId, ThreadSnapshot, ThreadState } from '../../engine/types';
 import type { Anchor } from '../anchors';
+import { TINY_FACTORY } from '../assetManifest';
 import { forwardEnd, pointAt, type SampledPath } from '../pathMath';
 import {
   COLORS,
@@ -9,6 +10,7 @@ import {
   ROBOT_FX,
   ROBOT_FX_TEXT,
   ROBOT_SIZE,
+  ROBOT_SPRITE,
   STATE_STYLE,
 } from '../theme';
 import { REDUCE_MOTION_KEY } from '../registryKeys';
@@ -24,19 +26,22 @@ export interface RobotViewOptions {
   labelSide: -1 | 1;
   /** Jumlah putaran program (ThreadDef.repeat). */
   totalRounds: number;
+  /** Nomor frame sprite robot pada spritesheet TINY_FACTORY (lihat ROBOT_FRAMES). */
+  spriteFrame: number;
 }
 
 /**
- * Robot: kotak berwarna state di atas jalan, dengan label nama + status,
- * penghitung putaran, waktu tunggu, dan catatan register. Posisinya berupa
- * pecahan panjang jalan; gerak antar jangkar memakai tween yang selalu maju.
- * View ini hanya menggambar; ia tidak tahu aturan permainan.
+- Robot: kotak berwarna state di atas jalan, dengan label nama + status,
+- penghitung putaran, waktu tunggu, dan catatan register. Posisinya berupa
+- pecahan panjang jalan; gerak antar jangkar memakai tween yang selalu maju.
+- View ini hanya menggambar; ia tidak tahu aturan permainan.
  */
 export class RobotView {
   readonly threadId: ThreadId;
   private readonly scene: Scene;
   private readonly options: RobotViewOptions;
   private readonly box: GameObjects.Rectangle;
+  private readonly sprite: GameObjects.Image | null;
   private readonly label: GameObjects.Text;
   private readonly ring: GameObjects.Rectangle;
   private readonly zzz: GameObjects.Text;
@@ -55,16 +60,28 @@ export class RobotView {
     this.cursor.t = this.fractionOf(thread.pc);
     const start = this.positionAt(this.cursor.t);
 
+    // Sprite dari spritesheet; bila belum termuat, hanya pelat berwarna state
+    // yang tampil (placeholder, ARCHITECTURE bagian 15).
+    const hasSprite = scene.textures.exists(TINY_FACTORY.key);
+    const plateSize = hasSprite
+      ? ROBOT_SIZE + ROBOT_SPRITE.platePadding * 2
+      : ROBOT_SIZE;
     this.box = scene.add
       .rectangle(
         start.x,
         start.y,
-        ROBOT_SIZE,
-        ROBOT_SIZE,
+        plateSize,
+        plateSize,
         STATE_STYLE[thread.state].color,
       )
       .setStrokeStyle(2, COLORS.robotBorder)
       .setDepth(DEPTH.robot);
+    this.sprite = hasSprite
+      ? scene.add
+          .image(start.x, start.y, TINY_FACTORY.key, options.spriteFrame)
+          .setDisplaySize(ROBOT_SIZE, ROBOT_SIZE)
+          .setDepth(DEPTH.robotSprite)
+      : null;
     this.label = scene.add
       .text(start.x, start.y, '', LABEL_STYLE)
       .setOrigin(0.5, options.labelSide < 0 ? 1 : 0)
@@ -117,9 +134,9 @@ export class RobotView {
   }
 
   /**
-   * Meluncurkan robot ke jangkar instruksi efektif `index`. Selalu maju
-   * sepanjang jalan; bila jangkar ada di belakang, robot melewati ujung jalan
-   * (putaran berikutnya). Tween lama dihentikan dulu agar tidak saling menimpa.
+- Meluncurkan robot ke jangkar instruksi efektif `index`. Selalu maju
+- sepanjang jalan; bila jangkar ada di belakang, robot melewati ujung jalan
+- (putaran berikutnya). Tween lama dihentikan dulu agar tidak saling menimpa.
    */
   moveToInstruction(index: number, durationMs: number): void {
     const target = this.fractionOf(index);
@@ -147,6 +164,7 @@ export class RobotView {
     this.scene.tweens.killTweensOf(this.ring);
     this.scene.tweens.killTweensOf(this.zzzOffset);
     this.box.destroy();
+    this.sprite?.destroy();
     this.label.destroy();
     this.ring.destroy();
     this.zzz.destroy();
@@ -166,6 +184,7 @@ export class RobotView {
     const p = this.positionAt(fraction);
     this.pos = { x: p.x, y: p.y };
     this.box.setPosition(p.x, p.y);
+    this.sprite?.setPosition(p.x, p.y);
     this.label.setPosition(
       p.x,
       p.y + this.options.labelSide * (ROBOT_SIZE / 2 + 4),
@@ -190,6 +209,7 @@ export class RobotView {
     const fx = deriveRobotFx(state, reduceMotion);
 
     this.box.setAlpha(fx.frozen ? ROBOT_FX.frozenAlpha : 1);
+    this.sprite?.setAlpha(fx.frozen ? ROBOT_FX.frozenAlpha : 1);
     if (fx.frozen) {
       this.box.setStrokeStyle(ROBOT_FX.iceStroke, ROBOT_FX.iceColor);
     } else {

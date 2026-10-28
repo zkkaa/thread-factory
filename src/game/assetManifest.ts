@@ -39,3 +39,14 @@ export const TINY_FRAMES = {
 
 /** Satu dari tiap sekian ubin lantai memakai variasi berserpihan. */
 export const FLOOR_DEBRIS_EVERY = 6;
+
+/**
+ * Frame robot menurut urutan thread: biru, merah, hijau, oranye (mesin kecil
+ * bermuka layar). Berulang bila robot lebih dari empat (Level 1-3: 8 robot).
+ */
+export const ROBOT_FRAMES: readonly number[] = [111, 75, 99, 87];
+
+export function robotFrameFor(index: number): number {
+  const total = ROBOT_FRAMES.length;
+  return ROBOT_FRAMES[((index % total) + total) % total] ?? 0;
+}
