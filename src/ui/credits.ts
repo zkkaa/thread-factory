@@ -20,7 +20,7 @@ export const ASSET_CREDITS: readonly AssetCredit[] = [
     license: 'MIT',
   },
   {
-    name: 'Kenney: Tiny Factory dan Robot Pack (dunia permainan)',
+    name: 'Kenney: Tiny Factory (dunia permainan)',
     source: 'kenney.nl',
     license: 'CC0',
   },

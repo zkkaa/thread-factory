@@ -29,9 +29,9 @@ Ketiganya tidak dipakai kode (dicek 26 Okt 2026) dan sudah dihapus.
 | characters/mandor-avatar.png | Avatar kepala untuk HUD dan tombol petunjuk | - | Dipotong dari potret | Mengikuti potret | Belum |
 | ui/logo-thread-factory.png | Logo di Beranda (S1) | - | Dibuat tim atau generator | Milik tim | Belum |
 | world/bg-beranda.png | Latar Beranda (S1) | - | Kenney + komposisi tim | CC0 | Belum |
-| world/tiny-factory.png | Ubin latar arena dan properti (S5) | 16x16 per ubin | Kenney "Tiny Factory" | CC0 (verifikasi di halaman paket saat diunduh) | Belum |
-| world/robot-a.png, robot-b.png | Sprite robot A dan B (S5) | - | Kenney "Robot Pack" | CC0 (verifikasi; kecocokan gaya belum dicek) | Belum |
-| world/checkpoint.png, gate.png, board.png | Checkpoint, gerbang mutex, papan stok (S5) | - | Kenney atau dibuat tim | CC0 atau milik tim | Belum |
+| world/tiny-factory.png | Spritesheet Tiny Factory (192x176, 12x11 ubin 16x16 tanpa jarak): lantai, ban berjalan, mesin, barikade, lampu, perkakas. Peta nomor frame: docs/tiny-factory-frames.png | 192x176 | Kenney "Tiny Factory" v1.0 (kenney.nl), berkas `Tilemap/tilemap_packed.png` | CC0 (License.txt tersalin di `world/tiny-factory-license.txt`; kredit tidak wajib) | Terpasang |
+| (frame di world/tiny-factory.png: 111-113, 87-89, 99-101, 75-77) | Sprite robot A dan B (S5): mesin kecil bermuka layar, satu frame per warna; tanpa animasi jalan | - | Kenney "Tiny Factory" (sama seperti di atas); Robot Pack tidak dipakai karena gayanya vektor dan tidak seragam | CC0 | Dipakai di U-072 |
+| (frame di world/tiny-factory.png, mis. 124 untuk gerbang) atau gambar tim | Checkpoint, gerbang mutex, papan stok (S5) | - | Kenney Tiny Factory atau dibuat tim | CC0 atau milik tim | Dipilih di U-073 |
 | world/props-level-1-3-sampai-2-3.png | Kartu akses, lampu sinyal, ban, kunci inggris | - | Kenney atau dibuat tim | CC0 atau milik tim | Belum |
 | world/fx-*.png | Efek: bintang, percikan, zzz | - | Dibuat tim | Milik tim | Belum |
 | audio/click.ogg, success.ogg, fail.ogg, lock.ogg | Efek suara | - | Paket audio CC0 | CC0 (catat sumber pasti) | Belum |

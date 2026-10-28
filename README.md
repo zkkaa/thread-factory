@@ -244,3 +244,11 @@ Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, 
 The Phaser logo and characters are &copy; 2011 - 2025 Phaser Studio Inc.
 
 All rights reserved.
+
+## Kredit
+
+- **Aset dunia permainan:** [Tiny Factory](https://kenney.nl) v1.0 oleh Kenney (kenney.nl), lisensi CC0. Salinan lisensi: `public/assets/world/tiny-factory-license.txt`.
+- **Game engine:** Phaser 3 (MIT). **Antarmuka:** React (MIT). **Template awal:** phaserjs/template-react-ts (MIT).
+- **Ikon antarmuka:** dibuat oleh tim.
+- **Potret Pak Mandor:** akan dibuat dengan bantuan generator gambar (dicatat di `docs/AI_USAGE.md`, lihat U-074).
+- Daftar lengkap aset beserta statusnya ada di `docs/ASSETS.md`.
