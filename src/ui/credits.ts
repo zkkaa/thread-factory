@@ -24,12 +24,17 @@ export const ASSET_CREDITS: readonly AssetCredit[] = [
     source: 'kenney.nl',
     license: 'CC0',
   },
+  {
+    name: 'Efek suara dan musik latar',
+    source: '[LAYANAN] (dihasilkan dengan AI, 29 Okt 2026)',
+    license: 'Sesuai ketentuan layanan',
+  },
 ];
 
 export const ICON_NOTE = 'Ikon antarmuka dibuat oleh tim.';
 
 export const GENERATOR_NOTE =
-  'Potret Pak Mandor dibuat dengan bantuan generator gambar (ChatGPT, OpenAI), dan latarnya dihapus dengan Photoroom.';
+  'Potret, logo, dan latar Beranda dibuat dengan bantuan generator gambar (ChatGPT, OpenAI); latar potret dan logo dihapus dengan Photoroom.';
 
 /** Ganti dengan nama enam anggota tim. */
 export const TEAM_MEMBERS: readonly string[] = [

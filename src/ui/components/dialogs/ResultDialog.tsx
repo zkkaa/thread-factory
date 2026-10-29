@@ -7,6 +7,7 @@ import type {
 import { deriveResultView, type ResultView } from '../../resultView';
 import { MandorPortrait } from '../MandorPortrait';
 import { starClass } from '../../motion';
+import { useSound } from '../../audio/soundContext';
 
 interface ResultDialogProps {
   controller: SimulationController;
@@ -34,6 +35,7 @@ interface ResultCardProps {
 function ResultCard({ view, reduceMotion, actions, onClose }: ResultCardProps) {
   const total = view.stars ?? 0;
   const [count, setCount] = useState(0);
+  const player = useSound();
   // Bintang muncul satu per satu; "kurangi animasi" langsung menampilkan semua.
   const shown = reduceMotion ? total : Math.min(count, total);
 
@@ -42,6 +44,11 @@ function ResultCard({ view, reduceMotion, actions, onClose }: ResultCardProps) {
     const id = window.setTimeout(() => setCount((c) => c + 1), 450);
     return () => window.clearTimeout(id);
   }, [reduceMotion, count, total]);
+
+  // Satu bunyi tiap bintang yang muncul (dengan "kurangi animasi" semuanya muncul sekaligus).
+  useEffect(() => {
+    if (shown > 0) player.playSfx('star');
+  }, [shown, player]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {

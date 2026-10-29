@@ -1,5 +1,7 @@
 import { APP_VERSION } from '../../version';
+import { MandorPortrait } from '../components/MandorPortrait';
 import type { Navigation } from '../navigation';
+import { UI_ASSETS } from '../uiAssets';
 
 interface HomeScreenProps {
   navigation: Navigation;
@@ -28,19 +30,33 @@ function MenuButton({ label, onClick, primary = false }: MenuButtonProps) {
   );
 }
 
-/** Layar Beranda (S1). Gambar Pak Mandor dan logo menyusul di U-074 dan U-075. */
+/**
+ * Layar Beranda (S1): latar pabrik, logo, menu di kiri, dan Pak Mandor di
+ * kanan. Gradasi gelap di kiri menjaga teks dan tombol tetap terbaca di atas
+ * gambar latar.
+ */
 export function HomeScreen({ navigation, hasProgress }: HomeScreenProps) {
   return (
-    <main className="flex h-screen items-center justify-center gap-16 bg-linear-to-br from-navy-900 to-navy-700 px-12 text-ink-100">
-      <section className="flex max-w-md flex-col gap-6">
-        <header className="space-y-2">
-          <h1 className="text-6xl leading-none font-black tracking-tight text-sun-400">
-            Thread Factory
-          </h1>
-          <p className="inline-block rounded-lg bg-ember-500 px-4 py-1 text-2xl font-bold text-navy-900">
-            Pabrik Rebutan
-          </p>
-          <p className="pt-2 text-ink-300">
+    <main
+      className="relative flex h-screen items-center justify-center gap-16 overflow-hidden bg-navy-900 bg-cover bg-center px-12 text-ink-100"
+      style={{ backgroundImage: `url(${UI_ASSETS.homeBackground})` }}
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-linear-to-r from-navy-900/90 via-navy-900/55 to-navy-900/10"
+      />
+
+      <section className="relative flex max-w-md flex-col gap-6">
+        <header className="space-y-3">
+          <h1 className="sr-only">Thread Factory: Pabrik Rebutan</h1>
+          <img
+            src={UI_ASSETS.logo}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            className="w-full max-w-md drop-shadow-lg"
+          />
+          <p className="text-ink-100">
             Belajar sinkronisasi dan konkurensi thread lewat simulasi pabrik.
           </p>
         </header>
@@ -64,18 +80,10 @@ export function HomeScreen({ navigation, hasProgress }: HomeScreenProps) {
         <p className="text-sm text-ink-300">v{APP_VERSION}</p>
       </section>
 
-      <div
-        role="img"
-        aria-label="Gambar Pak Mandor (menyusul)"
-        className="flex h-96 w-72 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-navy-500 bg-navy-800 text-center"
-      >
-        <span aria-hidden="true" className="text-8xl">
-          👷
-        </span>
-        <span className="text-sm text-ink-300">
-          Pak Mandor (gambar menyusul)
-        </span>
-      </div>
+      <MandorPortrait
+        mood="senang"
+        className="relative h-[28rem] w-80 shrink-0"
+      />
     </main>
   );
 }

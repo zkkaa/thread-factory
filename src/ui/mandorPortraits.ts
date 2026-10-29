@@ -16,6 +16,9 @@ export const MANDOR_PORTRAITS: PortraitSources = {
   berpikir: 'assets/characters/mandor-berpikir.png',
 };
 
+/** Avatar kepala (dipotong dari potret netral) untuk ikon tombol petunjuk. */
+export const MANDOR_AVATAR = 'assets/characters/mandor-avatar.png';
+
 /** Jalur gambar untuk `mood`, dengan cadangan ke 'netral'; null bila tidak ada. */
 export function portraitSrcFor(
   mood: MandorMood,
