@@ -114,7 +114,7 @@ Centang semuanya sebelum lanjut ke fase berikutnya:
 - [ ] **U-003** `P0` Lengkapi `docs/AI_USAGE.md` untuk seluruh tugas T-011 sampai T-036 dan perubahan setelahnya (satu baris per tugas: tanggal, ID, berkas, peran AI, peninjau).
 - [x] **U-004** `P0` Wireframe final: satu gambar per layar S1 sampai S13 (PRD bagian 16) dan satu gambar arena Level 1-1 yang menunjukkan jalan melengkung, posisi 4 checkpoint, 5 slot, papan tengah, dan gerbang. Simpan di `docs/wireframe/`. Disetujui tim sebelum U-050.
 - [x] **U-005** `P0` Buat `docs/ASSETS.md`: tabel aset (nama berkas, kegunaan, ukuran, sumber, lisensi, status) dari PRD bagian 18.5, dan siapkan folder `public/assets/{characters,world,ui,audio}/`.
-- [ ] **U-006** `P1` Pastikan jadwal presentasi kelompok dari dosen atau kalender akademik; catat tanggalnya di bagian atas berkas ini dan hitung ulang tanggal pengumpulan (H-2).
+- [x] **U-006** `P1` Pastikan jadwal presentasi kelompok dari dosen atau kalender akademik; catat tanggalnya di bagian atas berkas ini dan hitung ulang tanggal pengumpulan (H-2).
 - [x] **U-007** `P1` Sepakati palet warna dan gaya bingkai UI (navy, kuning, oranye seperti mockup), simpan sebagai token di `ui/` (variabel CSS atau konstanta Tailwind) dan `game/theme.ts`.
 
 ---
@@ -170,22 +170,22 @@ Centang semuanya sebelum lanjut ke fase berikutnya:
 - [x] **U-059** `P1` Visual Si Penjadwal: sorot robot RUNNING, bekukan robot READY.
 - [x] **U-060** `P0` `game/slots.ts` (`nearestSlot`, daftar slot sah) dan `SlotMarkerView` (penanda dan sorotan saat seret). Tes `slots.ts`.
 - [x] **U-061** `P0` Seret-lepas pintu: HTML5 DnD dari toolbox, `EventBus` (`tool-drag-start/move/drop/end`), `LevelScene` mencari slot, `game/doorPlacement.ts` (state machine murni: pintu masuk lalu pintu keluar, Esc membatalkan), `controller.placeTool/removeTool`; pindah pintu, seret ke Hapus; mode klik sebagai alternatif. Tes `doorPlacement` dan konversi slot menjadi `ToolSpan` (`start = s`, `end = e - 1`, untuk semua robot di loop).
-- [ ] **U-062** `P1` Skala FIT, HiDPI, dan perubahan ukuran jendela; uji manual pada 1280x720 dan 1920x1080.
-- [ ] **U-063** `P1` Uji kinerja arena Level 1-1 (sekitar 60 fps) dan catat hasilnya.
-- [ ] **U-064** `P0` Sambungkan seluruh komponen baru ke `PlayScreen`; hapus `ControlBar`, `Toolbox` lama, dan tampilan panel kanan setelah pengganti stabil; perbarui tes.
+- [x] **U-062** `P1` Skala FIT, HiDPI, dan perubahan ukuran jendela; uji manual pada 1280x720 dan 1920x1080.
+- [x] **U-063** `P1` Uji kinerja arena Level 1-1 (sekitar 60 fps) dan catat hasilnya.
+- [x] **U-064** `P0` Sambungkan seluruh komponen baru ke `PlayScreen`; hapus `ControlBar`, `Toolbox` lama, dan tampilan panel kanan setelah pengganti stabil; perbarui tes.
 
 ---
 
 ## Fase U4 — Aset dan Karakter (29 Okt sampai 10 Nov; audio sampai 19 Nov) *(baru)*
 
-- [ ] **U-070** `P0` Pilih dan unduh aset Kenney (Tiny Factory, Robot Pack, paket UI atau ikon bila perlu); periksa kecocokan gaya; simpan di `public/assets/`; catat sumber dan lisensi di `docs/ASSETS.md` dan README Kredit.
-- [ ] **U-071** `P0` Konfigurasi Phaser `pixelArt: true`, `assetManifest.ts`, scene `Preloader` (muat aset), tes manifest (berkas ada). Latar arena Level 1-1 dari Tiny Factory (ubin 16x16 diskalakan 4x).
-- [ ] **U-072** `P0` Sprite robot top-down (A dan B dengan tint, animasi jalan dan diam) menggantikan placeholder `RobotView`.
-- [ ] **U-073** `P1` Sprite checkpoint dan ikon instruksi, gerbang, papan stok (bila perlu digambar sendiri atau disusun dari aset Kenney).
-- [ ] **U-074** `P0` Potret Pak Mandor: pilih gambar resmi; hasilkan ekspresi netral, senang, sedih, berpikir (minimal tiga) dengan latar polos tanpa teks; hapus latar; PNG transparan sekitar 1024 px; optimalkan; buat avatar kepala. Catat prompt, generator, tanggal, peninjau di `docs/AI_USAGE.md` dan Kredit; periksa ketentuan penggunaan generator.
-- [ ] **U-075** `P1` Logo Thread Factory, latar Beranda, dan gambar pratinjau kartu modul.
-- [ ] **U-076** `P1` Efek kecil: bintang muncul, percikan bentrok, zzz, kilau pintu; hormati kurangi animasi.
-- [ ] **U-077** `P2` Audio: klik, benar, salah, kunci dipegang atau dilepas, musik latar opsional; sumber CC0 tercatat; pemutar menghormati volume dan dimatikan di tes. (Menggantikan T-074.)
+- [x] **U-070** `P0` Pilih dan unduh aset Kenney (Tiny Factory, Robot Pack, paket UI atau ikon bila perlu); periksa kecocokan gaya; simpan di `public/assets/`; catat sumber dan lisensi di `docs/ASSETS.md` dan README Kredit.
+- [x] **U-071** `P0` Konfigurasi Phaser `pixelArt: true`, `assetManifest.ts`, scene `Preloader` (muat aset), tes manifest (berkas ada). Latar arena Level 1-1 dari Tiny Factory (ubin 16x16 diskalakan 4x).
+- [x] **U-072** `P0` Sprite robot top-down (A dan B dengan tint, animasi jalan dan diam) menggantikan placeholder `RobotView`.
+- [x] **U-073** `P1` Sprite checkpoint dan ikon instruksi, gerbang, papan stok (bila perlu digambar sendiri atau disusun dari aset Kenney).
+- [x] **U-074** `P0` Potret Pak Mandor: pilih gambar resmi; hasilkan ekspresi netral, senang, sedih, berpikir (minimal tiga) dengan latar polos tanpa teks; hapus latar; PNG transparan sekitar 1024 px; optimalkan; buat avatar kepala. Catat prompt, generator, tanggal, peninjau di `docs/AI_USAGE.md` dan Kredit; periksa ketentuan penggunaan generator.
+- [x] **U-075** `P1` Logo Thread Factory, latar Beranda, dan gambar pratinjau kartu modul.
+- [x] **U-076** `P1` Efek kecil: bintang muncul, percikan bentrok, zzz, kilau pintu; hormati kurangi animasi.
+- [x] **U-077** `P2` Audio: klik, benar, salah, kunci dipegang atau dilepas, musik latar opsional; sumber CC0 tercatat; pemutar menghormati volume dan dimatikan di tes. (Menggantikan T-074.)
 
 ---
 
