@@ -13,6 +13,7 @@ import { PlayLayout } from '../components/hud/PlayLayout';
 import { ToolboxHud } from '../components/hud/ToolboxHud';
 import { ICONS } from '../components/icons/registry';
 import { IconButton } from '../components/IconButton';
+import { MandorAvatar } from '../components/MandorAvatar';
 import { useSimulation } from '../hooks/useSimulation';
 import {
   INITIAL_HINT_STATE,
@@ -55,7 +56,6 @@ export function PlayScreen({
   const [hintState, setHintState] = useState<HintState>(INITIAL_HINT_STATE);
   const countedResult = useRef<unknown>(null);
   const Menu = ICONS.menu;
-  const Help = ICONS.help;
   const hints = state.level?.hints ?? [];
 
   // Hitung tiap hasil gagal satu kali (per objek result).
@@ -115,7 +115,7 @@ export function PlayScreen({
           <ControlHud controller={controller} state={state} />
           <IconButton
             label="Tanya Pak Mandor"
-            icon={<Help />}
+            icon={<MandorAvatar />}
             onClick={() => open('hint')}
           />
           <IconButton

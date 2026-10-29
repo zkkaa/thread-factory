@@ -23,6 +23,8 @@ import { ModuleIntroScreen } from './screens/ModuleIntroScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { PlayScreen } from './screens/PlayScreen';
 import { LevelIntroScreen } from './screens/LevelIntroScreen';
+import { useSound } from './audio/soundContext';
+import { useAppAudio, useSoundEffects } from './hooks/useAppAudio';
 import {
   type ScreenState,
   back,
@@ -54,6 +56,9 @@ export function AppShell({
   const progress = useProgress(progressStore);
   const settings = useSettings(settingsStore);
   useProgressRecorder(controller, progressStore);
+  const audio = useSound();
+  useSoundEffects(controller, audio);
+  useAppAudio(audio, settings.volume);
 
   const [screenState, setScreenState] =
     useState<ScreenState>(createScreenState);
