@@ -21,6 +21,12 @@ export interface Metrics {
   avgWaitTicks: number;
   maxWaitTicks: number;
   /**
+   * Instruksi yang dieksekusi / (cores x tick), antara 0 dan 1. Mengukur
+   * seberapa sering core sibuk; core menganggur karena thread menunggu pintu.
+   * 0 bila tick masih 0.
+   */
+  coreUtilization: number;
+  /**
    * (nilai seharusnya) - (nilai akhir), tidak pernah negatif.
    * null bila `expected` tidak diberikan, atau bila simulasi belum selesai
    * normal (ada thread yang belum TERMINATED): nilai yang belum final tidak
@@ -52,6 +58,9 @@ export function computeMetrics(
     maxWaitTicks = Math.max(maxWaitTicks, t.waitTicks);
   }
   const avgWaitTicks = threads.length > 0 ? totalWait / threads.length : 0;
+  const coreCapacity = snapshot.cores * snapshot.tick;
+  const coreUtilization =
+    coreCapacity > 0 ? snapshot.executedInstructions / coreCapacity : 0;
 
   let lostUpdates: number | null = null;
   if (expected !== undefined) {
@@ -79,6 +88,7 @@ export function computeMetrics(
     waitTicksByThread,
     avgWaitTicks,
     maxWaitTicks,
+    coreUtilization,
     lostUpdates,
   };
 }
