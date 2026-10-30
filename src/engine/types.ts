@@ -128,6 +128,11 @@ export interface Snapshot {
   mutexes: MutexSnapshot[];
   semaphores: SemaphoreSnapshot[];
   conditions: ConditionSnapshot[];
+
+  /** Jumlah core yang dipakai scheduler (dari konfigurasi level). */
+  cores: number;
+  /** Total eksekusi instruksi sejak tick 0 (satu per thread terpilih per tick). */
+  executedInstructions: number;
 }
 
 // ---------------------------------------------------------------------------
