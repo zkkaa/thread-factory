@@ -96,7 +96,7 @@ export const TILE_TEXT_STYLE = {
 
 /** Jalan robot (U-053). Lebar cukup untuk dua jalur sejajar. */
 export const ROAD = {
-  width: 50,
+  width: 80,
   color: 0x2b364f,
   edge: 0x4b5b80,
   arrow: 0x93a4c8,
