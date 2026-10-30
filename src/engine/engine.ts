@@ -41,6 +41,7 @@ export class Engine implements SimulationEngine {
   private seed = 0;
   private tick = 0;
   private finished = false;
+  private executedInstructions = 0;
   private threads: ThreadRuntime[] = [];
   private threadById = new Map<string, ThreadRuntime>();
   private mutexes = new Map<string, Mutex>();
@@ -62,6 +63,7 @@ export class Engine implements SimulationEngine {
     this.seed = seed;
     this.tick = 0;
     this.finished = false;
+    this.executedInstructions = 0;
     this.sharedVars = { ...config.sharedVars };
     this.threads = config.threads.map(createThread);
     const threadById = new Map(this.threads.map((t) => [t.def.id, t]));
@@ -142,6 +144,7 @@ export class Engine implements SimulationEngine {
         throw new Error(`Scheduler memilih thread yang tidak ada: "${id}"`);
       }
       push(transition(thread, 'RUNNING', tick));
+      this.executedInstructions += 1;
       events.push(
         ...executeInstruction(thread, tick, this.sharedVars, this.sync),
       );
@@ -194,6 +197,8 @@ export class Engine implements SimulationEngine {
         queue: [],
       })),
       conditions: this.config.conditions.map((id) => ({ id, queue: [] })),
+      cores: this.config.scheduler.cores,
+      executedInstructions: this.executedInstructions,
     };
   }
 }
