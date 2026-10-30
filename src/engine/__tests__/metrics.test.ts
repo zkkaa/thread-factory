@@ -97,6 +97,8 @@ describe('computeMetrics: waktu tunggu', () => {
     // disuntikkan lewat salinan snapshot.
     const snap: Snapshot = {
       ...engine.getSnapshot(),
+      cores: 1,
+      executedInstructions: 0,
       threads: engine.getSnapshot().threads.map((t, i) => ({
         ...t,
         waitTicks: i === 0 ? 4 : 10,
