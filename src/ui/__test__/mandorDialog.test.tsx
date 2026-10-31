@@ -44,7 +44,7 @@ describe('MandorDialog', () => {
     expect(html).not.toContain('halaman-dua');
     expect(html).toContain('Halaman 1 / 2');
     expect(html).toContain('Level 1-1');
-    expect(html).toContain('>Lanjut</button>');
+    expect(html).toContain('<span>Lanjut</span>');
     expect(html).toContain('>Lewati</button>');
   });
 
@@ -54,7 +54,7 @@ describe('MandorDialog', () => {
   });
 
   it('satu halaman langsung menampilkan tombol Mulai', () => {
-    expect(render([{ text: 'x' }])).toContain('>Mulai</button>');
+    expect(render([{ text: 'x' }])).toContain('<span>Mulai</span>');
   });
 
   it('tanpa halaman tidak menampilkan apa pun', () => {
