@@ -23,8 +23,7 @@ interface MandorDialogProps {
  */
 const PORTRAIT_CLASS =
   'absolute bottom-0 left-30 z-0 h-[92%] w-auto max-w-none  translate-y-[2%]';
-const BUBBLE_CLASS =
-  'absolute right-[14%] top-[24%] z-10 w-[52%] max-w-xl';
+const BUBBLE_CLASS = 'absolute right-[14%] top-[24%] z-10 w-[52%] max-w-xl';
 
 /**
  * Dialog bergaya komik Pak Mandor (S4): potret besar menempel di kiri-bawah,

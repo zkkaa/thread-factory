@@ -27,10 +27,7 @@ export function LevelIntroScreen({ navigation, level }: LevelIntroScreenProps) {
             className="absolute inset-0 scale-105 bg-cover bg-center blur-sm"
             style={{ backgroundImage: `url(${background})` }}
           />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-navy-900/45"
-          />
+          <div aria-hidden="true" className="absolute inset-0 bg-navy-900/45" />
         </>
       )}
 

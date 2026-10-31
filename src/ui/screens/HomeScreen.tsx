@@ -60,7 +60,12 @@ function SettingsIcon() {
   );
 }
 
-function MenuButton({ label, onClick, primary = false, icon }: MenuButtonProps) {
+function MenuButton({
+  label,
+  onClick,
+  primary = false,
+  icon,
+}: MenuButtonProps) {
   const tone = primary
     ? 'bg-amber-400 text-slate-950 hover:bg-amber-300 border-b-4 border-amber-600 active:translate-y-0.5 shadow-amber-500/20'
     : 'bg-slate-900/85 text-slate-100 hover:bg-slate-800/90 border border-slate-600/80 border-b-4 border-b-slate-950 active:translate-y-0.5 backdrop-blur-xs';
@@ -95,7 +100,7 @@ export function HomeScreen({ navigation, hasProgress }: HomeScreenProps) {
       <section className="relative z-10 -mt-20 flex w-full max-w-md md:max-w-xl flex-col items-center gap-5 sm:gap-8">
         <header className="flex w-full flex-col items-center text-center ">
           <h1 className="sr-only">Thread Factory: Pabrik Rebutan</h1>
-          
+
           <img
             src={UI_ASSETS.logo}
             alt="Thread Factory Logo"
@@ -108,7 +113,10 @@ export function HomeScreen({ navigation, hasProgress }: HomeScreenProps) {
           </p>
         </header>
 
-        <nav aria-label="Menu utama" className="flex w-90 flex-col gap-2.5 sm:gap-3">
+        <nav
+          aria-label="Menu utama"
+          className="flex w-90 flex-col gap-2.5 sm:gap-3"
+        >
           <MenuButton
             primary
             label={hasProgress ? 'Lanjutkan' : 'Mulai Game'}
