@@ -10,6 +10,11 @@ interface MandorPortraitProps {
   className?: string;
   /** Daftar gambar; bawaannya data aktual (diganti hanya oleh tes). */
   sources?: PortraitSources;
+  /**
+   * Tanpa sudut membulat dan padding, supaya gambar bisa dipotong sampai
+   * tepi layar (dialog S4). Bawaannya false, jadi Beranda tidak berubah.
+   */
+  bare?: boolean;
 }
 
 /**
@@ -21,16 +26,18 @@ export function MandorPortrait({
   mood,
   className = '',
   sources = MANDOR_PORTRAITS,
+  bare = false,
 }: MandorPortraitProps) {
   const src = portraitSrcFor(mood, sources);
 
   if (src !== null) {
+    const shape = bare ? '' : 'rounded-2xl p-1';
     return (
       <img
         src={src}
         alt={`Pak Mandor, ekspresi ${mood}`}
         draggable={false}
-        className={`rounded-2xl border-2 border-navy-500 bg-navy-800 object-contain object-bottom p-1 ${className}`}
+        className={`${shape} object-contain object-bottom ${className}`}
       />
     );
   }
@@ -39,7 +46,7 @@ export function MandorPortrait({
     <div
       role="img"
       aria-label={`Pak Mandor, ekspresi ${mood} (gambar menyusul)`}
-      className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-navy-500 bg-navy-800 text-center ${className}`}
+      className={`flex flex-col items-center justify-center gap-2 rounded-2xl text-center ${className}`}
     >
       <span aria-hidden="true" className="text-8xl">
         👷

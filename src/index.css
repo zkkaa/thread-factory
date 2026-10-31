@@ -11,6 +11,8 @@
   --color-ember-500: #ff8a3d;
   --color-ink-100: #f2f6fc;
   --color-ink-300: #9fb3cc;
+  /* Krem untuk bubble dialog Pak Mandor (S4). */
+  --color-cream-50: #fdf9ef;
 
   /* Bintang hasil membesar sebentar saat muncul (U-076). */
   --animate-star-pop: star-pop 0.35s ease-out;
