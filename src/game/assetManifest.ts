@@ -20,9 +20,39 @@ export const TINY_FACTORY: SheetSpec = {
 /** Semua spritesheet yang dimuat Preloader. */
 export const SHEETS: readonly SheetSpec[] = [TINY_FACTORY];
 
+/** Gambar tunggal yang dibesarkan menjadi satu tekstur (mis. ubin jalan). */
+export interface ImageSpec {
+  key: string;
+  sourceKey: string;
+  /** Jalur relatif terhadap public/assets. */
+  path: string;
+  /** Pembesaran bulat (nearest-neighbor). */
+  scale: number;
+}
+
+/** Jalan lurus mendatar 16x32 px; jalan tegak = diputar 90 derajat. */
+export const ROAD_STRAIGHT: ImageSpec = {
+  key: 'road-straight',
+  sourceKey: 'road-straight-src',
+  path: 'world/road-straight.png',
+  scale: 4,
+};
+
+/** Sudut kanan-atas 48x48 px; tiga sudut lain lewat flip. */
+export const ROAD_CURVE: ImageSpec = {
+  key: 'road-curve',
+  sourceKey: 'road-curve-src',
+  path: 'world/road-curve.png',
+  scale: 4,
+};
+
+export const IMAGES: readonly ImageSpec[] = [ROAD_STRAIGHT, ROAD_CURVE];
+
 /** Berkas lain yang wajib ada (dicek tes manifest). */
 export const EXTRA_FILES: readonly string[] = [
   'world/tiny-factory-license.txt',
+  'world/road-straight.png',
+  'world/road-curve.png',
 ];
 
 /** Kunci tekstur lantai arena yang dibakar sekali oleh FloorView. */

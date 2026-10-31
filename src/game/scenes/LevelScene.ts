@@ -10,7 +10,8 @@ import { computeAnchors } from '../anchors';
 import { DoorDragSession } from '../doorDrag';
 import { buildDoorSpans } from '../doorSpans';
 import { getLayout } from '../layouts';
-import { pointAt, sampleClosedPath } from '../pathMath';
+import { pointAt } from '../pathMath';
+import { buildRoad } from '../roadGeometry';
 import { ARENA, COLORS, DOOR_PANEL, TEXT_STYLE } from '../theme';
 import { BoardView, type BoardLinkPoint } from '../views/BoardView';
 import { CheckpointView } from '../views/CheckpointView';
@@ -107,10 +108,11 @@ export class LevelScene extends Scene {
       level,
       state.tools,
     );
-    const path = sampleClosedPath(layout.path);
+    const road = buildRoad(layout.road);
+    const path = road.path;
     const nameOf = this.nameOf(snapshot);
 
-    this.track = new TrackView(this, path);
+    this.track = new TrackView(this, road);
 
     const links: BoardLinkPoint[] = [];
     for (const link of layout.boardLinks) {

@@ -96,7 +96,12 @@ export const TILE_TEXT_STYLE = {
 
 /** Jalan robot (U-053). Lebar cukup untuk dua jalur sejajar. */
 export const ROAD = {
-  width: 80,
+  /** Satu ubin lurus sepanjang jalan (16 px aset x 4). */
+  unit: 64,
+  /** Lebar jalan (32 px aset x 4). */
+  width: 128,
+  /** Sisi ubin sudut (48 px aset x 4). */
+  corner: 192,
   color: 0x2b364f,
   edge: 0x4b5b80,
   arrow: 0x93a4c8,
