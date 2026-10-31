@@ -11,29 +11,36 @@ describe('validateLayout', () => {
   });
 
   it('menolak jumlah slot yang salah', () => {
-    const bad = { ...layout1_1, slots: [0.04, 0.235, 0.475, 0.725] };
+    const bad = { ...layout1_1, slots: [0.04, 0.265, 0.445, 0.765] };
     expect(validateLayout(bad, level1_1)).toContain('slot 4, seharusnya 5');
   });
 
   it('menolak fraksi checkpoint yang tidak menaik', () => {
-    const bad = { ...layout1_1, checkpoints: [0.12, 0.6, 0.35, 0.85] };
+    const bad = { ...layout1_1, checkpoints: [0.105, 0.605, 0.355, 0.855] };
     expect(validateLayout(bad, level1_1)).toContain(
       'fraksi checkpoint harus menaik',
     );
   });
 
-  it('menolak koordinat di luar ARENA', () => {
-    const bad = {
-      ...layout1_1,
-      path: [...layout1_1.path, { x: 5000, y: 10 }],
-    };
+  it('menolak jalan di luar ARENA', () => {
+    const bad = { ...layout1_1, road: { ...layout1_1.road, left: 1200 } };
+    expect(validateLayout(bad, level1_1)).toContain('jalan di luar ARENA');
+  });
+
+  it('menolak ukuran jalan bukan kelipatan satuan ubin', () => {
+    const bad = { ...layout1_1, road: { ...layout1_1.road, width: 770 } };
+    expect(validateLayout(bad, level1_1).length).toBeGreaterThan(0);
+  });
+
+  it('menolak papan di luar lubang tengah jalan', () => {
+    const bad = { ...layout1_1, board: { ...layout1_1.board, x: 300 } };
     expect(validateLayout(bad, level1_1)).toContain(
-      'titik jalan di luar ARENA',
+      'papan harus berada di lubang tengah jalan',
     );
   });
 
   it('menolak slot yang tidak berada di antara checkpoint', () => {
-    const bad = { ...layout1_1, slots: [0.04, 0.1, 0.475, 0.725, 0.93] };
+    const bad = { ...layout1_1, slots: [0.04, 0.1, 0.445, 0.765, 0.945] };
     expect(validateLayout(bad, level1_1).length).toBeGreaterThan(0);
   });
 });
