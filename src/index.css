@@ -30,3 +30,13 @@
     }
   }
 }
+
+/* Bar waktu Pembuka Modul (S3a): terisi penuh selama durasi auto-lanjut. */
+@keyframes intro-bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

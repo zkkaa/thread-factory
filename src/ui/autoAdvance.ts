@@ -4,6 +4,10 @@ export interface AutoAdvance {
   skip: () => void;
   /** Membatalkan tanpa memanggil onAdvance (mis. layar ditinggalkan). */
   cancel: () => void;
+  /** Menghentikan hitungan mundur sementara; sisa waktu disimpan. */
+  pause: () => void;
+  /** Melanjutkan hitungan dari sisa waktu. Tidak berefek bila tidak sedang dijeda. */
+  resume: () => void;
 }
 
 /**
@@ -16,12 +20,21 @@ export function createAutoAdvance(
   delayMs: number,
 ): AutoAdvance {
   let finished = false;
-  const handle: ReturnType<typeof setTimeout> = setTimeout(fire, delayMs);
+  let remaining = delayMs;
+  let startedAt = Date.now();
+  let handle: ReturnType<typeof setTimeout> | null = setTimeout(fire, delayMs);
+
+  function clear(): void {
+    if (handle !== null) {
+      clearTimeout(handle);
+      handle = null;
+    }
+  }
 
   function fire(): void {
     if (finished) return;
     finished = true;
-    clearTimeout(handle);
+    clear();
     onAdvance();
   }
 
@@ -29,7 +42,17 @@ export function createAutoAdvance(
     skip: fire,
     cancel: () => {
       finished = true;
-      clearTimeout(handle);
+      clear();
+    },
+    pause: () => {
+      if (finished || handle === null) return;
+      remaining = Math.max(0, remaining - (Date.now() - startedAt));
+      clear();
+    },
+    resume: () => {
+      if (finished || handle !== null) return;
+      startedAt = Date.now();
+      handle = setTimeout(fire, remaining);
     },
   };
 }
