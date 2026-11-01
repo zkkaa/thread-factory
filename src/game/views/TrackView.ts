@@ -29,7 +29,8 @@ export class TrackView {
     for (const tile of road.tiles) {
       const image = scene.add.image(0, 0, textureKeyOf(tile));
       if (tile.rotate90) {
-        // Tekstur lurus 64x128 diputar 90 derajat di sekitar pusat kotak 128x64.
+        // Tekstur lurus (ROAD.unit x ROAD.width) diputar 90 derajat di
+        // sekitar pusat kotak ubin tegak (ROAD.width x ROAD.unit).
         image
           .setOrigin(0.5, 0.5)
           .setPosition(tile.x + tile.width / 2, tile.y + tile.height / 2)
