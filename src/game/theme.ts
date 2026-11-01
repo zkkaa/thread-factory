@@ -1,9 +1,9 @@
 import type { ThreadState } from '../engine/types';
 
 /**
-- Semua ukuran dan warna tampilan arena ada di sini, supaya mengganti gaya
-- (mis. dari kotak geometris ke sprite) cukup menyentuh satu tempat.
-- Isinya data dan dua fungsi posisi kecil; tidak ada aturan permainan.
+ * Semua ukuran dan warna tampilan arena ada di sini, supaya mengganti gaya
+ * (mis. dari kotak geometris ke sprite) cukup menyentuh satu tempat.
+ * Isinya data dan dua fungsi posisi kecil; tidak ada aturan permainan.
  */
 
 /** Ukuran kanvas; harus sama dengan width/height di game/main.ts. */
@@ -13,14 +13,15 @@ export const ARENA = { width: 1280, height: 720 } as const;
 export const TILE_SIZE = 64;
 
 /**
- * Sisi sprite robot. Frame sprite 64 px (ubin 16 px diskalakan 4x), jadi 32
- * berarti pengecilan tepat setengah dan tetap tajam.
+ * Sisi sprite robot. Frame sprite 64 px (ubin 16 px diskalakan 4x) dikecilkan
+ * ke 24 px agar dua robot muat berdampingan di jalan selebar ROAD.width.
+ * Bukan pengecilan bulat, jadi sedikit lebih lembut dari 32 px.
  */
-export const ROBOT_SIZE = 32;
+export const ROBOT_SIZE = 24;
 
 /**
-- Tata letak jalur robot. Tiap robot punya satu jalur (baris):
-- nama dan state di kiri (`labelX`), deretan ubin mulai dari `startX`.
+ * Tata letak jalur robot. Tiap robot punya satu jalur (baris):
+ * nama dan state di kiri (`labelX`), deretan ubin mulai dari `startX`.
  */
 export const LANE = {
   labelX: 120,
@@ -40,9 +41,9 @@ export function laneCenterY(laneIndex: number): number {
 }
 
 /**
-- Gaya tiap state thread. Warna SELALU dipasangkan dengan label teks supaya
-- state tetap terbaca oleh pemain yang sulit membedakan warna.
-- Label memakai istilah teknis bahasa Inggris, sesuai PRD bagian 6.
+ * Gaya tiap state thread. Warna SELALU dipasangkan dengan label teks supaya
+ * state tetap terbaca oleh pemain yang sulit membedakan warna.
+ * Label memakai istilah teknis bahasa Inggris, sesuai PRD bagian 6.
  */
 export const STATE_STYLE: Record<
   ThreadState,
@@ -82,6 +83,7 @@ export const COLORS = {
 export const TEXT_STYLE = {
   fontFamily: 'Arial, sans-serif',
   fontSize: '16px',
+  resolution: 2,
   color: COLORS.text,
   align: 'center',
 };
@@ -90,30 +92,41 @@ export const TEXT_STYLE = {
 export const TILE_TEXT_STYLE = {
   fontFamily: 'Arial, sans-serif',
   fontSize: '11px',
+  resolution: 2,
   color: '#d1d5db',
   align: 'center',
 };
 
-/** Jalan robot (U-053). Lebar cukup untuk dua jalur sejajar. */
+/**
+ * Jalan robot (U-053). Lebar cukup untuk dua jalur sejajar.
+ * Aset jalan dibesarkan 2x (ROAD_SCALE di assetManifest.ts); angka di sini
+ * HARUS ikut berubah bila skala itu diubah (dicek tes roadGeometry):
+ * unit = 16 x skala, width = 32 x skala, corner = 48 x skala.
+ */
 export const ROAD = {
-  width: 80,
+  /** Satu ubin lurus sepanjang jalan (16 px aset x 2). */
+  unit: 32,
+  /** Lebar jalan (32 px aset x 2). */
+  width: 64,
+  /** Sisi ubin sudut (48 px aset x 2). */
+  corner: 96,
   color: 0x2b364f,
   edge: 0x4b5b80,
   arrow: 0x93a4c8,
 } as const;
 
-/** Checkpoint bulat (U-054). */
+/** Checkpoint bulat (U-054). Diameternya hampir sama dengan lebar jalan. */
 export const CHECKPOINT = {
-  radius: 50,
+  radius: 30,
   fill: 0x1f2a44,
   stroke: 0xf5c542,
   hover: 0xffffff,
   tooltipWidth: 220,
   /** Ikon instruksi di dalam lingkaran (U-073). */
-  iconSize: 32,
+  iconSize: 22,
   /** Ikon digeser ke atas dari pusat, teks diturunkan, supaya muat berdua. */
-  iconLift: 12,
-  labelDrop: 22,
+  iconLift: 9,
+  labelDrop: 14,
 } as const;
 
 /** Kilau gerbang saat kunci dipegang atau dilepas (U-076). */
@@ -140,6 +153,7 @@ export const BOARD_STYLE = {
 export const LABEL_STYLE = {
   fontFamily: 'Arial, sans-serif',
   fontSize: '12px',
+  resolution: 2,
   color: COLORS.text,
   align: 'center',
   backgroundColor: 'rgba(15,24,48,0.8)',
@@ -191,6 +205,7 @@ export const SLOT_STYLE = {
   hoverColor: 0xffffff,
   ringWidth: 3,
 } as const;
+
 /** Efek visual Si Penjadwal pada robot (U-059). */
 export const ROBOT_FX = {
   /** Cincin RUNNING: tambahan ukuran di tiap sisi robot. */
@@ -219,6 +234,7 @@ export const ROBOT_SPRITE = {
 export const ROBOT_FX_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
   fontFamily: 'monospace',
   fontSize: '14px',
+  resolution: 2,
   fontStyle: 'bold',
   color: '#bfdbfe',
 };
