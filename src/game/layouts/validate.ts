@@ -1,6 +1,8 @@
 import type { LevelDefinition } from '../../levels/types';
-import { ARENA } from '../theme';
+import { roadRectErrors } from '../roadGeometry';
+import { ARENA, ROAD } from '../theme';
 import type { ArenaLayout, Point } from './types';
+
 
 const inArena = (p: Point): boolean =>
   p.x >= 0 && p.x <= ARENA.width && p.y >= 0 && p.y <= ARENA.height;
@@ -52,11 +54,31 @@ export function validateLayout(
       errors.push(`slot ${k} harus sesudah checkpoint ${k - 1}`);
     }
   });
-  if (layout.path.length < 3) errors.push('jalan butuh minimal 3 titik');
-  if (!layout.path.every(inArena)) errors.push('titik jalan di luar ARENA');
+    errors.push(...roadRectErrors(layout.road));
+  const road = layout.road;
+  if (
+    !inArena({ x: road.left, y: road.top }) ||
+    !inArena({ x: road.left + road.width, y: road.top + road.height })
+  ) {
+    errors.push('jalan di luar ARENA');
+  }
   const { x, y, width, height } = layout.board;
   if (!inArena({ x, y }) || !inArena({ x: x + width, y: y + height })) {
     errors.push('papan di luar ARENA');
+  }
+  const hole = {
+    left: road.left + ROAD.width,
+    top: road.top + ROAD.width,
+    right: road.left + road.width - ROAD.width,
+    bottom: road.top + road.height - ROAD.width,
+  };
+  if (
+    x < hole.left ||
+    y < hole.top ||
+    x + width > hole.right ||
+    y + height > hole.bottom
+  ) {
+    errors.push('papan harus berada di lubang tengah jalan');
   }
   if (layout.boardLinks.some((l) => l.checkpoint >= n || l.checkpoint < 0)) {
     errors.push('boardLinks menunjuk checkpoint yang tidak ada');

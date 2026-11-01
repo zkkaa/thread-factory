@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { layout1_1 } from '../layouts/level-1-1.layout';
-import { pointAt, sampleClosedPath } from '../pathMath';
+import { pointAt } from '../pathMath';
+import { buildRoad } from '../roadGeometry';
 import { clientToGame, nearestSlot, slotPositions } from '../slots';
 
 const positions = [
@@ -38,7 +39,7 @@ describe('nearestSlot', () => {
 
 describe('slotPositions', () => {
   it('satu titik per slot, sama dengan pointAt di jalan layout', () => {
-    const path = sampleClosedPath(layout1_1.path);
+    const path = buildRoad(layout1_1.road).path;
     const result = slotPositions(path, layout1_1.slots);
     expect(result).toHaveLength(layout1_1.slots.length);
     const first = pointAt(path, layout1_1.slots[0] ?? 0, 0);

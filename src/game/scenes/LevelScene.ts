@@ -10,8 +10,9 @@ import { computeAnchors } from '../anchors';
 import { DoorDragSession } from '../doorDrag';
 import { buildDoorSpans } from '../doorSpans';
 import { getLayout } from '../layouts';
-import { pointAt, sampleClosedPath } from '../pathMath';
-import { ARENA, COLORS, DOOR_PANEL, TEXT_STYLE } from '../theme';
+import { pointAt } from '../pathMath';
+import { buildRoad } from '../roadGeometry';
+import { ARENA, COLORS, DEPTH, DOOR_PANEL, TEXT_STYLE } from '../theme';
 import { BoardView, type BoardLinkPoint } from '../views/BoardView';
 import { CheckpointView } from '../views/CheckpointView';
 import { DoorView, type NameOf } from '../views/DoorView';
@@ -20,8 +21,7 @@ import { clientToGame, slotPositions } from '../slots';
 import { toolBus } from '../toolBus';
 import { SlotMarkerView } from '../views/SlotMarkerView';
 import { TrackView } from '../views/TrackView';
-import { FloorView } from '../views/FloorView';
-import { robotFrameFor } from '../assetManifest';
+import { ARENA_BACKGROUND, robotFrameFor } from '../assetManifest';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
 export interface LevelSceneData {
@@ -59,8 +59,17 @@ export class LevelScene extends Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor(COLORS.background);
-    const floor = new FloorView(this);
-    this.events.once(Scenes.Events.DESTROY, () => floor.destroy());
+    this.cameras.main.centerOn(ARENA.width / 2, ARENA.height / 2);
+    if (this.textures.exists(ARENA_BACKGROUND.key)) {
+      this.add
+        .image(ARENA.width / 2, ARENA.height / 2, ARENA_BACKGROUND.key)
+        .setDisplaySize(ARENA.width, ARENA.height)
+        .setDepth(DEPTH.floor);
+    } else {
+      console.warn(
+        `Aset "${ARENA_BACKGROUND.path}" gagal dimuat; memakai latar polos.`,
+      );
+    }
     const controller = this.controller;
     if (controller === null) {
       this.showNotice('Controller belum diberikan ke scene');
@@ -107,10 +116,11 @@ export class LevelScene extends Scene {
       level,
       state.tools,
     );
-    const path = sampleClosedPath(layout.path);
+    const road = buildRoad(layout.road);
+    const path = road.path;
     const nameOf = this.nameOf(snapshot);
 
-    this.track = new TrackView(this, path);
+    this.track = new TrackView(this, road);
 
     const links: BoardLinkPoint[] = [];
     for (const link of layout.boardLinks) {

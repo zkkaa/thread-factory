@@ -467,7 +467,7 @@ Yang **dihapus** dari mockup: tombol "Jalur (Opsional)" di toolbox, dan panel Me
 | Potret Pak Mandor (4 ekspresi) | S1, S4, S6, S7, S8, petunjuk | Generator | Belum |
 | Logo Thread Factory | S1 | Dibuat tim/generator | Belum |
 | Latar Beranda | S1 | Kenney + komposisi | Belum |
-| Tile latar arena (lantai, properti) | S5 | Kenney Tiny Factory | Belum |
+| Latar arena penuh (`world/bg-arena.png`) | S5 | Google Gemini AI | Terpasang; ketentuan penggunaan perlu dikonfirmasi |
 | Sprite robot (A, B, dan variasi) | S5 | Kenney Robot Pack | Belum |
 | Checkpoint, ikon instruksi | S5 | Dibuat tim | Belum |
 | Gerbang/pintu mutex (terbuka/tertutup) | S5 | Kenney/dibuat tim | Belum |
