@@ -17,6 +17,12 @@ export const TINY_FACTORY: SheetSpec = {
   scale: 4,
 };
 
+/** Latar layar arena; dipasang memenuhi kanvas tanpa nearest-neighbor. */
+export const ARENA_BACKGROUND = {
+  key: 'bg-arena',
+  path: 'world/bg-arena.png',
+} as const;
+
 /** Semua spritesheet yang dimuat Preloader. */
 export const SHEETS: readonly SheetSpec[] = [TINY_FACTORY];
 
@@ -53,6 +59,7 @@ export const EXTRA_FILES: readonly string[] = [
   'world/tiny-factory-license.txt',
   'world/road-straight.png',
   'world/road-curve.png',
+  ARENA_BACKGROUND.path,
 ];
 
 /** Kunci tekstur lantai arena yang dibakar sekali oleh FloorView. */

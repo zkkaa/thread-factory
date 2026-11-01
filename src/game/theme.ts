@@ -82,6 +82,7 @@ export const COLORS = {
 export const TEXT_STYLE = {
   fontFamily: 'Arial, sans-serif',
   fontSize: '16px',
+  resolution: 2,
   color: COLORS.text,
   align: 'center',
 };
@@ -90,6 +91,7 @@ export const TEXT_STYLE = {
 export const TILE_TEXT_STYLE = {
   fontFamily: 'Arial, sans-serif',
   fontSize: '11px',
+  resolution: 2,
   color: '#d1d5db',
   align: 'center',
 };
@@ -145,6 +147,7 @@ export const BOARD_STYLE = {
 export const LABEL_STYLE = {
   fontFamily: 'Arial, sans-serif',
   fontSize: '12px',
+  resolution: 2,
   color: COLORS.text,
   align: 'center',
   backgroundColor: 'rgba(15,24,48,0.8)',
@@ -224,6 +227,7 @@ export const ROBOT_SPRITE = {
 export const ROBOT_FX_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
   fontFamily: 'monospace',
   fontSize: '14px',
+  resolution: 2,
   fontStyle: 'bold',
   color: '#bfdbfe',
 };
