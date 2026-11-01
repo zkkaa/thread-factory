@@ -15,14 +15,19 @@ function buatNavigasi(moduleId: number): Navigation {
   };
 }
 
-function render(index: number): string {
+function render(index: number, reduceMotion = false): string {
   const moduleDef = MODULES[index];
   return renderToStaticMarkup(
     <ModuleIntroScreen
       navigation={buatNavigasi(moduleDef.id)}
       moduleDef={moduleDef}
+      reduceMotion={reduceMotion}
     />,
   );
+}
+
+function hitung(html: string, pola: RegExp): number {
+  return (html.match(pola) ?? []).length;
 }
 
 describe('ModuleIntroScreen', () => {
@@ -39,12 +44,41 @@ describe('ModuleIntroScreen', () => {
       expect(html).toContain(concept);
     }
     expect(html).toContain('aria-label="Konsep yang akan dipelajari"');
+    expect(hitung(html, /<li /g)).toBe(MODULES[1].concepts.length);
   });
 
-  it('punya tombol Lewati dan menyebut jumlah level', () => {
-    const html = render(0);
-    expect(html).toContain('Lewati');
-    expect(html).toContain('5 level');
+  it('menyebut jumlah level', () => {
+    expect(render(0)).toContain('5 level');
     expect(render(1)).toContain('4 level');
+  });
+
+  it('memakai bangunan modul dan peta Peta Level modul itu sebagai latar', () => {
+    const modul1 = render(0);
+    expect(modul1).toContain('assets/ui/building-module-1.png');
+    expect(modul1).toContain('assets/ui/map-levels-1.jpg');
+    const modul2 = render(1);
+    expect(modul2).toContain('assets/ui/building-module-2.png');
+    expect(modul2).toContain('assets/ui/map-levels-2.jpg');
+  });
+
+  it('gambar hias disembunyikan dari pembaca layar', () => {
+    const html = render(0);
+    expect(html).toContain('alt="" aria-hidden="true"');
+  });
+
+  it('awalnya bar terisi dan tombol Lanjut belum ada', () => {
+    const html = render(0);
+    expect(html).toContain('intro-bar-fill');
+    expect(html).toContain('Menyiapkan modul');
+    expect(html).not.toContain('Lanjut</span>');
+    expect(hitung(html, /<button/g)).toBe(0);
+  });
+
+  it('kurangi animasi: tanpa bar, tombol Lanjut langsung tampil tanpa efek pop', () => {
+    const html = render(0, true);
+    expect(html).not.toContain('intro-bar-fill');
+    expect(html).toContain('<span>Lanjut</span>');
+    expect(hitung(html, /<button/g)).toBe(1);
+    expect(html).not.toContain('animate-star-pop');
   });
 });
