@@ -6,10 +6,10 @@ import type { UnlockContext } from '../../progress/unlocks';
 import type { Navigation } from '../navigation';
 import { LevelMapScreen } from '../screens/LevelMapScreen';
 
-function buatNavigasi(moduleId: number): Navigation {
+function buatNavigasi(moduleId: number, canGo = true): Navigation {
   return {
     screen: { id: 'levelMap', moduleId },
-    canGo: () => true,
+    canGo: () => canGo,
     go: vi.fn(),
     replace: vi.fn(),
     back: vi.fn(),
@@ -34,11 +34,16 @@ function buatKonteks(progress: ProgressData, demoMode = false): UnlockContext {
 const hanya11 = (levelId: string) =>
   levelId === '1-1' ? 'Bug Papan Stok' : undefined;
 
-function render(moduleIndex: number, progress: ProgressData, demoMode = false) {
+function render(
+  moduleIndex: number,
+  progress: ProgressData,
+  demoMode = false,
+  canGo = true,
+) {
   const moduleDef = MODULES[moduleIndex];
   return renderToStaticMarkup(
     <LevelMapScreen
-      navigation={buatNavigasi(moduleDef.id)}
+      navigation={buatNavigasi(moduleDef.id, canGo)}
       moduleDef={moduleDef}
       context={buatKonteks(progress, demoMode)}
       progress={progress}
@@ -52,7 +57,7 @@ function hitung(html: string, pola: RegExp): number {
 }
 
 describe('LevelMapScreen', () => {
-  it('tanpa progres: tombol Mulai Level 1-1, level lain nonaktif', () => {
+  it('tanpa progres: 1-1 dipilih dan berikutnya, tombol Mulai Level 1-1 aktif', () => {
     const html = render(0, buatProgress());
     expect(html).toContain('Modul 1');
     expect(html).toContain('Sinkronisasi Dasar');
@@ -61,12 +66,14 @@ describe('LevelMapScreen', () => {
     expect(html).toContain(
       'aria-label="Level 1-1: Bug Papan Stok, belum selesai"',
     );
-    expect(hitung(html, /Segera hadir/g)).toBe(4);
-    // 4 titik "segera hadir" nonaktif; titik 1-1 dan tombol aksi aktif.
-    expect(hitung(html, /disabled=""/g)).toBe(4);
+    // Lima penanda level; hanya satu yang dipilih.
+    expect(hitung(html, /aria-pressed=/g)).toBe(5);
+    expect(hitung(html, /aria-pressed="true"/g)).toBe(1);
+    expect(hitung(html, /, segera hadir"/g)).toBe(4);
+    expect(html).not.toContain('disabled=""');
   });
 
-  it('level selesai menampilkan bintang untuk pembaca layar dan total modul', () => {
+  it('level selesai: bintang untuk pembaca layar, total modul, dan tombol Ulangi', () => {
     const html = render(
       0,
       buatProgress({ '1-1': { bestStars: 2, cleared: true } }),
@@ -76,27 +83,35 @@ describe('LevelMapScreen', () => {
     );
     expect(html).toContain('2 / 15');
     expect(html).toContain('★★☆');
-  });
-
-  it('semua level tersedia selesai: tanpa tombol aksi, ada pesan', () => {
-    const html = render(
-      0,
-      buatProgress({ '1-1': { bestStars: 3, cleared: true } }),
-    );
-    expect(html).not.toContain('Mulai Level');
-    expect(html).not.toContain('Lanjut Level');
+    expect(html).toContain('Selesai');
+    expect(html).toContain('Ulangi Level 1-1');
     expect(html).toContain('Semua level yang tersedia sudah selesai');
   });
 
-  it('modul tanpa level siap: pesan segera hadir dan semua titik nonaktif', () => {
+  it('modul tanpa level siap: pesan segera hadir dan tombol nonaktif', () => {
     const html = render(1, buatProgress(), true);
     expect(html).toContain('Level modul ini segera hadir.');
-    expect(hitung(html, /disabled=""/g)).toBe(4);
+    expect(hitung(html, /, segera hadir"/g)).toBe(4);
+    expect(html).toContain('Belum bisa dimainkan');
+    expect(html).toContain('disabled=""');
+    expect(html).not.toContain('Mulai Level');
+  });
+
+  it('navigation.canGo false menonaktifkan tombol aksi', () => {
+    const html = render(0, buatProgress(), false, false);
+    expect(html).toContain('Mulai Level 1-1');
+    expect(html).toContain('disabled=""');
   });
 
   it('punya tombol Kembali dan catatan mengulang level', () => {
     const html = render(0, buatProgress());
     expect(html).toContain('Kembali');
     expect(html).toContain('bisa diulang untuk mengejar bintang');
+  });
+
+  it('tanpa tab Kampanye, Sandbox, dan Bandingkan', () => {
+    const html = render(0, buatProgress());
+    expect(html).not.toContain('Sandbox');
+    expect(html).not.toContain('Bandingkan');
   });
 });

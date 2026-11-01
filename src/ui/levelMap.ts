@@ -35,6 +35,12 @@ export interface MapAction {
   levelId: string;
 }
 
+/** Aksi untuk level yang sedang dipilih di peta (termasuk Ulangi). */
+export interface SelectionAction {
+  verb: 'Mulai' | 'Lanjut' | 'Ulangi';
+  levelId: string;
+}
+
 export interface LevelMapView {
   nodes: LevelNode[];
   action: MapAction | null;
@@ -47,6 +53,24 @@ export interface LevelMapView {
 export const ALL_DONE_MESSAGE =
   'Semua level yang tersedia sudah selesai. Level lainnya segera hadir.';
 export const NONE_YET_MESSAGE = 'Level modul ini segera hadir.';
+
+/** Teks pembaca layar untuk satu titik level. */
+export function describeNode(node: LevelNode): string {
+  const name =
+    node.title === null
+      ? `Level ${node.levelId}`
+      : `Level ${node.levelId}: ${node.title}`;
+  switch (node.status) {
+    case 'comingSoon':
+      return `${name}, segera hadir`;
+    case 'locked':
+      return `${name}, terkunci`;
+    case 'cleared':
+      return `${name}, ${node.stars} dari 3 bintang`;
+    case 'open':
+      return `${name}, belum selesai`;
+  }
+}
 
 /**
  * Menyusun tampilan Peta Level satu modul. `getLevelTitle` mengembalikan
@@ -119,4 +143,36 @@ export function buildLevelMap(
     starsEarned: totalStars(progress, moduleDef.levelIds),
     starsMax: moduleDef.levelIds.length * 3,
   };
+}
+
+/**
+ * Level yang menjadi fokus peta: level berikutnya; bila semua selesai, level
+ * selesai terakhir; bila belum ada yang bisa dimainkan, level pertama.
+ * Dipakai untuk pilihan awal dan tempat robot pemandu berdiri.
+ */
+export function focusLevelId(view: LevelMapView): string | null {
+  const next = view.nodes.find((node) => node.isNext);
+  if (next !== undefined) return next.levelId;
+  const cleared = view.nodes.filter((node) => node.status === 'cleared');
+  if (cleared.length > 0) return cleared[cleared.length - 1].levelId;
+  return view.nodes.length > 0 ? view.nodes[0].levelId : null;
+}
+
+/**
+ * Aksi tombol untuk level yang dipilih. Null bila levelnya terkunci, belum
+ * dibuat, atau tidak ada di peta.
+ */
+export function selectionAction(
+  view: LevelMapView,
+  levelId: string,
+): SelectionAction | null {
+  const node = view.nodes.find((item) => item.levelId === levelId);
+  if (node === undefined) return null;
+  if (node.status === 'cleared') return { verb: 'Ulangi', levelId };
+  if (node.status === 'open') {
+    const verb =
+      node.isNext && view.action !== null ? view.action.verb : 'Mulai';
+    return { verb, levelId };
+  }
+  return null;
 }

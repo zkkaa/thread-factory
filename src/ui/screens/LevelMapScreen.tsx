@@ -1,10 +1,22 @@
+import { useState } from 'react';
 import type { ModuleDefinition } from '../../levels/types';
-import { pulseClass } from '../motion';
 import type { ProgressData } from '../../progress/progressStore';
 import type { UnlockContext } from '../../progress/unlocks';
-import { type LevelNode, buildLevelMap } from '../levelMap';
+import { LevelPedestal } from '../components/LevelPedestal';
+import { LevelRoad } from '../components/LevelRoad';
+import { MapFog } from '../components/MapFog';
+import {
+  NONE_YET_MESSAGE,
+  buildLevelMap,
+  focusLevelId,
+  selectionAction,
+} from '../levelMap';
+import { layoutFor } from '../levelMapLayout';
+import { buildRoadSegments } from '../levelMapPath';
+import { FOCUS } from '../modeTabsData';
 import type { Navigation } from '../navigation';
 import type { Screen } from '../screenState';
+import { UI_ASSETS } from '../uiAssets';
 
 interface LevelMapScreenProps {
   navigation: Navigation;
@@ -17,79 +29,33 @@ interface LevelMapScreenProps {
   reduceMotion?: boolean;
 }
 
-const FOCUS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sun-400';
+/*
+ * Kotak peta berukuran "cover" seperti di ModuleMap: menutup seluruh layar
+ * tetapi tetap 16:9, dipusatkan. Peta, jalur, titik level, dan robot berada
+ * di kotak yang sama, jadi selalu menempel ke lahannya. Header dan panel
+ * bawah berada di luar kotak. `containerType: size` membuat satuan cqw pada
+ * anak-anaknya mengikuti ukuran kotak ini.
+ */
+const COVER_BOX = {
+  width: 'max(100vw, calc(100vh * 16 / 9))',
+  height: 'max(100vh, calc(100vw * 9 / 16))',
+  containerType: 'size',
+} as const;
 
-/** Teks pembaca layar untuk satu titik level. */
-function describeNode(node: LevelNode): string {
-  const name =
-    node.title === null
-      ? `Level ${node.levelId}`
-      : `Level ${node.levelId}: ${node.title}`;
-  switch (node.status) {
-    case 'comingSoon':
-      return `${name}, segera hadir`;
-    case 'locked':
-      return `${name}, terkunci`;
-    case 'cleared':
-      return `${name}, ${node.stars} dari 3 bintang`;
-    case 'open':
-      return `${name}, belum selesai`;
-  }
-}
-
-function StarRow({ stars }: { stars: number }) {
+function Stars({ count }: { count: number }) {
   return (
     <span aria-hidden="true" className="text-xl tracking-widest text-sun-400">
-      {'★'.repeat(stars)}
-      {'☆'.repeat(3 - stars)}
+      {`${'★'.repeat(count)}${'☆'.repeat(3 - count)}`}
     </span>
   );
 }
 
-interface NodeButtonProps {
-  node: LevelNode;
-  disabled: boolean;
-  reduceMotion: boolean;
-  onOpen: () => void;
-}
-
-function NodeButton({ node, disabled, reduceMotion, onOpen }: NodeButtonProps) {
-  const tone =
-    node.status === 'cleared'
-      ? 'border-sun-500 bg-sun-400 text-navy-900'
-      : node.status === 'open'
-        ? 'border-ember-500 bg-navy-800 text-ink-100 hover:bg-navy-700'
-        : 'border-navy-700 bg-navy-900 text-ink-300 opacity-60';
-  const ring = node.isNext
-    ? `ring-4 ring-ember-500 ring-offset-2 ring-offset-navy-900 ${pulseClass(
-        true,
-        reduceMotion,
-      )}`
-    : '';
-  const locked = node.status === 'locked' || node.status === 'comingSoon';
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      aria-label={describeNode(node)}
-      onClick={onOpen}
-      className={`flex h-20 w-20 items-center justify-center rounded-full border-4 text-xl font-black transition-colors disabled:cursor-not-allowed ${FOCUS} ${tone} ${ring}`}
-    >
-      {locked ? (
-        <span aria-hidden="true">🔒</span>
-      ) : (
-        <span aria-hidden="true">{node.levelId}</span>
-      )}
-    </button>
-  );
-}
-
 /**
- * Peta Level (S3 bagian B): titik level berurutan dengan bintang tertinggi,
- * kunci, sorotan level berikutnya, dan tombol Mulai/Lanjut. Ikon kunci
- * sementara berupa emoji; diganti ikon SVG di U-023.
- * Sorotan level berikutnya berdenyut kecuali "kurangi animasi" aktif (U-076).
+ * Peta Level (S3b): peta pabrik layar penuh dengan jalur, penanda level
+ * (pedestal), dan robot pemandu yang berdiri di posisi tetap. Klik penanda =
+ * memilih level; panel bawah menampilkan rinciannya dan tombol
+ * Mulai/Lanjut/Ulangi mengikuti pilihan. Hanya level terbuka atau selesai
+ * yang bisa dibuka (navigation.canGo).
  */
 export function LevelMapScreen({
   navigation,
@@ -100,11 +66,15 @@ export function LevelMapScreen({
   reduceMotion = false,
 }: LevelMapScreenProps) {
   const view = buildLevelMap(moduleDef, context, progress, getLevelTitle);
-  const intro = (levelId: string): Screen => ({ id: 'levelIntro', levelId });
+  const layout = layoutFor(moduleDef.id);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    focusLevelId(view),
+  );
 
-  return (
-    <main className="flex h-screen flex-col gap-8 overflow-y-auto bg-linear-to-br from-navy-900 to-navy-700 px-12 py-8 text-ink-100">
-      <header className="flex items-center justify-between gap-6">
+  if (layout === null) {
+    return (
+      <main className="flex h-screen flex-col items-center justify-center gap-4 bg-navy-900 text-ink-100">
+        <p>Peta {moduleDef.title} belum tersedia.</p>
         <button
           type="button"
           onClick={navigation.back}
@@ -112,88 +82,166 @@ export function LevelMapScreen({
         >
           Kembali
         </button>
-        <div className="text-center">
-          <p className="text-sm font-bold tracking-widest text-ember-500 uppercase">
-            {moduleDef.title}
-          </p>
-          <h1 className="text-3xl font-black text-sun-400">
-            {moduleDef.subtitle}
-          </h1>
-        </div>
-        <p className="w-24 text-right text-sm font-semibold text-ink-300">
-          <span aria-hidden="true">★ </span>
+      </main>
+    );
+  }
+
+  const selected =
+    view.nodes.find((node) => node.levelId === selectedId) ?? null;
+  const action =
+    selected === null ? null : selectionAction(view, selected.levelId);
+  const target: Screen | null =
+    action === null ? null : { id: 'levelIntro', levelId: action.levelId };
+  const canStart = target !== null && navigation.canGo(target);
+  const segments = buildRoadSegments(moduleDef.levelIds, layout, (levelId) =>
+    view.nodes.some(
+      (node) => node.levelId === levelId && node.status === 'cleared',
+    ),
+  );
+
+  return (
+    <main className="relative h-screen w-screen overflow-hidden bg-navy-900">
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+        style={COVER_BOX}
+        onClick={(event) => {
+          const box = event.currentTarget.getBoundingClientRect();
+          const x = ((event.clientX - box.left) / box.width) * 100;
+          const y = ((event.clientY - box.top) / box.height) * 100;
+          console.log(`{ x: ${x.toFixed(1)}, y: ${y.toFixed(1)} }`);
+        }}
+      >
+        <img
+          src={layout.mapImage}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          className="absolute inset-0 h-full w-full select-none object-cover saturate-90"
+        />
+        {/* Tint navy tipis supaya peta tidak terlalu terang. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-navy-800/25"
+        />
+        <MapFog layer="back" />
+        <LevelRoad segments={segments} />
+
+        <section aria-label="Peta level" className="absolute inset-0">
+          {view.nodes.map((node) => {
+            const position = layout.pads[node.levelId];
+            if (position === undefined) return null;
+            return (
+              <LevelPedestal
+                key={node.levelId}
+                node={node}
+                position={position}
+                width={layout.padWidth}
+                selected={node.levelId === selectedId}
+                reduceMotion={reduceMotion}
+                onSelect={() => setSelectedId(node.levelId)}
+              />
+            );
+          })}
+        </section>
+
+        <img
+          src={UI_ASSETS.robotGuide}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          className="pointer-events-none absolute z-12 h-auto -translate-x-1/2 -translate-y-1/2 select-none drop-shadow-lg"
+          style={{
+            left: `${layout.robot.x}%`,
+            top: `${layout.robot.y}%`,
+            width: `${layout.robot.width}%`,
+          }}
+        />
+
+        <MapFog layer="front" />
+      </div>
+
+      <header className="absolute inset-x-[2.5%] top-[3.5%] z-30 flex items-center justify-between gap-4">
+        <button
+          type="button"
+          onClick={navigation.back}
+          className={`rounded-lg border border-navy-500 bg-navy-800 px-4 py-2 font-semibold text-ink-100 hover:bg-navy-700 ${FOCUS}`}
+        >
+          Kembali
+        </button>
+        <h1 className="rounded-xl border-2 border-navy-500 bg-navy-900/90 px-6 py-2 text-lg font-black text-ink-100 shadow-lg">
+          <span className="text-ember-500 uppercase">{moduleDef.title}</span>
+          <span aria-hidden="true"> · </span>
+          <span className="text-sun-400">{moduleDef.subtitle}</span>
+        </h1>
+        <p className="rounded-xl border-2 border-navy-500 bg-navy-900/90 px-4 py-2 font-bold text-ink-100 shadow-lg">
+          <span aria-hidden="true" className="text-sun-400">
+            ★{' '}
+          </span>
           {view.starsEarned} / {view.starsMax}
         </p>
       </header>
 
       <section
-        aria-label="Peta level"
-        className="flex flex-1 flex-col items-center justify-center gap-10"
+        aria-live="polite"
+        className="absolute inset-x-[2.5%] bottom-[4%] z-30 flex items-center justify-between gap-6 rounded-2xl border-2 border-sun-400 bg-navy-900/90 p-4 text-ink-100 shadow-xl backdrop-blur-sm"
       >
-        <ol className="flex items-start">
-          {view.nodes.map((node, index) => (
-            <li key={node.levelId} className="flex items-start">
-              {index > 0 && (
-                <span
-                  aria-hidden="true"
-                  className="mt-9 h-1.5 w-12 rounded bg-navy-500"
-                />
-              )}
-              <div className="flex w-32 flex-col items-center gap-1 text-center">
-                <NodeButton
-                  node={node}
-                  disabled={
-                    (node.status !== 'open' && node.status !== 'cleared') ||
-                    !navigation.canGo(intro(node.levelId))
-                  }
-                  reduceMotion={reduceMotion}
-                  onOpen={() => navigation.go(intro(node.levelId))}
-                />
-                <span className="text-sm font-bold">Level {node.levelId}</span>
-                <span className="text-xs text-ink-300">
-                  {node.title ?? node.note}
-                </span>
-                {node.status === 'cleared' && (
+        <div className="min-w-0 space-y-1">
+          {selected === null ? (
+            <p className="font-semibold">{NONE_YET_MESSAGE}</p>
+          ) : (
+            <>
+              <p className="text-xs font-bold tracking-wide text-ember-500 uppercase">
+                Level {selected.levelId}
+              </p>
+              <h2 className="text-xl font-black text-sun-400">
+                {selected.title ?? 'Belum tersedia'}
+              </h2>
+              <div className="flex flex-wrap items-center gap-3 text-sm font-semibold">
+                {selected.status === 'cleared' && (
                   <>
-                    <span className="text-xs font-bold text-sun-400">
-                      Selesai
-                    </span>
-                    <StarRow stars={node.stars} />
+                    <Stars count={selected.stars} />
+                    <span>Selesai</span>
                   </>
                 )}
-                {node.status === 'locked' && node.note !== null && (
-                  <span className="text-xs text-ember-500">{node.note}</span>
+                {selected.status === 'open' && <span>Belum selesai</span>}
+                {selected.status === 'locked' && (
+                  <span className="text-ember-500">
+                    <span aria-hidden="true">🔒 </span>
+                    Terkunci{selected.note !== null ? `: ${selected.note}` : ''}
+                  </span>
                 )}
-                {node.isNext && (
+                {selected.status === 'comingSoon' && <span>Segera hadir</span>}
+                {selected.isNext && (
                   <span className="rounded bg-ember-500 px-2 py-0.5 text-xs font-bold text-navy-900">
                     Berikutnya
                   </span>
                 )}
               </div>
-            </li>
-          ))}
-        </ol>
-
-        {view.action !== null ? (
-          <button
-            type="button"
-            disabled={!navigation.canGo(intro(view.action.levelId))}
-            onClick={() => {
-              if (view.action !== null) {
-                navigation.go(intro(view.action.levelId));
-              }
-            }}
-            className={`rounded-xl bg-sun-400 px-8 py-3 text-xl font-bold text-navy-900 shadow-md hover:bg-sun-500 disabled:cursor-not-allowed disabled:opacity-40 ${FOCUS}`}
-          >
-            {view.action.verb} Level {view.action.levelId}
-          </button>
-        ) : (
-          <p className="max-w-md text-center text-ink-300">{view.message}</p>
-        )}
-
-        <p className="text-sm text-ink-300">
-          Level yang sudah selesai bisa diulang untuk mengejar bintang.
-        </p>
+            </>
+          )}
+          {view.message !== null && (
+            <p className="text-sm text-ink-300">{view.message}</p>
+          )}
+          <p className="text-xs text-ink-300">
+            Level yang sudah selesai bisa diulang untuk mengejar bintang.
+          </p>
+        </div>
+        <button
+          type="button"
+          disabled={!canStart}
+          onClick={() => {
+            if (target !== null) navigation.go(target);
+          }}
+          className={`shrink-0 rounded-full border-b-4 px-8 py-3 text-lg font-extrabold whitespace-nowrap shadow-lg transition-colors ${FOCUS} ${
+            canStart
+              ? 'border-amber-600 bg-sun-400 text-navy-900 hover:bg-sun-500'
+              : 'cursor-not-allowed border-navy-700 bg-navy-800 text-ink-300 opacity-70'
+          }`}
+        >
+          {action === null
+            ? 'Belum bisa dimainkan'
+            : `${action.verb} Level ${action.levelId}`}
+        </button>
       </section>
     </main>
   );
