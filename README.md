@@ -248,6 +248,7 @@ All rights reserved.
 ## Kredit
 
 - **Aset dunia permainan:** [Tiny Factory](https://kenney.nl) v1.0 oleh Kenney (kenney.nl), lisensi CC0. Salinan lisensi: `public/assets/world/tiny-factory-license.txt`.
+- **Latar arena:** `public/assets/world/bg-arena.png`, dibuat dengan Google Gemini AI. Tanggal dan prompt belum tersedia; ketentuan penggunaan perlu dikonfirmasi.
 - **Game engine:** Phaser 3 (MIT). **Antarmuka:** React (MIT). **Template awal:** phaserjs/template-react-ts (MIT).
 - **Ikon antarmuka:** dibuat oleh tim.
 - **Potret Pak Mandor:** akan dibuat dengan bantuan generator gambar (dicatat di `docs/AI_USAGE.md`, lihat U-074).

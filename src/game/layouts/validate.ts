@@ -65,7 +65,8 @@ export function validateLayout(
   const { x, y, width, height } = layout.board;
   if (!inArena({ x, y }) || !inArena({ x: x + width, y: y + height })) {
     errors.push('papan di luar ARENA');
-    const hole = {
+  }
+  const hole = {
     left: road.left + ROAD.width,
     top: road.top + ROAD.width,
     right: road.left + road.width - ROAD.width,
@@ -78,7 +79,6 @@ export function validateLayout(
     y + height > hole.bottom
   ) {
     errors.push('papan harus berada di lubang tengah jalan');
-  }
   }
   if (layout.boardLinks.some((l) => l.checkpoint >= n || l.checkpoint < 0)) {
     errors.push('boardLinks menunjuk checkpoint yang tidak ada');

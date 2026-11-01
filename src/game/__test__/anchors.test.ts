@@ -26,11 +26,11 @@ describe('computeAnchors', () => {
     const { origins } = applyToolsDetailed(level1_1.threads, [tool]);
     const anchors = computeAnchors(origins['A'] ?? [], layout1_1);
     expect(anchors).toEqual([
-      { kind: 'checkpoint', fraction: 0.105 },
+      { kind: 'checkpoint', fraction: 0.0887 },
       { kind: 'gate', fraction: 0.265 },
-      { kind: 'checkpoint', fraction: 0.355 },
-      { kind: 'checkpoint', fraction: 0.605 },
-      { kind: 'checkpoint', fraction: 0.855 },
+      { kind: 'checkpoint', fraction: 0.3386 },
+      { kind: 'checkpoint', fraction: 0.5884 },
+      { kind: 'checkpoint', fraction: 0.8386 },
       { kind: 'gate', fraction: 0.945 },
     ]);
   });

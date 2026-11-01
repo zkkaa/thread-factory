@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import type { SimulationController } from '../../controller/SimulationController';
 import {
+  ARENA_BACKGROUND,
   ASSET_BASE_PATH,
   IMAGES,
   SHEETS,
@@ -39,6 +40,7 @@ export class Preloader extends Scene {
     this.load.setPath(ASSET_BASE_PATH);
     for (const sheet of SHEETS) this.load.image(sheet.sourceKey, sheet.path);
     for (const image of IMAGES) this.load.image(image.sourceKey, image.path);
+    this.load.image(ARENA_BACKGROUND.key, ARENA_BACKGROUND.path);
   }
 
   create(): void {
