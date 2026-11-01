@@ -19,11 +19,11 @@ describe('validateLayout', () => {
     );
 
     expect(centers[0]?.x).toBeCloseTo(640, 0);
-    expect(centers[0]?.y).toBeCloseTo(200, 0);
+    expect(centers[0]?.y).toBeCloseTo(248, 0);
     expect(centers[1]?.x).toBeCloseTo(896, 0);
     expect(centers[1]?.y).toBeCloseTo(360, 0);
     expect(centers[2]?.x).toBeCloseTo(640, 0);
-    expect(centers[2]?.y).toBeCloseTo(520, 0);
+    expect(centers[2]?.y).toBeCloseTo(472, 0);
     expect(centers[3]?.x).toBeCloseTo(384, 0);
     expect(centers[3]?.y).toBeCloseTo(360, 0);
   });
@@ -57,8 +57,15 @@ describe('validateLayout', () => {
     );
   });
 
-  it('menolak slot yang tidak berada di antara checkpoint', () => {
-    const bad = { ...layout1_1, slots: [0.09, 0.265, 0.445, 0.765, 0.945] };
+    it('menolak slot yang tidak berada di antara checkpoint', () => {
+    // Slot 0 harus sebelum checkpoint 0; geser sedikit ke sesudahnya.
+    const afterFirst = (layout1_1.checkpoints[0] ?? 0) + 0.01;
+    const bad = {
+      ...layout1_1,
+      slots: layout1_1.slots.map((slot, index) =>
+        index === 0 ? afterFirst : slot,
+      ),
+    };
     expect(validateLayout(bad, level1_1).length).toBeGreaterThan(0);
   });
 });

@@ -36,12 +36,18 @@ export interface ImageSpec {
   scale: number;
 }
 
+/**
+ * Skala ubin jalan. Bila diubah, ROAD di theme.ts (unit, width, corner)
+ * dan layout jalan (kelipatan unit) harus disesuaikan.
+ */
+const ROAD_SCALE = 2;
+
 /** Jalan lurus mendatar 16x32 px; jalan tegak = diputar 90 derajat. */
 export const ROAD_STRAIGHT: ImageSpec = {
   key: 'road-straight',
   sourceKey: 'road-straight-src',
   path: 'world/road-straight.png',
-  scale: 4,
+  scale: ROAD_SCALE,
 };
 
 /** Sudut kanan-atas 48x48 px; tiga sudut lain lewat flip. */
@@ -49,7 +55,7 @@ export const ROAD_CURVE: ImageSpec = {
   key: 'road-curve',
   sourceKey: 'road-curve-src',
   path: 'world/road-curve.png',
-  scale: 4,
+  scale: ROAD_SCALE,
 };
 
 export const IMAGES: readonly ImageSpec[] = [ROAD_STRAIGHT, ROAD_CURVE];
