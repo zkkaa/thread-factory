@@ -41,9 +41,9 @@ export const LEVEL_MAP_LAYOUTS: Readonly<Record<number, LevelMapLayout>> = {
     },
     via: [
       [
-        { x: 25, y: 27},
-        { x: 37, y: 22.5},
-        { x: 45, y: 24},
+        { x: 25, y: 27 },
+        { x: 37, y: 22.5 },
+        { x: 45, y: 24 },
       ],
       [
         { x: 46, y: 23 },
@@ -83,7 +83,7 @@ export const LEVEL_MAP_LAYOUTS: Readonly<Record<number, LevelMapLayout>> = {
       [
         { x: 50, y: 24 },
         { x: 57, y: 28 },
-        { x: 61, y: 33.8},
+        { x: 61, y: 33.8 },
       ],
       [
         { x: 75, y: 48 },
