@@ -34,6 +34,8 @@ export interface ThreadRuntime {
 export interface SyncContext {
   mutexes: ReadonlyMap<string, Mutex>;
   semaphores?: ReadonlyMap<string, Semaphore>;
+  enterArea?: (threadId: ThreadId, area: string) => void;
+  leaveArea?: (threadId: ThreadId, area: string) => void;
   /** Mengambil thread lain (untuk dibangunkan). Melempar error bila tidak ada. */
   getThread(id: ThreadId): ThreadRuntime;
 }
@@ -319,6 +321,26 @@ export function executeInstruction(
         push(transition(woken, 'READY', tick));
         push(advancePc(woken, tick));
       }
+      break;
+    }
+    case 'ENTER_AREA': {
+      sync.enterArea?.(id, instruction.area);
+      events.push({
+        type: 'AREA_ENTERED',
+        tick,
+        thread: id,
+        area: instruction.area,
+      });
+      break;
+    }
+    case 'LEAVE_AREA': {
+      sync.leaveArea?.(id, instruction.area);
+      events.push({
+        type: 'AREA_LEFT',
+        tick,
+        thread: id,
+        area: instruction.area,
+      });
       break;
     }
     default:

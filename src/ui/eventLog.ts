@@ -15,6 +15,8 @@ export type LogKind =
   | 'unlock'
   | 'blocked'
   | 'deadlock'
+  | 'area'
+  | 'overload'
   | 'finished';
 
 export interface LogEntry {
@@ -94,6 +96,27 @@ export function describeEvent(
         tick,
         kind: 'deadlock',
         text: `Deadlock terdeteksi: ${event.cycle.map(nameOf).join(' → ')}`,
+        minor: false,
+      };
+    case 'AREA_ENTERED':
+      return {
+        tick,
+        kind: 'area',
+        text: `${nameOf(event.thread)} masuk ke area "${event.area}"`,
+        minor: false,
+      };
+    case 'AREA_LEFT':
+      return {
+        tick,
+        kind: 'area',
+        text: `${nameOf(event.thread)} keluar dari area "${event.area}"`,
+        minor: false,
+      };
+    case 'AREA_OVERLOAD':
+      return {
+        tick,
+        kind: 'overload',
+        text: `BENTROK di area "${event.area}": ${event.count} robot (kapasitas ${event.capacity})!`,
         minor: false,
       };
     case 'FINISHED':

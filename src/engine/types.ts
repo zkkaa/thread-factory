@@ -24,7 +24,9 @@ export type Instruction =
   | { op: 'SEM_SIGNAL'; sem: string }
   | { op: 'COND_WAIT'; cond: string; mutex: string }
   | { op: 'COND_SIGNAL'; cond: string }
-  | { op: 'COND_BROADCAST'; cond: string };
+  | { op: 'COND_BROADCAST'; cond: string }
+  | { op: 'ENTER_AREA'; area: string }
+  | { op: 'LEAVE_AREA'; area: string };
 
 /** Nama operasi saja, mis. 'LOCK'. Dipakai di event INSTRUCTION. */
 export type Op = Instruction['op'];
@@ -72,6 +74,8 @@ export interface EngineConfig {
   /** Daftar nama condition variable. */
   conditions: string[];
   scheduler: SchedulerConfig;
+  /** Kapasitas area berkapasitas, mis. { aula: 3 }. Bila tidak dispesifikasikan, default {}. */
+  areas?: Record<string, number>;
   /** Batas pengaman: simulasi dihentikan paksa setelah tick ini. */
   maxTicks: number;
 }
@@ -129,6 +133,13 @@ export interface Snapshot {
   semaphores: SemaphoreSnapshot[];
   conditions: ConditionSnapshot[];
 
+  /** Jumlah thread yang saat ini berada di dalam tiap area, mis. { aula: 2 }. */
+  areaOccupancy: Record<string, number>;
+  /** Total tick dengan kejadian overload kapasitas area. */
+  overloadTicks: number;
+  /** Rata-rata utilisasi area (0..1). */
+  areaUtilization: number;
+
   /** Jumlah core yang dipakai scheduler (dari konfigurasi level). */
   cores: number;
   /** Total eksekusi instruksi sejak tick 0 (satu per thread terpilih per tick). */
@@ -168,6 +179,15 @@ export type SimEvent =
   /** Thread berhenti menunggu resource `on` (mis. 'mutex:papan'). */
   | { type: 'BLOCKED'; tick: number; thread: ThreadId; on: string }
   | { type: 'DEADLOCK_DETECTED'; tick: number; cycle: ThreadId[] }
+  | { type: 'AREA_ENTERED'; tick: number; thread: ThreadId; area: string }
+  | { type: 'AREA_LEFT'; tick: number; thread: ThreadId; area: string }
+  | {
+      type: 'AREA_OVERLOAD';
+      tick: number;
+      area: string;
+      count: number;
+      capacity: number;
+    }
   | { type: 'FINISHED'; tick: number };
 
 /** Hasil dari satu pemanggilan engine.step(). */
