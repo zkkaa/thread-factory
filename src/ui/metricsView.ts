@@ -1,4 +1,5 @@
 import type { ControllerState } from '../controller/SimulationController';
+import { computeMetrics } from '../engine/metrics';
 
 /**
  * Menyiapkan angka untuk Laci Metrik. Murni (tanpa React) supaya bisa dites.
@@ -11,6 +12,7 @@ export function deriveMetrics(state: ControllerState) {
 
   const { variable, value: target } = level.goal.target;
   const metrics = result?.metrics;
+  const liveUtilization = computeMetrics(snapshot).coreUtilization;
 
   return {
     variable,
@@ -20,6 +22,8 @@ export function deriveMetrics(state: ControllerState) {
     throughput: metrics
       ? `${metrics.throughput.toFixed(2)} pekerjaan/tick`
       : '-',
+    cores: snapshot.cores,
+    coreUtilization: `${Math.round(liveUtilization * 100)}%`,
     threads: snapshot.threads.map((thread) => ({
       id: thread.id,
       label: thread.label,

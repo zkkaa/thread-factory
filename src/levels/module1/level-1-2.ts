@@ -87,7 +87,8 @@ export const level1_2: LevelDefinition = {
         message: `Stok akhir bernilai ${actual}, seharusnya 10. Terjadi pembaruan hilang (race condition)!`,
       };
     },
-    // SEMENTARA: diganti dengan angka hasil ukur di T-039.
-    stars: { fast: 60, lowWait: 30 },
+    // Diukur pada seed tutorial 10: pintu pas [1, 3] selesai tick 42 (wait 20);
+    // pintu terlalu besar [0, 3] selesai tick 51 (wait 37) karena satu core menganggur.
+    stars: { fast: 45, lowWait: 25 },
   },
 };
