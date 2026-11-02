@@ -14,5 +14,9 @@ export const SOUND_PATHS: Record<SoundName, string> = {
 
 export const MUSIC_PATH = 'assets/audio/bgm-main.ogg';
 
-/** Musik dibuat lebih pelan daripada efek suara pada volume utama yang sama. */
-export const MUSIC_GAIN = 0.35;
+/**
+ * Musik dibuat lebih pelan daripada efek suara pada volume utama yang sama,
+ * supaya efek (klik, kunci, hasil) tidak tenggelam. Nilai harus 0..1 karena
+ * HTMLAudioElement.volume menolak nilai di luar rentang itu.
+ */
+export const MUSIC_GAIN = 0.6;
