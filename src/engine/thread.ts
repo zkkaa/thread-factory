@@ -1,4 +1,5 @@
 import type { Mutex } from './primitives/mutex';
+import type { Semaphore } from './primitives/semaphore';
 import type {
   SimEvent,
   ThreadDef,
@@ -32,6 +33,7 @@ export interface ThreadRuntime {
  */
 export interface SyncContext {
   mutexes: ReadonlyMap<string, Mutex>;
+  semaphores?: ReadonlyMap<string, Semaphore>;
   /** Mengambil thread lain (untuk dibangunkan). Melempar error bila tidak ada. */
   getThread(id: ThreadId): ThreadRuntime;
 }
@@ -137,6 +139,20 @@ function requireMutex(
     );
   }
   return mutex;
+}
+
+function requireSemaphore(
+  sync: SyncContext,
+  name: string,
+  threadId: string,
+): Semaphore {
+  const sem = sync.semaphores?.get(name);
+  if (sem === undefined) {
+    throw new Error(
+      `Thread "${threadId}" memakai semaphore "${name}" yang tidak ada`,
+    );
+  }
+  return sem;
 }
 
 /**
@@ -284,10 +300,31 @@ export function executeInstruction(
       }
       break;
     }
+    case 'SEM_WAIT': {
+      const sem = requireSemaphore(sync, instruction.sem, id);
+      if (!sem.wait(id)) {
+        completed = false;
+        const on = `sem:${instruction.sem}`;
+        thread.waitingOn = on;
+        events.push({ type: 'BLOCKED', tick, thread: id, on });
+        push(transition(thread, 'WAITING', tick));
+      }
+      break;
+    }
+    case 'SEM_SIGNAL': {
+      const sem = requireSemaphore(sync, instruction.sem, id);
+      const next = sem.signal();
+      if (next !== null) {
+        const woken = sync.getThread(next);
+        push(transition(woken, 'READY', tick));
+        push(advancePc(woken, tick));
+      }
+      break;
+    }
     default:
       throw new Error(
         `Instruksi ${instruction.op} belum didukung engine ` +
-          `(semaphore: T-040, condition variable: T-044)`,
+          `(condition variable: T-044)`,
       );
   }
 
