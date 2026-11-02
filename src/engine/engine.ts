@@ -1,5 +1,6 @@
 import { createPrng } from './prng';
 import { Mutex } from './primitives/mutex';
+import { Semaphore } from './primitives/semaphore';
 import { createScheduler, type Scheduler } from './scheduler';
 import {
   createThread,
@@ -45,6 +46,7 @@ export class Engine implements SimulationEngine {
   private threads: ThreadRuntime[] = [];
   private threadById = new Map<string, ThreadRuntime>();
   private mutexes = new Map<string, Mutex>();
+  private semaphores = new Map<string, Semaphore>();
   private sync: SyncContext | null = null;
   private sharedVars: Record<string, number> = {};
   private scheduler: Scheduler | null = null;
@@ -71,8 +73,15 @@ export class Engine implements SimulationEngine {
     this.mutexes = new Map(
       config.mutexes.map((name) => [name, new Mutex(name)]),
     );
+    this.semaphores = new Map(
+      Object.entries(config.semaphores).map(([name, val]) => [
+        name,
+        new Semaphore(name, val),
+      ]),
+    );
     this.sync = {
       mutexes: this.mutexes,
+      semaphores: this.semaphores,
       getThread(id) {
         const thread = threadById.get(id);
         if (thread === undefined) throw new Error(`Thread tidak ada: "${id}"`);
@@ -191,11 +200,7 @@ export class Engine implements SimulationEngine {
       threads: this.threads.map(snapshotThread),
       sharedVars: { ...this.sharedVars },
       mutexes: Array.from(this.mutexes.values(), (m) => m.snapshot()),
-      semaphores: Object.entries(this.config.semaphores).map(([id, value]) => ({
-        id,
-        value,
-        queue: [],
-      })),
+      semaphores: Array.from(this.semaphores.values(), (s) => s.snapshot()),
       conditions: this.config.conditions.map((id) => ({ id, queue: [] })),
       cores: this.config.scheduler.cores,
       executedInstructions: this.executedInstructions,

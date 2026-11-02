@@ -236,14 +236,18 @@ describe('Engine: step dan state machine', () => {
     expect(snap.threads.some((t) => t.state !== 'TERMINATED')).toBe(true);
   });
 
-  it('instruksi yang belum didukung (SEM_WAIT) menghasilkan error jelas dari step()', () => {
+  it('instruksi yang belum didukung (COND_WAIT) menghasilkan error jelas dari step()', () => {
     const engine = new Engine();
     engine.load(
       makeConfig(undefined, {
         threads: [
-          { id: 'A', label: 'A', program: [{ op: 'SEM_WAIT', sem: 'mesin' }] },
+          {
+            id: 'A',
+            label: 'A',
+            program: [{ op: 'COND_WAIT', cond: 'sinyal', mutex: 'papan' }],
+          },
         ],
-        semaphores: { mesin: 1 },
+        conditions: ['sinyal'],
       }),
       1,
     );
