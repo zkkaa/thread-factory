@@ -40,3 +40,46 @@
     transform: scaleX(1);
   }
 }
+
+/* Popup hasil (S6): pita kalah bergetar sekali, konfeti menang, kilau bintang (U-041). */
+@keyframes ribbon-shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  20% {
+    transform: translateX(-8px) rotate(-1.5deg);
+  }
+  40% {
+    transform: translateX(7px) rotate(1.2deg);
+  }
+  60% {
+    transform: translateX(-5px) rotate(-0.8deg);
+  }
+  80% {
+    transform: translateX(3px) rotate(0.4deg);
+  }
+}
+
+@keyframes confetti-fall {
+  from {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(110vh) rotate(540deg);
+    opacity: 0.2;
+  }
+}
+
+@keyframes sparkle {
+  0%,
+  100% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
