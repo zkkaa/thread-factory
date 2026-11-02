@@ -3,7 +3,6 @@ import { roadRectErrors } from '../roadGeometry';
 import { ARENA, ROAD } from '../theme';
 import type { ArenaLayout, Point } from './types';
 
-
 const inArena = (p: Point): boolean =>
   p.x >= 0 && p.x <= ARENA.width && p.y >= 0 && p.y <= ARENA.height;
 
@@ -54,7 +53,7 @@ export function validateLayout(
       errors.push(`slot ${k} harus sesudah checkpoint ${k - 1}`);
     }
   });
-    errors.push(...roadRectErrors(layout.road));
+  errors.push(...roadRectErrors(layout.road));
   const road = layout.road;
   if (
     !inArena({ x: road.left, y: road.top }) ||

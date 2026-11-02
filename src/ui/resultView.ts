@@ -14,12 +14,20 @@ export interface ResultView {
   criteria: { label: string; met: boolean }[];
   cards: { label: string; value: string }[];
   explanation: string | null;
+  /** Angka kunci untuk bar besar, mis. "Stok: 8 ≠ 10". Hanya untuk tampilan. */
+  keyFigure: { label: string; actual: string; target: string; match: boolean };
 }
 
 const DEFAULT_TITLES = {
   pass: 'Bagus! Berhasil!',
   fail: 'Waduh, Hasilnya Salah!',
 };
+
+function capitalize(text: string): string {
+  return text.length === 0
+    ? text
+    : text.charAt(0).toUpperCase() + text.slice(1);
+}
 
 /** Mengubah hasil penilaian controller menjadi data tampilan. Tidak menilai ulang. */
 export function deriveResultView(
@@ -75,5 +83,11 @@ export function deriveResultView(
         ? level.explanation.pass
         : level.explanation.fail
       : null,
+    keyFigure: {
+      label: capitalize(variable),
+      actual: actualText,
+      target: String(target),
+      match: actual === target,
+    },
   };
 }

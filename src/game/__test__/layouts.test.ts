@@ -57,7 +57,7 @@ describe('validateLayout', () => {
     );
   });
 
-    it('menolak slot yang tidak berada di antara checkpoint', () => {
+  it('menolak slot yang tidak berada di antara checkpoint', () => {
     // Slot 0 harus sebelum checkpoint 0; geser sedikit ke sesudahnya.
     const afterFirst = (layout1_1.checkpoints[0] ?? 0) + 0.01;
     const bad = {
