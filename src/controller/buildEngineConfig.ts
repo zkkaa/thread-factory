@@ -25,6 +25,12 @@ export function buildEngineConfig(
     else conditions.push(resource.id);
   }
 
+  for (const tool of placedTools) {
+    if (tool.kind === 'semaphore') {
+      semaphores[tool.sem] = tool.value;
+    }
+  }
+
   return {
     threads: applyTools(level.threads, [...placedTools]),
     sharedVars: { ...level.sharedVars },
@@ -32,6 +38,7 @@ export function buildEngineConfig(
     semaphores,
     conditions,
     scheduler: level.scheduler,
+    areas: level.areas,
     maxTicks: level.maxTicks ?? DEFAULT_MAX_TICKS,
   };
 }

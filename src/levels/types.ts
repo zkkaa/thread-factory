@@ -72,6 +72,8 @@ export interface LevelDefinition {
   scheduler: SchedulerConfig;
   /** Seed default tutorial yang pasti menghasilkan perilaku tertentu (mis. race condition). */
   tutorialSeed?: number;
+  /** Kapasitas area, mis. { aula: 3 }. Bila tidak dispesifikasikan, default {}. */
+  areas?: Record<string, number>;
   /** Batas pengaman tick eksekusi simulasi sebelum timeout (default 2000 jika tidak diset). */
   maxTicks?: number;
   /** Kriteria keberhasilan dan penilaian bintang. */
