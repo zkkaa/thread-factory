@@ -1,4 +1,5 @@
 import { createPrng } from './prng';
+import { Condition } from './primitives/condition';
 import { Mutex } from './primitives/mutex';
 import { Semaphore } from './primitives/semaphore';
 import { createScheduler, type Scheduler } from './scheduler';
@@ -34,7 +35,8 @@ function isRunnable(thread: ThreadRuntime): boolean {
  *  3. thread RUNNING yang tidak terpilih turun ke READY (context switch)
  *  4. thread terpilih menjadi RUNNING dan mengeksekusi SATU instruksi
  *     (LOCK pada mutex terpakai membuat thread WAITING; UNLOCK membangunkan
- *     thread terdepan di antrean)
+ *     thread terdepan di antrean; COND_WAIT/COND_SIGNAL bekerja serupa
+ *     lewat antrean condition)
  *  5. simulasi selesai bila semua TERMINATED atau tick mencapai maxTicks
  */
 export class Engine implements SimulationEngine {
@@ -47,6 +49,7 @@ export class Engine implements SimulationEngine {
   private threadById = new Map<string, ThreadRuntime>();
   private mutexes = new Map<string, Mutex>();
   private semaphores = new Map<string, Semaphore>();
+  private conditions = new Map<string, Condition>();
   private sync: SyncContext | null = null;
   private sharedVars: Record<string, number> = {};
   private scheduler: Scheduler | null = null;
@@ -83,6 +86,9 @@ export class Engine implements SimulationEngine {
         new Semaphore(name, val),
       ]),
     );
+    this.conditions = new Map(
+      config.conditions.map((name) => [name, new Condition(name)]),
+    );
     this.areaCapacities = new Map(Object.entries(config.areas ?? {}));
     this.areaMembers = new Map(
       Array.from(this.areaCapacities.keys(), (area) => [
@@ -98,6 +104,7 @@ export class Engine implements SimulationEngine {
     this.sync = {
       mutexes: this.mutexes,
       semaphores: this.semaphores,
+      conditions: this.conditions,
       enterArea: (threadId, area) => {
         let members = this.areaMembers.get(area);
         if (!members) {
@@ -156,8 +163,8 @@ export class Engine implements SimulationEngine {
     const runnable = this.threads.filter(isRunnable).map((t) => t.def.id);
     if (runnable.length === 0) {
       // Tidak ada thread yang bisa jalan padahal belum semua selesai (semua
-      // WAITING, mis. dua thread saling menunggu mutex). Berhenti di sini
-      // daripada berputar sampai maxTicks.
+      // WAITING, mis. dua thread saling menunggu mutex, atau sinyal condition
+      // yang hilang). Berhenti di sini daripada berputar sampai maxTicks.
       // TODO(T-055): pancarkan DEADLOCK_DETECTED sebelum FINISHED.
       this.finished = true;
       events.push({ type: 'FINISHED', tick });
@@ -241,8 +248,6 @@ export class Engine implements SimulationEngine {
     if (this.config === null) {
       throw new Error('getSnapshot() dipanggil sebelum load()');
     }
-    // Condition variable belum punya keadaan runtime sampai T-044;
-    // sementara ditampilkan dalam keadaan awal.
     let areaUtilization = 0;
     if (this.areaCapacities.size > 0 && this.tick > 0) {
       let totalRatio = 0;
@@ -262,7 +267,7 @@ export class Engine implements SimulationEngine {
       sharedVars: { ...this.sharedVars },
       mutexes: Array.from(this.mutexes.values(), (m) => m.snapshot()),
       semaphores: Array.from(this.semaphores.values(), (s) => s.snapshot()),
-      conditions: this.config.conditions.map((id) => ({ id, queue: [] })),
+      conditions: Array.from(this.conditions.values(), (c) => c.snapshot()),
       areaOccupancy: Object.fromEntries(
         Array.from(this.areaMembers.entries(), ([k, v]) => [k, v.size]),
       ),

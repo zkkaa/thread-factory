@@ -31,6 +31,14 @@ export function validateConfig(config: EngineConfig): void {
     mutexNames.add(name);
   }
 
+  const conditionNames = new Set<string>();
+  for (const name of config.conditions) {
+    if (conditionNames.has(name)) {
+      throw new Error(`Nama condition ganda: "${name}"`);
+    }
+    conditionNames.add(name);
+  }
+
   // Area yang dipakai ENTER_AREA/LEAVE_AREA harus punya kapasitas yang jelas.
   const areas = config.areas ?? {};
   for (const [name, capacity] of Object.entries(areas)) {
@@ -101,6 +109,21 @@ export function validateConfig(config: EngineConfig): void {
         );
       }
       if (
+        (instruction.op === 'COND_WAIT' ||
+          instruction.op === 'COND_SIGNAL' ||
+          instruction.op === 'COND_BROADCAST') &&
+        !conditionNames.has(instruction.cond)
+      ) {
+        throw new Error(
+          `${instruction.op} pada thread "${thread.id}": condition "${instruction.cond}" tidak dideklarasikan`,
+        );
+      }
+      if (instruction.op === 'COND_WAIT' && !mutexNames.has(instruction.mutex)) {
+        throw new Error(
+          `COND_WAIT pada thread "${thread.id}": mutex "${instruction.mutex}" tidak dideklarasikan`,
+        );
+      }
+      if (
         (instruction.op === 'ENTER_AREA' || instruction.op === 'LEAVE_AREA') &&
         !hasKey(areas, instruction.area)
       ) {
@@ -110,12 +133,15 @@ export function validateConfig(config: EngineConfig): void {
       }
     }
 
-    // Thread yang menunggu LOCK atau SEM_WAIT dilanjutkan oleh thread lain
-    // (handoff: thread itu dibangunkan lalu pc-nya dimajukan). Bila instruksi
-    // pemblokir itu juga instruksi terakhir, pemajuan pc memaksa transisi
-    // READY -> TERMINATED yang tidak sah, jadi program seperti itu ditolak.
+    // Thread yang menunggu LOCK, SEM_WAIT, atau COND_WAIT dilanjutkan oleh
+    // thread lain (handoff: thread itu dibangunkan lalu pc-nya dimajukan).
+    // Bila instruksi pemblokir itu juga instruksi terakhir, pemajuan pc memaksa
+    // transisi READY -> TERMINATED yang tidak sah, jadi program seperti itu ditolak.
     const last = thread.program[thread.program.length - 1];
-    if (last !== undefined && (last.op === 'LOCK' || last.op === 'SEM_WAIT')) {
+    if (
+      last !== undefined &&
+      (last.op === 'LOCK' || last.op === 'SEM_WAIT' || last.op === 'COND_WAIT')
+    ) {
       throw new Error(
         `Thread "${thread.id}": instruksi terakhir tidak boleh ${last.op}`,
       );
