@@ -266,3 +266,9 @@ export const TOKEN_COLORS = {
   count: '#f9fafb',
   queueText: '#ffffff',
 } as const;
+
+/** Arena aula (Level 1-3, T-089). */
+export const HALL = {
+  /** Jarak minimal antar titik robot di satu zona (piksel), supaya tidak bertumpuk. */
+  minSpotGap: 44,
+} as const;

@@ -13,4 +13,4 @@ export function getLayout(id: string): ArenaLayout | undefined {
   return LAYOUTS[id];
 }
 
-export type { ArenaLayout, LoopLayout, Point } from './types';
+export type { ArenaLayout, HallLayout, LoopLayout, Point, Rect } from './types';

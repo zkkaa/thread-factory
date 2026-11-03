@@ -1,7 +1,8 @@
 import type { LevelDefinition } from '../../levels/types';
 import { roadRectErrors } from '../roadGeometry';
 import { ARENA, ROAD } from '../theme';
-import type { ArenaLayout, Point } from './types';
+import type { ArenaLayout, LoopLayout, Point } from './types';
+import { validateHallLayout } from './validateHall';
 
 const inArena = (p: Point): boolean =>
   p.x >= 0 && p.x <= ARENA.width && p.y >= 0 && p.y <= ARENA.height;
@@ -9,9 +10,9 @@ const inArena = (p: Point): boolean =>
 const strictlyAscending = (values: readonly number[]): boolean =>
   values.every((v, i) => i === 0 || v > (values[i - 1] ?? 0));
 
-/** Memeriksa layout terhadap level. Mengembalikan daftar masalah (kosong = sah). */
-export function validateLayout(
-  layout: ArenaLayout,
+/** Memeriksa layout loop terhadap level. */
+function validateLoopLayout(
+  layout: LoopLayout,
   level: LevelDefinition,
 ): string[] {
   const errors: string[] = [];
@@ -83,4 +84,13 @@ export function validateLayout(
     errors.push('boardLinks menunjuk checkpoint yang tidak ada');
   }
   return errors;
+}
+
+/** Memeriksa layout terhadap level. Mengembalikan daftar masalah (kosong = sah). */
+export function validateLayout(
+  layout: ArenaLayout,
+  level: LevelDefinition,
+): string[] {
+  if (layout.kind === 'hall') return validateHallLayout(layout, level);
+  return validateLoopLayout(layout, level);
 }
