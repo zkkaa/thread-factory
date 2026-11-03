@@ -20,9 +20,9 @@ import { RobotView } from '../views/RobotView';
 import { clientToGame, slotPositions } from '../slots';
 import { toolBus } from '../toolBus';
 import { SlotMarkerView } from '../views/SlotMarkerView';
-import { TokenView } from '../views/TokenView';
 import { TrackView } from '../views/TrackView';
 import { ARENA_BACKGROUND, robotFrameFor } from '../assetManifest';
+import { HallArena } from './HallArena';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
 export interface LevelSceneData {
@@ -32,8 +32,9 @@ export interface LevelSceneData {
 /**
  * Scene arena satu level. Tugasnya hanya MENGGAMBAR dan MENGANIMASIKAN apa yang
  * dilaporkan controller; benar/salah, menang/kalah, dan metrik dihitung engine
- * (aturan arsitektur 3). Tata letak (jalan, checkpoint, slot, papan) dibaca
- * dari game/layouts/, bukan di-hardcode di sini.
+ * (aturan arsitektur 3). Tata letak dibaca dari game/layouts/, bukan
+ * di-hardcode di sini. Layout 'loop' (jalan, checkpoint, slot, papan) digambar
+ * di sini; layout 'hall' (aula Level 1-3) diserahkan ke HallArena.
  *
  * Pada tick 0 (level dimuat, Reset, atau alat berubah) semua view dibangun
  * ulang. Pada tick berikutnya, event INSTRUCTION menggerakkan robot ke jangkar
@@ -45,7 +46,7 @@ export class LevelScene extends Scene {
   private checkpoints: CheckpointView[] = [];
   private robots: RobotView[] = [];
   private doors: DoorView[] = [];
-  private tokenViews: TokenView[] = [];
+  private hallArena: HallArena | null = null;
   private board: BoardView | null = null;
   private slotMarkers: SlotMarkerView | null = null;
   private doorDrag: DoorDragSession | null = null;
@@ -98,7 +99,12 @@ export class LevelScene extends Scene {
       this.rebuild(state);
       return;
     }
-    this.playEvents(state.events, TICK_INTERVAL_MS / state.speed);
+    const durationMs = TICK_INTERVAL_MS / state.speed;
+    if (this.hallArena !== null) {
+      this.hallArena.update(snapshot, durationMs);
+      return;
+    }
+    this.playEvents(state.events, durationMs);
     this.refresh(snapshot);
   }
 
@@ -109,7 +115,7 @@ export class LevelScene extends Scene {
 
     this.destroyViews();
     const layout = getLayout(level.layoutId);
-    if (layout === undefined || layout.kind !== 'loop') {
+    if (layout === undefined) {
       this.showNotice(`Layout "${level.layoutId}" belum tersedia`);
       return;
     }
@@ -118,6 +124,18 @@ export class LevelScene extends Scene {
       level,
       state.tools,
     );
+    if (layout.kind === 'hall') {
+      this.hallArena = new HallArena(
+        this,
+        layout,
+        level,
+        snapshot,
+        effective,
+        state.tools.some((tool) => tool.kind === 'semaphore'),
+      );
+      return;
+    }
+
     const road = buildRoad(layout.road);
     const path = road.path;
     const nameOf = this.nameOf(snapshot);
@@ -158,26 +176,6 @@ export class LevelScene extends Scene {
         panelY,
         nameOf,
       );
-    });
-
-    // Rak Kartu Akses / Token Semaphore (T-042)
-    this.tokenViews = snapshot.semaphores.map((sem, semIndex) => {
-      const res = level.resources.find((r) => r.id === sem.id);
-      const title = res?.label ?? 'Kartu Akses';
-      const initialCapacity =
-        res && res.kind === 'semaphore' ? res.initialValue : sem.value;
-      const tokenX = DOOR_PANEL.x;
-      const tokenY =
-        DOOR_PANEL.topY +
-        (snapshot.mutexes.length + semIndex) * DOOR_PANEL.gapY;
-      const view = new TokenView(this, sem.id, {
-        x: tokenX,
-        y: tokenY,
-        label: title,
-        maxCapacity: initialCapacity,
-      });
-      view.updateSnapshot(sem, nameOf);
-      return view;
     });
 
     const positions = slotPositions(path, layout.slots);
@@ -230,7 +228,7 @@ export class LevelScene extends Scene {
     }
   }
 
-  /** Memperbarui label, nilai papan, status pintu, dan rak token tanpa membangun ulang. */
+  /** Memperbarui label, nilai papan, dan status pintu tanpa membangun ulang. */
   private refresh(snapshot: Readonly<Snapshot>): void {
     const nameOf = this.nameOf(snapshot);
     this.board?.update(snapshot.sharedVars);
@@ -240,10 +238,6 @@ export class LevelScene extends Scene {
     for (const door of this.doors) {
       const mutex = snapshot.mutexes.find((m) => m.id === door.mutexId);
       if (mutex !== undefined) door.update(mutex, nameOf);
-    }
-    for (const tokenView of this.tokenViews) {
-      const sem = snapshot.semaphores.find((s) => s.id === tokenView.semId);
-      if (sem !== undefined) tokenView.updateSnapshot(sem, nameOf);
     }
   }
 
@@ -266,8 +260,8 @@ export class LevelScene extends Scene {
     this.robots = [];
     for (const door of this.doors) door.destroy();
     this.doors = [];
-    for (const tokenView of this.tokenViews) tokenView.destroy();
-    this.tokenViews = [];
+    this.hallArena?.destroy();
+    this.hallArena = null;
     this.board?.destroy();
     this.board = null;
     this.doorDrag?.dispose();
