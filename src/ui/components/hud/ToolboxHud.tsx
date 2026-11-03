@@ -38,13 +38,16 @@ const BUTTON =
 export function ToolboxHud({ controller, state }: ToolboxHudProps) {
   const { level } = state;
   const mutex = level?.resources.find((resource) => resource.kind === 'mutex');
-  const sem = level?.resources.find((resource) => resource.kind === 'semaphore');
+  const sem = level?.resources.find(
+    (resource) => resource.kind === 'semaphore',
+  );
   const first = level?.threads[0];
   if (level === null || first === undefined) {
     return null;
   }
 
-  const hasMutex = mutex !== undefined && level.availableTools.includes('mutex');
+  const hasMutex =
+    mutex !== undefined && level.availableTools.includes('mutex');
   const hasSemaphore =
     sem !== undefined && level.availableTools.includes('semaphore');
 
