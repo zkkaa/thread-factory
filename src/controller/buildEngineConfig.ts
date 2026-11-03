@@ -38,6 +38,7 @@ export function buildEngineConfig(
     semaphores,
     conditions,
     scheduler: level.scheduler,
+    areas: level.areas,
     maxTicks: level.maxTicks ?? DEFAULT_MAX_TICKS,
   };
 }
