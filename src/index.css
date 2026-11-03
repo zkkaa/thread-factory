@@ -29,6 +29,19 @@
       transform: scale(1);
     }
   }
+
+  /* Denyut pedestal level berikutnya di Peta Level (U-019). */
+  /* Setel di sini: durasi (1.4s) dan skala puncak (1.08). */
+  --animate-pedestal-pulse: pedestal-pulse 1.4s ease-in-out infinite;
+  @keyframes pedestal-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.08);
+    }
+  }
 }
 
 /* Bar waktu Pembuka Modul (S3a): terisi penuh selama durasi auto-lanjut. */
