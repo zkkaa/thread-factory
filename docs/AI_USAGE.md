@@ -1,0 +1,1 @@
+2026-11-03 · T-037 sampai T-043 (perbaikan hasil review) · validateConfig.ts, TokenView.ts, theme.ts, tes baru, ARCHITECTURE.md, TASKS.md · AI menemukan bug SEM_WAIT terakhir dan celah validasi, lalu menulis perbaikan dan tesnya · ditinjau Azka
