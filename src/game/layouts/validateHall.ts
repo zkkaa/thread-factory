@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../../levels/types';
-import { ARENA, HALL, TOKEN_PANEL } from '../theme';
+import { ARENA, HALL, HUD_SAFE, TOKEN_PANEL } from '../theme';
 import type { HallLayout, Point, Rect } from './types';
 
 const rectInArena = (rect: Rect): boolean =>
@@ -7,6 +7,13 @@ const rectInArena = (rect: Rect): boolean =>
   rect.y >= 0 &&
   rect.x + rect.width <= ARENA.width &&
   rect.y + rect.height <= ARENA.height;
+
+/** Di dalam area yang tidak tertutup HUD (lihat HUD_SAFE di theme.ts). */
+const rectInSafe = (rect: Rect): boolean =>
+  rect.x >= HUD_SAFE.x &&
+  rect.y >= HUD_SAFE.y &&
+  rect.x + rect.width <= HUD_SAFE.x + HUD_SAFE.width &&
+  rect.y + rect.height <= HUD_SAFE.y + HUD_SAFE.height;
 
 const inRect = (p: Point, rect: Rect): boolean =>
   p.x >= rect.x &&
@@ -89,6 +96,7 @@ export function validateHallLayout(
   ];
   for (const [name, rect] of zones) {
     if (!rectInArena(rect)) errors.push(`zona ${name} di luar ARENA`);
+    if (!rectInSafe(rect)) errors.push(`zona ${name} di luar area aman HUD`);
   }
   for (let i = 0; i < zones.length; i += 1) {
     for (let j = i + 1; j < zones.length; j += 1) {
@@ -139,6 +147,7 @@ export function validateHallLayout(
     height: TOKEN_PANEL.height,
   };
   if (!rectInArena(rack)) errors.push('rak kartu di luar ARENA');
+  if (!rectInSafe(rack)) errors.push('rak kartu di luar area aman HUD');
   for (const [name, rect] of zones) {
     if (overlaps(rack, rect)) errors.push(`rak kartu menimpa zona ${name}`);
   }

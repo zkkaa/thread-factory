@@ -267,8 +267,49 @@ export const TOKEN_COLORS = {
   queueText: '#ffffff',
 } as const;
 
+/**
+ * Area di kanvas yang aman dari HUD pada layar minimum 1280x720 (kanvas skala 1).
+ * Panel Misi dan Si Penjadwal menutupi sisi kiri sampai x sekitar 333, bar
+ * kontrol di atas sampai y sekitar 70, serta toolbox dan log di bawah mulai y
+ * sekitar 590 (lebih tinggi bila toolbox dibuka). Isi arena yang penting
+ * ditaruh di dalam kotak ini.
+ */
+export const HUD_SAFE = { x: 350, y: 80, width: 910, height: 500 } as const;
+
 /** Arena aula (Level 1-3, T-089). */
 export const HALL = {
   /** Jarak minimal antar titik robot di satu zona (piksel), supaya tidak bertumpuk. */
-  minSpotGap: 44,
+  minSpotGap: 60,
+  zoneFill: 0x132238,
+  zoneFillAlpha: 0.55,
+  zoneStroke: 0x4b5b80,
+  zoneStrokeWidth: 2,
+  zoneTitleInset: 6,
+  titleFontSize: '13px',
+  counterInset: 28,
+  counterFontSize: '15px',
+  machineSize: 44,
+  machineLabelGap: 4,
+  machineStrokeWidth: 2,
+  machineIdle: 0x2b364f,
+  machineActive: 0x166534,
+  machineStroke: 0x93a4c8,
+  machineFontSize: '11px',
+  doorLength: 76,
+  doorThickness: 10,
+  doorOpen: 0x14b8a6,
+  doorClosed: 0xef4444,
+  doorFree: 0x93a4c8,
+  doorLabelGap: 8,
+  doorLabelFontSize: '11px',
+  overloadColor: 0xef4444,
+  overloadStrokeWidth: 4,
+  overloadFillAlpha: 0.12,
+  overloadText: '#fecaca',
+  bannerGap: 8,
+  bannerFontSize: '22px',
+  robotStroke: 2,
+  robotGlowStroke: 4,
+  robotLabelFontSize: '11px',
+  robotLabelGap: 4,
 } as const;
