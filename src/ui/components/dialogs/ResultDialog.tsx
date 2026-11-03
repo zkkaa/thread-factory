@@ -564,6 +564,14 @@ function ResultCard({
                   ))}
                 </ul>
               )}
+              {view.coreUtilization !== null && (
+                <div className="flex items-center justify-between rounded-lg bg-navy-800 px-3 py-1.5 text-xs">
+                  <span className="text-ink-300">Utilisasi core:</span>
+                  <span className="font-bold text-sun-400">
+                    {view.coreUtilization}
+                  </span>
+                </div>
+              )}
               {view.explanation !== null && (
                 <p className="rounded-lg bg-navy-800 p-2.5 text-[13px] leading-snug">
                   {view.explanation}

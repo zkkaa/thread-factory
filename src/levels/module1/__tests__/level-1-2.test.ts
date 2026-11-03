@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Engine } from '../../../engine/engine';
 import { applyTools, type PlacedTool } from '../../../engine/tools';
 import type { EngineConfig } from '../../../engine/types';
+import { evaluateLevel } from '../../../controller/evaluateLevel';
 import { level1_2 } from '../level-1-2';
 
 type Door = [start: number, end: number] | null;
@@ -72,5 +73,30 @@ describe('Level 1-2: Pintu Kebesaran (T-038)', () => {
       const tight = run(1, [1, 3], seed);
       expect(wide.tick, `seed ${seed}`).toBe(tight.tick);
     }
+  });
+
+  describe('evaluateLevel Level 1-2 (T-039)', () => {
+    it('tanpa pintu pada seed tutorial: gagal, 0 bintang', () => {
+      const snap = run(2, null, level1_2.tutorialSeed as number);
+      const result = evaluateLevel(level1_2, snap);
+      expect(result.ok).toBe(false);
+      expect(result.stars).toBe(0);
+    });
+
+    it('pintu pas [1, 3] pada seed tutorial: lulus 3 bintang (cepat dan hemat)', () => {
+      const snap = run(2, [1, 3], level1_2.tutorialSeed as number);
+      const result = evaluateLevel(level1_2, snap);
+      expect(result.ok).toBe(true);
+      expect(result.metrics.tick).toBeLessThanOrEqual(level1_2.goal.stars.fast);
+      expect(result.stars).toBe(3);
+    });
+
+    it('pintu terlalu besar [0, 3] pada seed tutorial: lulus tapi hanya 1 bintang karena lambat', () => {
+      const snap = run(2, [0, 3], level1_2.tutorialSeed as number);
+      const result = evaluateLevel(level1_2, snap);
+      expect(result.ok).toBe(true);
+      expect(result.metrics.tick).toBeGreaterThan(level1_2.goal.stars.fast);
+      expect(result.stars).toBe(1);
+    });
   });
 });

@@ -5,6 +5,7 @@ import { toolBus } from '../../game/toolBus';
 import { HintDialog } from '../components/dialogs/HintDialog';
 import { ResultDialog } from '../components/dialogs/ResultDialog';
 import { ControlHud } from '../components/hud/ControlHud';
+import { CoreIndicatorHud } from '../components/hud/CoreIndicatorHud';
 import { LogHud } from '../components/hud/LogHud';
 import { MetricsHud } from '../components/hud/MetricsHud';
 import { MissionChip } from '../components/hud/MissionChip';
@@ -108,6 +109,7 @@ export function PlayScreen({
             )}
           </div>
           {state.level !== null && <MissionChip level={state.level} />}
+          <CoreIndicatorHud state={state} />
         </div>
       }
       topRight={

@@ -14,6 +14,8 @@ export interface ResultView {
   criteria: { label: string; met: boolean }[];
   cards: { label: string; value: string }[];
   explanation: string | null;
+  /** Utilisasi core untuk level multicore (null bila single core). */
+  coreUtilization: string | null;
   /** Angka kunci untuk bar besar, mis. "Stok: 8 ≠ 10". Hanya untuk tampilan. */
   keyFigure: { label: string; actual: string; target: string; match: boolean };
 }
@@ -77,12 +79,24 @@ export function deriveResultView(
       },
       { label: 'Total tick', value: String(result.metrics.tick) },
       { label: 'Waktu tunggu', value: String(totalWait) },
+      ...(snapshot.cores > 1
+        ? [
+            {
+              label: 'Utilisasi core',
+              value: `${Math.round(result.metrics.coreUtilization * 100)}%`,
+            },
+          ]
+        : []),
     ],
     explanation: level.explanation
       ? result.ok
         ? level.explanation.pass
         : level.explanation.fail
       : null,
+    coreUtilization:
+      snapshot.cores > 1
+        ? `${Math.round(result.metrics.coreUtilization * 100)}%`
+        : null,
     keyFigure: {
       label: capitalize(variable),
       actual: actualText,

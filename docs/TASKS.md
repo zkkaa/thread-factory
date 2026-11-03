@@ -194,16 +194,16 @@ Centang semuanya sebelum lanjut ke fase berikutnya:
 Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D), konten Pak Mandor (jalur E). Tampilan baru dikerjakan setelah U3 stabil.
 
 **Level 1-2 — Pintu Kebesaran** `P1`
-- [ ] **T-037** *(diubah)* Pintu bebas ditaruh di slot mana pun, termasuk sebelum WORK, lewat seret-lepas (U-061). `tools.ts` sudah mendukung rentang; tambah tes kasus rentang yang menutupi `WORK` dan pastikan UI tidak membatasi slot di level ini.
-- [ ] **T-038** *(diubah)* Data level 1-2 dengan `cores: 2`. Tes: mutex terlalu besar (menutupi `WORK`) → total tick naik; mutex pas → benar dan cepat; tes eksplisit bahwa pada `cores = 1` total tick sama (dokumentasi alasan memakai 2 core).
-- [ ] **T-039** *(diubah)* Kriteria bintang berdasarkan throughput. Karena beban kerja tetap, `goal.stars.fast` dinyatakan sebagai batas tick (setara throughput) dan dijelaskan di UI sebagai throughput. Tes `evaluateLevel` untuk level ini.
-- [ ] **T-085** *(baru)* Metrik `coreUtilization` di `metrics.ts`; `Snapshot` ditambah `cores` dan `executedInstructions` (perbarui `types.ts`, `engine.ts`, dan tes); tampil di laci metrik dan popup hasil.
-- [ ] **T-086** *(baru)* Layout dan visual Level 1-2: pakai ulang loop 1-1, tambah indikator Core 1 dan Core 2 (sibuk atau menganggur) dan meter utilisasi.
-- [ ] **T-087** *(baru)* Konten Level 1-2: intro, petunjuk, penjelasan lulus dan gagal, konsep; tes data level.
+- [x] **T-037** *(diubah)* Pintu bebas ditaruh di slot mana pun, termasuk sebelum WORK, lewat seret-lepas (U-061). `tools.ts` sudah mendukung rentang; tambah tes kasus rentang yang menutupi `WORK` dan pastikan UI tidak membatasi slot di level ini.
+- [x] **T-038** *(diubah)* Data level 1-2 dengan `cores: 2`. Tes: mutex terlalu besar (menutupi `WORK`) → total tick naik; mutex pas → benar dan cepat; tes eksplisit bahwa pada `cores = 1` total tick sama (dokumentasi alasan memakai 2 core).
+- [x] **T-039** *(diubah)* Kriteria bintang berdasarkan throughput. Karena beban kerja tetap, `goal.stars.fast` dinyatakan sebagai batas tick (setara throughput) dan dijelaskan di UI sebagai throughput. Tes `evaluateLevel` untuk level ini.
+- [x] **T-085** *(baru)* Metrik `coreUtilization` di `metrics.ts`; `Snapshot` ditambah `cores` dan `executedInstructions` (perbarui `types.ts`, `engine.ts`, dan tes); tampil di laci metrik dan popup hasil.
+- [x] **T-086** *(baru)* Layout dan visual Level 1-2: pakai ulang loop 1-1, tambah indikator Core 1 dan Core 2 (sibuk atau menganggur) dan meter utilisasi.
+- [x] **T-087** *(baru)* Konten Level 1-2: intro, petunjuk, penjelasan lulus dan gagal, konsep; tes data level.
 
 **Level 1-3 — Tiga Mesin, Delapan Robot** `P1`
-- [ ] **T-040** `primitives/semaphore.ts` (`SEM_WAIT`/`SEM_SIGNAL`, antrean FIFO) + tes.
-- [ ] **T-041** *(diubah)* Area berkapasitas di engine (ARCHITECTURE 4.9): `areas` di `EngineConfig`, instruksi `ENTER_AREA` dan `LEAVE_AREA`, event `AREA_ENTERED`, `AREA_LEFT`, `AREA_OVERLOAD`, metrik `overloadTicks` dan `areaUtilization`; dokumentasikan di ARCHITECTURE 4.2; tes: kelebihan kapasitas terdeteksi, utilisasi dihitung benar.
+- [x] **T-040** `primitives/semaphore.ts` (`SEM_WAIT`/`SEM_SIGNAL`, antrean FIFO) + tes.
+- [x] **T-041** *(diubah)* Area berkapasitas di engine (ARCHITECTURE 4.9): `areas` di `EngineConfig`, instruksi `ENTER_AREA` dan `LEAVE_AREA`, event `AREA_ENTERED`, `AREA_LEFT`, `AREA_OVERLOAD`, metrik `overloadTicks` dan `areaUtilization`; dokumentasikan di ARCHITECTURE 4.2; tes: kelebihan kapasitas terdeteksi, utilisasi dihitung benar.
 - [ ] **T-088** *(baru)* Alat semaphore: perluas `PlacedTool` dengan `kind: 'semaphore'` (nilai awal 1 sampai 8 dipilih pemain) dan `applyTools` menyisipkan `SEM_WAIT` sebelum dan `SEM_SIGNAL` sesudah rentang; `buildEngineConfig` memasang nilai awal; `placeTool` memvalidasi. Tes: seimbang, nilai di luar 1..8 ditolak, masukan tidak termutasi.
 - [ ] **T-042** *(diubah)* `TokenView` (rak Kartu Akses), visual antrean, slider nilai semaphore 1 sampai 8 di toolbox, dan seret Kartu Akses ke pintu aula.
 - [ ] **T-043** *(diubah)* Data level 1-3 (`cores` = 8, 8 robot, area kapasitas 3) + tes: nilai 3 memberi `areaUtilization` tertinggi tanpa bentrok, nilai di atas 3 bentrok, nilai di bawah 3 utilisasi lebih rendah.

@@ -15,6 +15,8 @@ const KIND_STYLE: Record<LogKind, { icon: string; border: string }> = {
   unlock: { icon: '🔓', border: 'border-emerald-500' },
   blocked: { icon: '⏳', border: 'border-ember-500' },
   deadlock: { icon: '⚠', border: 'border-ember-500' },
+  area: { icon: '🚪', border: 'border-cyan-500' },
+  overload: { icon: '💥', border: 'border-rose-500' },
   finished: { icon: '🏁', border: 'border-indigo-400' },
 };
 
