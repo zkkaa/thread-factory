@@ -1,3 +1,4 @@
+import type { Condition, ConditionWaiter } from './primitives/condition';
 import type { Mutex } from './primitives/mutex';
 import type { Semaphore } from './primitives/semaphore';
 import type {
@@ -34,6 +35,7 @@ export interface ThreadRuntime {
 export interface SyncContext {
   mutexes: ReadonlyMap<string, Mutex>;
   semaphores?: ReadonlyMap<string, Semaphore>;
+  conditions?: ReadonlyMap<string, Condition>;
   enterArea?: (threadId: ThreadId, area: string) => void;
   leaveArea?: (threadId: ThreadId, area: string) => void;
   /** Mengambil thread lain (untuk dibangunkan). Melempar error bila tidak ada. */
@@ -157,6 +159,20 @@ function requireSemaphore(
   return sem;
 }
 
+function requireCondition(
+  sync: SyncContext,
+  name: string,
+  threadId: string,
+): Condition {
+  const cond = sync.conditions?.get(name);
+  if (cond === undefined) {
+    throw new Error(
+      `Thread "${threadId}" memakai condition variable "${name}" yang tidak ada`,
+    );
+  }
+  return cond;
+}
+
 /**
  * Memajukan pc setelah satu instruksi selesai. Bila program habis, pengulangan
  * berikutnya dimulai; bila semua pengulangan habis, thread TERMINATED
@@ -175,15 +191,90 @@ function advancePc(thread: ThreadRuntime, tick: number): SimEvent | null {
 }
 
 /**
+ * Pemilik melepas mutex. Dipakai UNLOCK dan COND_WAIT (yang melepas mutex
+ * sebelum tidur). Bila ada thread yang antre, kepemilikan langsung diserahkan
+ * (handoff): thread itu dibangunkan dan instruksinya yang memblokir (LOCK atau
+ * COND_WAIT) dianggap selesai, jadi pc-nya dimajukan di sini.
+ * Melempar error bila `thread` bukan pemilik.
+ */
+function releaseMutex(
+  mutex: Mutex,
+  mutexName: string,
+  thread: ThreadRuntime,
+  tick: number,
+  sync: SyncContext,
+): SimEvent[] {
+  const id = thread.def.id;
+  const events: SimEvent[] = [];
+  const push = (event: SimEvent | null): void => {
+    if (event) events.push(event);
+  };
+
+  const next = mutex.unlock(id); // melempar error bila bukan pemilik
+  events.push({ type: 'LOCK_RELEASED', tick, thread: id, mutex: mutexName });
+  if (next !== null) {
+    const woken = sync.getThread(next);
+    push(transition(woken, 'READY', tick));
+    events.push({
+      type: 'LOCK_ACQUIRED',
+      tick,
+      thread: next,
+      mutex: mutexName,
+    });
+    push(advancePc(woken, tick));
+  }
+  return events;
+}
+
+/**
+ * Membangunkan satu penunggu condition. Penunggu harus mengambil mutex-nya
+ * lagi sebelum boleh lanjut:
+ * - mutex bebas  -> langsung memegangnya, READY, COND_WAIT selesai;
+ * - mutex dipakai -> mengantre di mutex, tetap WAITING (kini menunggu mutex).
+ *   COND_WAIT-nya selesai nanti saat mutex diserahkan lewat releaseMutex().
+ */
+function wakeWaiter(
+  waiter: ConditionWaiter,
+  tick: number,
+  sync: SyncContext,
+): SimEvent[] {
+  const events: SimEvent[] = [];
+  const woken = sync.getThread(waiter.thread);
+  const mutex = requireMutex(sync, waiter.mutex, waiter.thread);
+
+  if (mutex.lock(waiter.thread)) {
+    const change = transition(woken, 'READY', tick);
+    if (change) events.push(change);
+    events.push({
+      type: 'LOCK_ACQUIRED',
+      tick,
+      thread: waiter.thread,
+      mutex: waiter.mutex,
+    });
+    const end = advancePc(woken, tick);
+    if (end) events.push(end);
+  } else {
+    const on = `mutex:${waiter.mutex}`;
+    woken.waitingOn = on;
+    events.push({ type: 'BLOCKED', tick, thread: waiter.thread, on });
+  }
+  return events;
+}
+
+/**
  * Menjalankan SATU instruksi pada pc saat ini (satu tick), lalu memajukan pc.
  * Thread harus sudah berstatus RUNNING. Mengubah thread, sharedVars, dan
- * (untuk LOCK/UNLOCK) mutex serta thread lain yang dibangunkan.
+ * (untuk instruksi sinkronisasi) mutex, semaphore, condition, serta thread
+ * lain yang dibangunkan.
  *
  * Catatan perilaku:
  * - WORK n membutuhkan n tick; tiap tick tetap menghasilkan event INSTRUCTION.
  * - LOCK pada mutex terpakai membuat thread WAITING dengan pc tetap di LOCK.
  *   Instruksi itu dianggap selesai saat UNLOCK menyerahkan mutex kepadanya
  *   (handoff); saat itu pc-nya dimajukan oleh thread yang melepas.
+ * - COND_WAIT melepas mutex lalu tidur di condition (WAITING, pc tetap di
+ *   COND_WAIT). Setelah disinyal, ia harus mengambil mutex lagi; COND_WAIT
+ *   selesai saat mutex didapat (lihat wakeWaiter). Sinyal tanpa penunggu hilang.
  * - Setelah instruksi terakhir selesai, program diulang sampai `repeat`
  *   terpenuhi; setelah itu thread TERMINATED.
  */
@@ -281,25 +372,9 @@ export function executeInstruction(
     }
     case 'UNLOCK': {
       const mutex = requireMutex(sync, instruction.mutex, id);
-      const next = mutex.unlock(id); // melempar error bila bukan pemilik
-      events.push({
-        type: 'LOCK_RELEASED',
-        tick,
-        thread: id,
-        mutex: instruction.mutex,
-      });
-      if (next !== null) {
-        // Handoff: thread terdepan kini pemilik, dibangunkan, dan LOCK-nya selesai.
-        const woken = sync.getThread(next);
-        push(transition(woken, 'READY', tick));
-        events.push({
-          type: 'LOCK_ACQUIRED',
-          tick,
-          thread: next,
-          mutex: instruction.mutex,
-        });
-        push(advancePc(woken, tick));
-      }
+      events.push(
+        ...releaseMutex(mutex, instruction.mutex, thread, tick, sync),
+      );
       break;
     }
     case 'SEM_WAIT': {
@@ -323,6 +398,35 @@ export function executeInstruction(
       }
       break;
     }
+    case 'COND_WAIT': {
+      const cond = requireCondition(sync, instruction.cond, id);
+      const mutex = requireMutex(sync, instruction.mutex, id);
+      // 1. Lepas mutex (melempar error bila thread bukan pemiliknya).
+      events.push(
+        ...releaseMutex(mutex, instruction.mutex, thread, tick, sync),
+      );
+      // 2. Tidur di condition sampai disinyal.
+      cond.wait(id, instruction.mutex);
+      completed = false;
+      const on = `cond:${instruction.cond}`;
+      thread.waitingOn = on;
+      events.push({ type: 'BLOCKED', tick, thread: id, on });
+      push(transition(thread, 'WAITING', tick));
+      break;
+    }
+    case 'COND_SIGNAL': {
+      const cond = requireCondition(sync, instruction.cond, id);
+      const waiter = cond.signal(); // null = tidak ada yang menunggu, sinyal hilang
+      if (waiter !== null) events.push(...wakeWaiter(waiter, tick, sync));
+      break;
+    }
+    case 'COND_BROADCAST': {
+      const cond = requireCondition(sync, instruction.cond, id);
+      for (const waiter of cond.broadcast()) {
+        events.push(...wakeWaiter(waiter, tick, sync));
+      }
+      break;
+    }
     case 'ENTER_AREA': {
       sync.enterArea?.(id, instruction.area);
       events.push({
@@ -343,11 +447,14 @@ export function executeInstruction(
       });
       break;
     }
-    default:
+    default: {
+      // Semua instruksi sudah ditangani; bila union Instruction bertambah,
+      // TypeScript akan menandai baris ini sebagai error.
+      const unhandled: never = instruction;
       throw new Error(
-        `Instruksi ${instruction.op} belum didukung engine ` +
-          `(condition variable: T-044)`,
+        `Instruksi belum didukung engine: ${JSON.stringify(unhandled)}`,
       );
+    }
   }
 
   if (completed) push(advancePc(thread, tick));
