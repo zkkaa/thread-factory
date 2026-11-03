@@ -207,7 +207,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-088** *(baru)* Alat semaphore: perluas `PlacedTool` dengan `kind: 'semaphore'` (nilai awal 1 sampai 8 dipilih pemain) dan `applyTools` menyisipkan `SEM_WAIT` sebelum dan `SEM_SIGNAL` sesudah rentang; `buildEngineConfig` memasang nilai awal; `placeTool` memvalidasi. Tes: seimbang, nilai di luar 1..8 ditolak, masukan tidak termutasi.
 - [x] **T-042** *(diubah)* `TokenView` (rak Kartu Akses), visual antrean, slider nilai semaphore 1 sampai 8 di toolbox, dan seret Kartu Akses ke pintu aula. *(catatan 3 Nov: nilai 1 sampai 8 lewat tombol stepper dan pemasangan lewat mode klik slot; seret Kartu Akses ke pintu aula menyusul bersama layout aula T-089)*
 - [x] **T-043** *(diubah)* Data level 1-3 (`cores` = 8, 8 robot, area kapasitas 3) + tes: nilai 3 memberi `areaUtilization` tertinggi tanpa bentrok, nilai di atas 3 bentrok, nilai di bawah 3 utilisasi lebih rendah.
-- [ ] **T-089** *(baru)* Layout aula (`HallLayout`): 8 robot antre, pintu aula, 3 mesin, efek "BENTROK".
+- [ ] **T-089** *(baru)* Layout aula (`HallLayout`): 8 robot antre, pintu aula, 3 mesin, efek "BENTROK". *(3 Nov: data layout dan logika posisi robot selesai di hallSpots.ts; tampilan Phaser aula selesai (A2, menunggu uji visual); seret Kartu Akses ke pintu aula menyusul (A3))*
 - [ ] **T-090** *(baru)* Konten Level 1-3 (intro, petunjuk, penjelasan, konsep).
 
 **Level 1-4 — Lampu Sinyal** `P1`
