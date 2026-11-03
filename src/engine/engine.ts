@@ -85,7 +85,10 @@ export class Engine implements SimulationEngine {
     );
     this.areaCapacities = new Map(Object.entries(config.areas ?? {}));
     this.areaMembers = new Map(
-      Array.from(this.areaCapacities.keys(), (area) => [area, new Set<string>()]),
+      Array.from(this.areaCapacities.keys(), (area) => [
+        area,
+        new Set<string>(),
+      ]),
     );
     this.overloadTickCount = 0;
     this.areaOccupancySum = new Map(
@@ -238,8 +241,8 @@ export class Engine implements SimulationEngine {
     if (this.config === null) {
       throw new Error('getSnapshot() dipanggil sebelum load()');
     }
-    // Semaphore dan condition belum punya keadaan runtime sampai T-040 dan
-    // T-044; sementara ditampilkan dalam keadaan awal.
+    // Condition variable belum punya keadaan runtime sampai T-044;
+    // sementara ditampilkan dalam keadaan awal.
     let areaUtilization = 0;
     if (this.areaCapacities.size > 0 && this.tick > 0) {
       let totalRatio = 0;

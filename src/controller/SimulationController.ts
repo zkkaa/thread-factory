@@ -81,7 +81,7 @@ export class SimulationController {
   constructor(
     private readonly engine: SimulationEngine = new Engine(),
     private readonly clock: Clock = browserClock,
-  ) { }
+  ) {}
 
   getState(): ControllerState {
     return this.state;

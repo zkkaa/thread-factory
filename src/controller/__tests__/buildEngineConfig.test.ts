@@ -72,9 +72,7 @@ describe('buildEngineConfig', () => {
   it('memetakan semaphore dari PlacedSemaphoreTool pemain (T-088)', () => {
     const level: LevelDefinition = {
       ...level1_1,
-      resources: [
-        { kind: 'semaphore', id: 'kartu', initialValue: 1 },
-      ],
+      resources: [{ kind: 'semaphore', id: 'kartu', initialValue: 1 }],
     };
     const semTool: PlacedTool = {
       id: 'sem-kartu',

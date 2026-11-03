@@ -31,6 +31,16 @@ export function validateConfig(config: EngineConfig): void {
     mutexNames.add(name);
   }
 
+  // Area yang dipakai ENTER_AREA/LEAVE_AREA harus punya kapasitas yang jelas.
+  const areas = config.areas ?? {};
+  for (const [name, capacity] of Object.entries(areas)) {
+    if (!isPositiveInt(capacity)) {
+      throw new Error(
+        `Kapasitas area "${name}" harus bilangan bulat >= 1, diterima: ${capacity}`,
+      );
+    }
+  }
+
   const ids = new Set<string>();
   for (const thread of config.threads) {
     if (ids.has(thread.id)) {
@@ -82,14 +92,32 @@ export function validateConfig(config: EngineConfig): void {
           `${instruction.op} pada thread "${thread.id}": mutex "${instruction.mutex}" tidak dideklarasikan`,
         );
       }
+      if (
+        (instruction.op === 'SEM_WAIT' || instruction.op === 'SEM_SIGNAL') &&
+        !hasKey(config.semaphores, instruction.sem)
+      ) {
+        throw new Error(
+          `${instruction.op} pada thread "${thread.id}": semaphore "${instruction.sem}" tidak dideklarasikan`,
+        );
+      }
+      if (
+        (instruction.op === 'ENTER_AREA' || instruction.op === 'LEAVE_AREA') &&
+        !hasKey(areas, instruction.area)
+      ) {
+        throw new Error(
+          `${instruction.op} pada thread "${thread.id}": area "${instruction.area}" tidak dideklarasikan`,
+        );
+      }
     }
 
-    // Thread yang menunggu LOCK dilanjutkan oleh thread lain (handoff), jadi LOCK
-    // sebagai instruksi terakhir tidak masuk akal: tidak ada yang bisa di-UNLOCK.
+    // Thread yang menunggu LOCK atau SEM_WAIT dilanjutkan oleh thread lain
+    // (handoff: thread itu dibangunkan lalu pc-nya dimajukan). Bila instruksi
+    // pemblokir itu juga instruksi terakhir, pemajuan pc memaksa transisi
+    // READY -> TERMINATED yang tidak sah, jadi program seperti itu ditolak.
     const last = thread.program[thread.program.length - 1];
-    if (last !== undefined && last.op === 'LOCK') {
+    if (last !== undefined && (last.op === 'LOCK' || last.op === 'SEM_WAIT')) {
       throw new Error(
-        `Thread "${thread.id}": instruksi terakhir tidak boleh LOCK`,
+        `Thread "${thread.id}": instruksi terakhir tidak boleh ${last.op}`,
       );
     }
   }

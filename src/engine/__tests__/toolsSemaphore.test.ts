@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { applyTools, applyToolsDetailed, type PlacedSemaphoreTool } from '../tools';
+import {
+  applyTools,
+  applyToolsDetailed,
+  type PlacedSemaphoreTool,
+} from '../tools';
 import type { Instruction, ThreadDef } from '../types';
 
 function makeRobots(): ThreadDef[] {
