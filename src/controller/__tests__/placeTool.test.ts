@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { PlacedTool } from '../../engine/tools';
+import type { PlacedMutexTool, PlacedTool } from '../../engine/tools';
 import type { ThreadDef } from '../../engine/types';
 import type { LevelDefinition, ToolType } from '../../levels/types';
 import type { Clock } from '../clock';
@@ -51,7 +51,7 @@ function makeLevel(availableTools: ToolType[] = ['mutex']): LevelDefinition {
 }
 
 /** Pintu yang menutupi baca-hitung-tulis (indeks 1..3) di kedua robot. */
-function makeDoor(id = 'pintu-stok'): PlacedTool {
+function makeDoor(id = 'pintu-stok'): PlacedMutexTool {
   return {
     id,
     kind: 'mutex',

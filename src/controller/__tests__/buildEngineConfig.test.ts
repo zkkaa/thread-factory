@@ -68,4 +68,34 @@ describe('buildEngineConfig', () => {
     };
     expect(() => buildEngineConfig(level1_1, [rusak])).toThrow(/tidak ada/);
   });
+
+  it('memetakan semaphore dari PlacedSemaphoreTool pemain (T-088)', () => {
+    const level: LevelDefinition = {
+      ...level1_1,
+      resources: [
+        { kind: 'semaphore', id: 'kartu', initialValue: 1 },
+      ],
+    };
+    const semTool: PlacedTool = {
+      id: 'sem-kartu',
+      kind: 'semaphore',
+      sem: 'kartu',
+      value: 3,
+      spans: [{ thread: 'A', start: 1, end: 3 }],
+    };
+    const config = buildEngineConfig(level, [semTool]);
+    expect(config.semaphores['kartu']).toBe(3);
+  });
+
+  it('menambahkan semaphore dari PlacedSemaphoreTool jika belum ada di resources (T-088)', () => {
+    const semTool: PlacedTool = {
+      id: 'sem-kartu-baru',
+      kind: 'semaphore',
+      sem: 'akses-baru',
+      value: 5,
+      spans: [{ thread: 'A', start: 1, end: 3 }],
+    };
+    const config = buildEngineConfig(level1_1, [semTool]);
+    expect(config.semaphores['akses-baru']).toBe(5);
+  });
 });
