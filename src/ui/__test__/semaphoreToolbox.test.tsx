@@ -28,7 +28,9 @@ function makeSemaphoreLevel(initialTokens = 3): LevelDefinition {
       },
     ],
     sharedVars: { stok: 0 },
-    resources: [{ kind: 'semaphore', id: 'kartu', initialValue: initialTokens }],
+    resources: [
+      { kind: 'semaphore', id: 'kartu', initialValue: initialTokens },
+    ],
     availableTools: ['semaphore'],
     scheduler: { kind: 'random', cores: 1 },
     goal: {
@@ -69,13 +71,18 @@ describe('SemaphoreToolbox (T-042)', () => {
 
   it('menonaktifkan tombol [-] bila nilai mencapai batas bawah 1', () => {
     const html = render(makeController(1));
-    const minusBtn = /<button[^>]*aria-label="Kurangi nilai semaphore"[^>]*>/.exec(html)?.[0] ?? '';
+    const minusBtn =
+      /<button[^>]*aria-label="Kurangi nilai semaphore"[^>]*>/.exec(
+        html,
+      )?.[0] ?? '';
     expect(/\sdisabled=""/.test(minusBtn)).toBe(true);
   });
 
   it('menonaktifkan tombol [+] bila nilai mencapai batas atas 8', () => {
     const html = render(makeController(8));
-    const plusBtn = /<button[^>]*aria-label="Tambah nilai semaphore"[^>]*>/.exec(html)?.[0] ?? '';
+    const plusBtn =
+      /<button[^>]*aria-label="Tambah nilai semaphore"[^>]*>/.exec(html)?.[0] ??
+      '';
     expect(/\sdisabled=""/.test(plusBtn)).toBe(true);
   });
 
@@ -85,8 +92,13 @@ describe('SemaphoreToolbox (T-042)', () => {
     const html = render(controller);
     expect(html).toContain('Alat terkunci karena simulasi sudah dimulai');
 
-    const minusBtn = /<button[^>]*aria-label="Kurangi nilai semaphore"[^>]*>/.exec(html)?.[0] ?? '';
-    const plusBtn = /<button[^>]*aria-label="Tambah nilai semaphore"[^>]*>/.exec(html)?.[0] ?? '';
+    const minusBtn =
+      /<button[^>]*aria-label="Kurangi nilai semaphore"[^>]*>/.exec(
+        html,
+      )?.[0] ?? '';
+    const plusBtn =
+      /<button[^>]*aria-label="Tambah nilai semaphore"[^>]*>/.exec(html)?.[0] ??
+      '';
     expect(/\sdisabled=""/.test(minusBtn)).toBe(true);
     expect(/\sdisabled=""/.test(plusBtn)).toBe(true);
   });
