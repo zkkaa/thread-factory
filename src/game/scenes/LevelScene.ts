@@ -164,9 +164,12 @@ export class LevelScene extends Scene {
     this.tokenViews = snapshot.semaphores.map((sem, semIndex) => {
       const res = level.resources.find((r) => r.id === sem.id);
       const title = res?.label ?? 'Kartu Akses';
-      const initialCapacity = res && res.kind === 'semaphore' ? res.initialValue : sem.value;
+      const initialCapacity =
+        res && res.kind === 'semaphore' ? res.initialValue : sem.value;
       const tokenX = DOOR_PANEL.x;
-      const tokenY = DOOR_PANEL.topY + (snapshot.mutexes.length + semIndex) * DOOR_PANEL.gapY;
+      const tokenY =
+        DOOR_PANEL.topY +
+        (snapshot.mutexes.length + semIndex) * DOOR_PANEL.gapY;
       const view = new TokenView(this, sem.id, {
         x: tokenX,
         y: tokenY,
