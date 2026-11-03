@@ -158,9 +158,9 @@ describe('Semaphore: Integrasi Engine (SEM_WAIT dan SEM_SIGNAL)', () => {
     const threadC = snap.threads.find((t) => t.id === 'C');
     expect(threadC?.state).toBe('WAITING');
     expect(threadC?.waitingOn).toBe('sem:s');
-    expect(step3.events.some((e) => e.type === 'BLOCKED' && e.thread === 'C')).toBe(
-      true,
-    );
+    expect(
+      step3.events.some((e) => e.type === 'BLOCKED' && e.thread === 'C'),
+    ).toBe(true);
 
     // Tick 4: D menjalankan SEM_WAIT (token habis, D jadi WAITING)
     engine.step();
@@ -200,7 +200,8 @@ describe('Semaphore: Integrasi Engine (SEM_WAIT dan SEM_SIGNAL)', () => {
     expect(threadCAfter?.pc).toBe(1); // pc maju melewati SEM_WAIT
     expect(
       stepSignal.events.some(
-        (e) => e.type === 'THREAD_STATE' && e.thread === 'C' && e.to === 'READY',
+        (e) =>
+          e.type === 'THREAD_STATE' && e.thread === 'C' && e.to === 'READY',
       ),
     ).toBe(true);
   });
