@@ -6,9 +6,11 @@ import type {
 import { toolBus } from '../../../game/toolBus';
 import {
   buildSharedMutexTool,
+  buildSharedSemaphoreTool,
   clickSlot,
   describeSlot,
   readSharedDoor,
+  semaphoreToolId,
   slotCount,
   type ClickState,
   type Door,
@@ -36,23 +38,42 @@ const BUTTON =
 export function ToolboxHud({ controller, state }: ToolboxHudProps) {
   const { level } = state;
   const mutex = level?.resources.find((resource) => resource.kind === 'mutex');
+  const sem = level?.resources.find((resource) => resource.kind === 'semaphore');
   const first = level?.threads[0];
-  if (
-    level === null ||
-    mutex === undefined ||
-    first === undefined ||
-    !level.availableTools.includes('mutex')
-  ) {
+  if (level === null || first === undefined) {
     return null;
   }
+
+  const hasMutex = mutex !== undefined && level.availableTools.includes('mutex');
+  const hasSemaphore =
+    sem !== undefined && level.availableTools.includes('semaphore');
+
+  if (!hasMutex && !hasSemaphore) {
+    return null;
+  }
+
   return (
-    <MutexToolbox
-      controller={controller}
-      state={state}
-      mutexId={mutex.id}
-      threadIds={level.threads.map((thread) => thread.id)}
-      ops={first.program.map((instruction) => instruction.op)}
-    />
+    <>
+      {hasMutex && (
+        <MutexToolbox
+          controller={controller}
+          state={state}
+          mutexId={mutex.id}
+          threadIds={level.threads.map((thread) => thread.id)}
+          ops={first.program.map((instruction) => instruction.op)}
+        />
+      )}
+      {hasSemaphore && (
+        <SemaphoreToolbox
+          controller={controller}
+          state={state}
+          semId={sem.id}
+          initialValue={sem.initialValue}
+          threadIds={level.threads.map((thread) => thread.id)}
+          ops={first.program.map((instruction) => instruction.op)}
+        />
+      )}
+    </>
   );
 }
 
@@ -232,6 +253,205 @@ function MutexToolbox({
         <p className="text-xs text-ink-300">
           Alat terkunci karena simulasi sudah dimulai. Tekan Reset untuk
           mengubah pintu.
+        </p>
+      )}
+      {message !== null && (
+        <p role="alert" className="text-xs text-red-300">
+          {message}
+        </p>
+      )}
+    </section>
+  );
+}
+
+interface SemaphoreToolboxProps extends ToolboxHudProps {
+  semId: string;
+  initialValue: number;
+  threadIds: readonly string[];
+  ops: readonly string[];
+}
+
+export function SemaphoreToolbox({
+  controller,
+  state,
+  semId,
+  initialValue,
+  threadIds,
+  ops,
+}: SemaphoreToolboxProps) {
+  const [open, setOpen] = useState(false);
+  const [click, setClick] = useState<ClickState>(IDLE);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const total = slotCount(ops.length);
+  const editable = state.runState === 'idle';
+  const activeClick = editable ? click : IDLE;
+
+  const toolId = semaphoreToolId(semId);
+  const existingTool = state.tools.find((tool) => tool.id === toolId);
+  const door = readSharedDoor(existingTool);
+
+  const initialTokens =
+    existingTool && existingTool.kind === 'semaphore'
+      ? existingTool.value
+      : (initialValue ?? 3);
+  const [tokenCount, setTokenCount] = useState<number>(initialTokens);
+
+  const apply = (next: Door | null, val = tokenCount): void => {
+    const tool = buildSharedSemaphoreTool(semId, val, threadIds, next);
+    setMessage(replaceTool(controller, toolId, tool));
+  };
+
+  const handleValueChange = (newVal: number) => {
+    if (!editable) return;
+    const clamped = Math.max(1, Math.min(8, newVal));
+    setTokenCount(clamped);
+    if (door !== null) {
+      apply(door, clamped);
+    }
+  };
+
+  const handleSlot = (slot: number): void => {
+    if (!editable) return;
+    const result = clickSlot(activeClick, slot, total);
+    setClick(result.state);
+    if (result.door !== null) apply(result.door);
+    else setMessage(null);
+  };
+
+  const status =
+    door === null
+      ? 'belum dipasang'
+      : `masuk slot ${door.entry}, keluar slot ${door.exit}`;
+
+  return (
+    <section
+      aria-label="Semaphore Toolbox"
+      className="space-y-2 rounded-lg border border-teal-500 bg-navy-800/90 p-2 text-ink-100"
+    >
+      {open && (
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-1">
+            {Array.from({ length: total }, (_, slot) => {
+              const isEntry =
+                activeClick.phase === 'entry' && activeClick.entry === slot;
+              const isDoor =
+                door !== null && (slot === door.entry || slot === door.exit);
+              const blocked =
+                !editable ||
+                (activeClick.phase === 'idle' && slot === total - 1);
+              return (
+                <span key={slot} className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={blocked}
+                    aria-label={`Slot ${slot}, ${describeSlot(slot, ops)}${
+                      isDoor ? ', ada gerbang kartu' : ''
+                    }${isEntry ? ', gerbang masuk dipilih' : ''}`}
+                    title={`Slot ${slot}: ${describeSlot(slot, ops)}`}
+                    onClick={() => handleSlot(slot)}
+                    className={`${BUTTON} ${
+                      isEntry
+                        ? 'border-teal-400 ring-2 ring-teal-400'
+                        : isDoor
+                          ? 'border-teal-500 bg-teal-500 text-navy-900'
+                          : 'border-navy-500 bg-navy-700 hover:bg-navy-500'
+                    }`}
+                  >
+                    {slot}
+                  </button>
+                  {slot < ops.length && (
+                    <span
+                      className={`rounded border px-2 py-1 text-xs ${
+                        door !== null && slot >= door.entry && slot < door.exit
+                          ? 'border-teal-500 bg-navy-500'
+                          : 'border-navy-500 bg-navy-900'
+                      }`}
+                    >
+                      {ops[slot]}
+                    </span>
+                  )}
+                </span>
+              );
+            })}
+          </div>
+          <p className="text-xs text-ink-300">
+            {activeClick.phase === 'idle'
+              ? 'Klik slot untuk memasang gerbang masuk semaphore.'
+              : `Gerbang masuk di slot ${activeClick.entry}. Klik slot sesudahnya untuk gerbang keluar.`}{' '}
+            {activeClick.phase === 'entry' && (
+              <button
+                type="button"
+                onClick={() => setClick(IDLE)}
+                className="underline"
+              >
+                Batal
+              </button>
+            )}
+          </p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-bold uppercase tracking-wide text-teal-400">
+          Kartu Akses (Semaphore)
+        </span>
+
+        {/* Stepper Kontrol Nilai Semaphore (1..8) */}
+        <div className="flex items-center gap-1 rounded border border-teal-500/50 bg-navy-900 px-2 py-0.5">
+          <span className="text-xs text-ink-300">Kapasitas:</span>
+          <button
+            type="button"
+            aria-label="Kurangi nilai semaphore"
+            disabled={!editable || tokenCount <= 1}
+            onClick={() => handleValueChange(tokenCount - 1)}
+            className="rounded px-1.5 py-0.5 text-xs font-bold hover:bg-teal-600/30 disabled:opacity-40"
+          >
+            -
+          </button>
+          <span
+            data-testid="semaphore-value"
+            className="w-4 text-center text-xs font-bold text-teal-300"
+          >
+            {tokenCount}
+          </span>
+          <button
+            type="button"
+            aria-label="Tambah nilai semaphore"
+            disabled={!editable || tokenCount >= 8}
+            onClick={() => handleValueChange(tokenCount + 1)}
+            className="rounded px-1.5 py-0.5 text-xs font-bold hover:bg-teal-600/30 disabled:opacity-40"
+          >
+            +
+          </button>
+        </div>
+
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+          className={`${BUTTON} border-teal-400 bg-navy-700 hover:bg-navy-500`}
+        >
+          Gerbang Kartu ({status})
+        </button>
+
+        <button
+          type="button"
+          disabled={!editable || door === null}
+          onClick={() => {
+            setClick(IDLE);
+            apply(null);
+          }}
+          className={`${BUTTON} border-ember-500 hover:bg-navy-500`}
+        >
+          Hapus
+        </button>
+      </div>
+
+      {!editable && (
+        <p className="text-xs text-ink-300">
+          Alat terkunci karena simulasi sudah dimulai. Tekan Reset untuk
+          mengubah nilai atau posisi gerbang.
         </p>
       )}
       {message !== null && (

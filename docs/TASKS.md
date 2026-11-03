@@ -205,7 +205,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-040** `primitives/semaphore.ts` (`SEM_WAIT`/`SEM_SIGNAL`, antrean FIFO) + tes.
 - [x] **T-041** *(diubah)* Area berkapasitas di engine (ARCHITECTURE 4.9): `areas` di `EngineConfig`, instruksi `ENTER_AREA` dan `LEAVE_AREA`, event `AREA_ENTERED`, `AREA_LEFT`, `AREA_OVERLOAD`, metrik `overloadTicks` dan `areaUtilization`; dokumentasikan di ARCHITECTURE 4.2; tes: kelebihan kapasitas terdeteksi, utilisasi dihitung benar.
 - [x] **T-088** *(baru)* Alat semaphore: perluas `PlacedTool` dengan `kind: 'semaphore'` (nilai awal 1 sampai 8 dipilih pemain) dan `applyTools` menyisipkan `SEM_WAIT` sebelum dan `SEM_SIGNAL` sesudah rentang; `buildEngineConfig` memasang nilai awal; `placeTool` memvalidasi. Tes: seimbang, nilai di luar 1..8 ditolak, masukan tidak termutasi.
-- [ ] **T-042** *(diubah)* `TokenView` (rak Kartu Akses), visual antrean, slider nilai semaphore 1 sampai 8 di toolbox, dan seret Kartu Akses ke pintu aula.
+- [x] **T-042** *(diubah)* `TokenView` (rak Kartu Akses), visual antrean, slider nilai semaphore 1 sampai 8 di toolbox, dan seret Kartu Akses ke pintu aula.
 - [ ] **T-043** *(diubah)* Data level 1-3 (`cores` = 8, 8 robot, area kapasitas 3) + tes: nilai 3 memberi `areaUtilization` tertinggi tanpa bentrok, nilai di atas 3 bentrok, nilai di bawah 3 utilisasi lebih rendah.
 - [ ] **T-089** *(baru)* Layout aula (`HallLayout`): 8 robot antre, pintu aula, 3 mesin, efek "BENTROK".
 - [ ] **T-090** *(baru)* Konten Level 1-3 (intro, petunjuk, penjelasan, konsep).
