@@ -18,7 +18,7 @@ function runWithSemaphore(semaphoreValue: number | null, seed = 10) {
             spans: level1_3.threads.map((t) => ({
               thread: t.id,
               start: 1, // tepat sebelum ENTER_AREA
-              end: 3,   // tepat setelah LEAVE_AREA
+              end: 3, // tepat setelah LEAVE_AREA
             })),
           },
         ];

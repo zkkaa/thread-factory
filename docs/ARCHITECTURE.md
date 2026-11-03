@@ -228,11 +228,15 @@ Aturan: `applyTools` tidak mengubah input, dan memiliki tes sendiri (urutan LOCK
 ```ts
 type InstructionOrigin =
   | { kind: 'original'; index: number }                          // instruksi asli ke-index
-  | { kind: 'inserted'; op: 'LOCK' | 'UNLOCK'; slot: number };   // disisipkan alat, di slot tertentu
+  | { kind: 'inserted'; op: 'LOCK' | 'UNLOCK' | 'SEM_WAIT' | 'SEM_SIGNAL'; slot: number };   // disisipkan alat, di slot tertentu
 applyToolsDetailed(threads, placed): { threads: ThreadDef[]; origins: Record<ThreadId, InstructionOrigin[]> }
 // applyTools() tetap ada dan hanya mengembalikan `threads`.
 ```
 Peta ini dipakai `game/anchors.ts` untuk menentukan titik visual (checkpoint atau gerbang) tempat robot berada saat mengeksekusi instruksi tertentu.
+
+**Alat semaphore *(baru, T-088)*:** `PlacedTool` kini berupa `PlacedMutexTool` (`kind: 'mutex'`, `mutex`) atau `PlacedSemaphoreTool` (`kind: 'semaphore'`, `sem`, `value` bilangan bulat 1 sampai 8). Rentang semaphore memakai aturan slot yang sama dengan mutex: `SEM_WAIT` disisipkan sebelum instruksi `start` dan `SEM_SIGNAL` sesudah instruksi `end`. `buildEngineConfig` mengisi nilai awal semaphore dari `value`. Rentang untuk sumber daya yang sama tidak boleh tumpang tindih; untuk sumber daya berbeda harus bersarang.
+
+**Aturan validasi engine *(baru)*:** `validateConfig` menolak program yang berakhir dengan `LOCK` atau `SEM_WAIT` (thread yang menunggu dilanjutkan lewat handoff oleh thread lain, sehingga instruksi pemblokir yang juga instruksi terakhir akan memaksa transisi `READY -> TERMINATED` yang tidak sah), serta semaphore dan area yang dipakai tetapi tidak dideklarasikan.
 
 ### 4.7 Metrik (`metrics.ts`)
 

@@ -238,3 +238,31 @@ export const ROBOT_FX_TEXT: Phaser.Types.GameObjects.Text.TextStyle = {
   fontStyle: 'bold',
   color: '#bfdbfe',
 };
+
+// ---------------------------------------------------------------------------
+// Rak Kartu Akses / Token Semaphore (TokenView, T-042)
+// ---------------------------------------------------------------------------
+export const TOKEN_PANEL = {
+  width: 160,
+  height: 70,
+  fillAlpha: 0.9,
+  strokeWidth: 2,
+  titleY: -22,
+  countY: -2,
+  queueY: 20,
+  queueHeight: 18,
+  queuePadding: 20,
+  titleFontSize: '11px',
+  countFontSize: '14px',
+  queueFontSize: '10px',
+} as const;
+
+export const TOKEN_COLORS = {
+  panel: 0x132238,
+  available: 0x14b8a6,
+  empty: 0xef4444,
+  queueBadge: 0xef4444,
+  title: '#2dd4bf',
+  count: '#f9fafb',
+  queueText: '#ffffff',
+} as const;

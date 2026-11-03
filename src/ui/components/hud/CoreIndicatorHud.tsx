@@ -28,7 +28,10 @@ export function CoreIndicatorHud({ state }: CoreIndicatorHudProps) {
     >
       <div className="flex items-center justify-between font-bold">
         <span className="text-ink-100 flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-sun-400" aria-hidden="true" />
+          <span
+            className="h-2 w-2 rounded-full bg-sun-400"
+            aria-hidden="true"
+          />
           <span>Si Penjadwal ({cores} Core)</span>
         </span>
         <span className="text-sun-400 font-mono">
@@ -47,7 +50,9 @@ export function CoreIndicatorHud({ state }: CoreIndicatorHudProps) {
       >
         <div
           className="h-full bg-sun-400 transition-all duration-200"
-          style={{ width: `${Math.min(100, Math.max(0, utilizationPercent))}%` }}
+          style={{
+            width: `${Math.min(100, Math.max(0, utilizationPercent))}%`,
+          }}
         />
       </div>
 
