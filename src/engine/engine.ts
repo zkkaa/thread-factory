@@ -1,5 +1,6 @@
 import { createPrng } from './prng';
 import { Mutex } from './primitives/mutex';
+import { Semaphore } from './primitives/semaphore';
 import { createScheduler, type Scheduler } from './scheduler';
 import {
   createThread,
@@ -45,9 +46,14 @@ export class Engine implements SimulationEngine {
   private threads: ThreadRuntime[] = [];
   private threadById = new Map<string, ThreadRuntime>();
   private mutexes = new Map<string, Mutex>();
+  private semaphores = new Map<string, Semaphore>();
   private sync: SyncContext | null = null;
   private sharedVars: Record<string, number> = {};
   private scheduler: Scheduler | null = null;
+  private areaMembers = new Map<string, Set<string>>();
+  private areaCapacities = new Map<string, number>();
+  private overloadTickCount = 0;
+  private areaOccupancySum = new Map<string, number>();
 
   get isFinished(): boolean {
     return this.finished;
@@ -71,8 +77,35 @@ export class Engine implements SimulationEngine {
     this.mutexes = new Map(
       config.mutexes.map((name) => [name, new Mutex(name)]),
     );
+    this.semaphores = new Map(
+      Object.entries(config.semaphores).map(([name, val]) => [
+        name,
+        new Semaphore(name, val),
+      ]),
+    );
+    this.areaCapacities = new Map(Object.entries(config.areas ?? {}));
+    this.areaMembers = new Map(
+      Array.from(this.areaCapacities.keys(), (area) => [area, new Set<string>()]),
+    );
+    this.overloadTickCount = 0;
+    this.areaOccupancySum = new Map(
+      Array.from(this.areaCapacities.keys(), (area) => [area, 0]),
+    );
+
     this.sync = {
       mutexes: this.mutexes,
+      semaphores: this.semaphores,
+      enterArea: (threadId, area) => {
+        let members = this.areaMembers.get(area);
+        if (!members) {
+          members = new Set();
+          this.areaMembers.set(area, members);
+        }
+        members.add(threadId);
+      },
+      leaveArea: (threadId, area) => {
+        this.areaMembers.get(area)?.delete(threadId);
+      },
       getThread(id) {
         const thread = threadById.get(id);
         if (thread === undefined) throw new Error(`Thread tidak ada: "${id}"`);
@@ -151,6 +184,29 @@ export class Engine implements SimulationEngine {
       this.assertNoLockLeak(thread);
     }
 
+    // 4b. Pemeriksaan kapasitas area
+    let hasOverloadThisTick = false;
+    for (const [area, capacity] of this.areaCapacities.entries()) {
+      const count = this.areaMembers.get(area)?.size ?? 0;
+      this.areaOccupancySum.set(
+        area,
+        (this.areaOccupancySum.get(area) ?? 0) + count,
+      );
+      if (count > capacity) {
+        hasOverloadThisTick = true;
+        events.push({
+          type: 'AREA_OVERLOAD',
+          tick,
+          area,
+          count,
+          capacity,
+        });
+      }
+    }
+    if (hasOverloadThisTick) {
+      this.overloadTickCount += 1;
+    }
+
     // 5. Selesai?
     const allTerminated = this.threads.every((t) => t.state === 'TERMINATED');
     if (allTerminated || tick >= this.config.maxTicks) {
@@ -184,6 +240,17 @@ export class Engine implements SimulationEngine {
     }
     // Semaphore dan condition belum punya keadaan runtime sampai T-040 dan
     // T-044; sementara ditampilkan dalam keadaan awal.
+    let areaUtilization = 0;
+    if (this.areaCapacities.size > 0 && this.tick > 0) {
+      let totalRatio = 0;
+      for (const [area, capacity] of this.areaCapacities.entries()) {
+        const avgCount = (this.areaOccupancySum.get(area) ?? 0) / this.tick;
+        const ratio = capacity > 0 ? Math.min(1, avgCount / capacity) : 0;
+        totalRatio += ratio;
+      }
+      areaUtilization = totalRatio / this.areaCapacities.size;
+    }
+
     return {
       tick: this.tick,
       seed: this.seed,
@@ -191,12 +258,13 @@ export class Engine implements SimulationEngine {
       threads: this.threads.map(snapshotThread),
       sharedVars: { ...this.sharedVars },
       mutexes: Array.from(this.mutexes.values(), (m) => m.snapshot()),
-      semaphores: Object.entries(this.config.semaphores).map(([id, value]) => ({
-        id,
-        value,
-        queue: [],
-      })),
+      semaphores: Array.from(this.semaphores.values(), (s) => s.snapshot()),
       conditions: this.config.conditions.map((id) => ({ id, queue: [] })),
+      areaOccupancy: Object.fromEntries(
+        Array.from(this.areaMembers.entries(), ([k, v]) => [k, v.size]),
+      ),
+      overloadTicks: this.overloadTickCount,
+      areaUtilization,
       cores: this.config.scheduler.cores,
       executedInstructions: this.executedInstructions,
     };

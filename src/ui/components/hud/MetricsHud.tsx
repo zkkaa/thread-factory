@@ -29,6 +29,13 @@ export function MetricsHud({ state }: { state: ControllerState }) {
         <dt className="text-ink-300">Throughput</dt>
         <dd>{view.throughput}</dd>
 
+        {view.cores > 1 && (
+          <div className="contents">
+            <dt className="text-ink-300">Utilisasi core</dt>
+            <dd>{view.coreUtilization}</dd>
+          </div>
+        )}
+
         {view.threads.map((thread) => (
           <div key={thread.id} className="contents">
             <dt className="text-ink-300">Tunggu {thread.label}</dt>

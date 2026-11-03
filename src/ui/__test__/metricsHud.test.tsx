@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { SimulationController } from '../../controller/SimulationController';
 import type { Clock } from '../../controller/clock';
 import { level1_1 } from '../../levels/module1/level-1-1';
+import { level1_2 } from '../../levels/module1/level-1-2';
 import { MetricsHud } from '../components/hud/MetricsHud';
 import { deriveMetrics } from '../metricsView';
 
@@ -53,5 +54,14 @@ describe('MetricsHud', () => {
     );
     expect(html).toContain('Tunggu');
     expect(html).toContain('tick');
+  });
+
+  it('menampilkan utilisasi core bila level multicore (cores > 1)', () => {
+    const controller = new SimulationController(undefined, noClock);
+    controller.loadLevel(level1_2);
+    const html = renderToStaticMarkup(
+      <MetricsHud state={controller.getState()} />,
+    );
+    expect(html).toContain('Utilisasi core');
   });
 });

@@ -70,6 +70,9 @@ class FakeEngine implements SimulationEngine {
       mutexes: [],
       semaphores: [],
       conditions: [],
+      areaOccupancy: {},
+      overloadTicks: 0,
+      areaUtilization: 0,
       cores: 1,
       executedInstructions: 0,
     };

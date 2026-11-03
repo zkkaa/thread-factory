@@ -181,10 +181,12 @@ describe('executeInstruction: pengulangan dan terminasi', () => {
 });
 
 describe('executeInstruction: instruksi yang belum didukung', () => {
-  it('SEM_WAIT melempar error yang menyebut tugas terkait', () => {
-    const thread = makeRunning([{ op: 'SEM_WAIT', sem: 'mesin' }]);
+  it('COND_WAIT melempar error yang menyebut tugas terkait', () => {
+    const thread = makeRunning([
+      { op: 'COND_WAIT', cond: 'sinyal', mutex: 'm' },
+    ]);
     expect(() => executeInstruction(thread, 1, {})).toThrow(
-      /belum didukung.*T-040/,
+      /belum didukung.*T-044/,
     );
   });
 });

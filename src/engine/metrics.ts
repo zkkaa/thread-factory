@@ -33,6 +33,10 @@ export interface Metrics {
    * boleh dianggap sebagai pembaruan yang hilang.
    */
   lostUpdates: number | null;
+  /** Total tick dengan kejadian kelebihan kapasitas area (bentrok). */
+  overloadTicks: number;
+  /** Rata-rata utilisasi area berkapasitas (0..1). */
+  areaUtilization: number;
 }
 
 /**
@@ -90,5 +94,7 @@ export function computeMetrics(
     maxWaitTicks,
     coreUtilization,
     lostUpdates,
+    overloadTicks: snapshot.overloadTicks ?? 0,
+    areaUtilization: snapshot.areaUtilization ?? 0,
   };
 }

@@ -145,7 +145,9 @@ export type Instruction =
   | { op: 'SEM_SIGNAL'; sem: string }
   | { op: 'COND_WAIT'; cond: string; mutex: string }
   | { op: 'COND_SIGNAL'; cond: string }
-  | { op: 'COND_BROADCAST'; cond: string };
+  | { op: 'COND_BROADCAST'; cond: string }
+  | { op: 'ENTER_AREA'; area: string }            // masuk area berkapasitas (Level 1-3)
+  | { op: 'LEAVE_AREA'; area: string };           // keluar area berkapasitas (Level 1-3)
 // Instruksi khusus skenario (mis. PUT_ITEM, TAKE_ITEM, ACQUIRE_FORK) ditambahkan
 // ke union ini saat Modul 2 dikerjakan, dan didokumentasikan di sini.
 
