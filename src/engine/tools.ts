@@ -6,15 +6,26 @@ export interface ToolSpan {
   end: number;
 }
 
-export interface PlacedTool {
+export interface PlacedMutexTool {
   id: string;
   kind: 'mutex';
   mutex: string;
   spans: ToolSpan[];
 }
 
+export interface PlacedSemaphoreTool {
+  id: string;
+  kind: 'semaphore';
+  sem: string;
+  value: number; // 1 sampai 8
+  spans: ToolSpan[];
+}
+
+export type PlacedTool = PlacedMutexTool | PlacedSemaphoreTool;
+
 interface OrderedSpan {
-  mutex: string;
+  resource: string;
+  kind: 'mutex' | 'semaphore';
   start: number;
   end: number;
   order: number;
@@ -23,7 +34,11 @@ interface OrderedSpan {
 /** Asal satu instruksi pada program efektif (ARCHITECTURE 4.6). */
 export type InstructionOrigin =
   | { kind: 'original'; index: number }
-  | { kind: 'inserted'; op: 'LOCK' | 'UNLOCK'; slot: number };
+  | {
+      kind: 'inserted';
+      op: 'LOCK' | 'UNLOCK' | 'SEM_WAIT' | 'SEM_SIGNAL';
+      slot: number;
+    };
 
 const overlaps = (a: OrderedSpan, b: OrderedSpan): boolean =>
   a.start <= b.end && b.start <= a.end;
@@ -58,14 +73,15 @@ function validatePairs(spans: OrderedSpan[], thread: ThreadDef): void {
       const a = spans[i];
       const b = spans[j];
       if (!overlaps(a, b)) continue;
-      if (a.mutex === b.mutex) {
+      if (a.resource === b.resource) {
+        const jenis = a.kind === 'mutex' ? 'mutex' : 'semaphore';
         throw new Error(
-          `${thread.label}: dua rentang untuk mutex "${a.mutex}" saling tumpang tindih.`,
+          `${thread.label}: dua rentang untuk ${jenis} "${a.resource}" saling tumpang tindih.`,
         );
       }
       if (!contains(a, b) && !contains(b, a)) {
         throw new Error(
-          `${thread.label}: rentang mutex "${a.mutex}" dan "${b.mutex}" saling silang; harus bersarang.`,
+          `${thread.label}: rentang "${a.resource}" dan "${b.resource}" saling silang; harus bersarang.`,
         );
       }
     }
@@ -83,8 +99,13 @@ function buildProgram(
       .filter((s) => s.start === index)
       .sort((a, b) => b.end - a.end || a.order - b.order)
       .forEach((s) => {
-        result.push({ op: 'LOCK', mutex: s.mutex });
-        origins.push({ kind: 'inserted', op: 'LOCK', slot: s.start });
+        if (s.kind === 'mutex') {
+          result.push({ op: 'LOCK', mutex: s.resource });
+          origins.push({ kind: 'inserted', op: 'LOCK', slot: s.start });
+        } else {
+          result.push({ op: 'SEM_WAIT', sem: s.resource });
+          origins.push({ kind: 'inserted', op: 'SEM_WAIT', slot: s.start });
+        }
       });
 
     result.push({ ...instruction });
@@ -94,8 +115,13 @@ function buildProgram(
       .filter((s) => s.end === index)
       .sort((a, b) => b.start - a.start || b.order - a.order)
       .forEach((s) => {
-        result.push({ op: 'UNLOCK', mutex: s.mutex });
-        origins.push({ kind: 'inserted', op: 'UNLOCK', slot: s.end + 1 });
+        if (s.kind === 'mutex') {
+          result.push({ op: 'UNLOCK', mutex: s.resource });
+          origins.push({ kind: 'inserted', op: 'UNLOCK', slot: s.end + 1 });
+        } else {
+          result.push({ op: 'SEM_SIGNAL', sem: s.resource });
+          origins.push({ kind: 'inserted', op: 'SEM_SIGNAL', slot: s.end + 1 });
+        }
       });
   });
   return { program: result, origins };
@@ -117,6 +143,16 @@ export function applyToolsDetailed(
     }
     seenIds.add(tool.id);
 
+    if (tool.kind === 'semaphore') {
+      if (!Number.isInteger(tool.value) || tool.value < 1 || tool.value > 8) {
+        throw new Error(
+          'Nilai semaphore harus berupa bilangan bulat antara 1 dan 8.',
+        );
+      }
+    }
+
+    const resource = tool.kind === 'mutex' ? tool.mutex : tool.sem;
+
     for (const span of tool.spans) {
       const thread = threads.find((t) => t.id === span.thread);
       if (!thread) {
@@ -126,7 +162,13 @@ export function applyToolsDetailed(
       }
       validateSpan(tool, span, thread);
       const list = byThread.get(span.thread) ?? [];
-      list.push({ mutex: tool.mutex, start: span.start, end: span.end, order });
+      list.push({
+        resource,
+        kind: tool.kind,
+        start: span.start,
+        end: span.end,
+        order,
+      });
       byThread.set(span.thread, list);
     }
   });
