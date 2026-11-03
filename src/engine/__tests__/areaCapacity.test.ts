@@ -99,7 +99,8 @@ describe('Area berkapasitas di Engine (T-041)', () => {
     const step1 = engine.step();
     expect(
       step1.events.some(
-        (e) => e.type === 'AREA_ENTERED' && e.thread === 'A' && e.area === 'aula',
+        (e) =>
+          e.type === 'AREA_ENTERED' && e.thread === 'A' && e.area === 'aula',
       ),
     ).toBe(true);
 
