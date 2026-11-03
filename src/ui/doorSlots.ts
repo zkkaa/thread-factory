@@ -39,6 +39,10 @@ export function describeSlot(index: number, ops: readonly string[]): string {
   return `antara ${ops[index - 1]} dan ${ops[index]}`;
 }
 
+export function semaphoreToolId(semId: string): string {
+  return `semaphore:${semId}`;
+}
+
 /**
  * Membangun satu alat mutex yang berlaku untuk SEMUA robot di loop bersama.
  * `door` null = tidak ada pintu (mengembalikan null supaya alat dilepas).
@@ -54,6 +58,27 @@ export function buildSharedMutexTool(
     id: mutexToolId(mutexId),
     kind: 'mutex',
     mutex: mutexId,
+    spans: threadIds.map((thread) => ({ thread, start, end })),
+  };
+}
+
+/**
+ * Membangun satu alat semaphore yang berlaku untuk SEMUA robot.
+ * `door` null = tidak ada pintu.
+ */
+export function buildSharedSemaphoreTool(
+  semId: string,
+  value: number,
+  threadIds: readonly string[],
+  door: Door | null,
+): PlacedTool | null {
+  if (door === null) return null;
+  const { start, end } = spanFromSlots(door);
+  return {
+    id: semaphoreToolId(semId),
+    kind: 'semaphore',
+    sem: semId,
+    value,
     spans: threadIds.map((thread) => ({ thread, start, end })),
   };
 }
