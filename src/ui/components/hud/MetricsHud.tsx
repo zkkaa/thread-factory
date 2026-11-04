@@ -14,7 +14,16 @@ export function MetricsHud({ state }: { state: ControllerState }) {
     <details className="group w-72 rounded-lg border border-navy-500 bg-navy-800/90 p-2 text-ink-100">
       <summary className="flex cursor-pointer items-center justify-between text-sm font-bold">
         <span>
-          Metrik: {view.variable} {view.current} / {view.target}
+          {view.area === null ? (
+            <>
+              Metrik: {view.variable} {view.current} / {view.target}
+            </>
+          ) : (
+            <>
+              Metrik: {view.area.name} {view.area.occupancy} /{' '}
+              {view.area.capacity}
+            </>
+          )}
         </span>
         <span className="text-xs font-normal text-ink-300">
           <span className="group-open:hidden">Buka</span>
@@ -23,8 +32,19 @@ export function MetricsHud({ state }: { state: ControllerState }) {
       </summary>
 
       <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-        <dt className="text-ink-300">Pembaruan hilang</dt>
-        <dd>{view.lostUpdates}</dd>
+        {view.area === null ? (
+          <>
+            <dt className="text-ink-300">Pembaruan hilang</dt>
+            <dd>{view.lostUpdates}</dd>
+          </>
+        ) : (
+          <>
+            <dt className="text-ink-300">Tick bentrok</dt>
+            <dd>{view.area.overloadTicks} tick</dd>
+            <dt className="text-ink-300">Utilisasi area</dt>
+            <dd>{view.area.utilization}</dd>
+          </>
+        )}
 
         <dt className="text-ink-300">Throughput</dt>
         <dd>{view.throughput}</dd>
