@@ -236,22 +236,23 @@ describe('Engine: step dan state machine', () => {
     expect(snap.threads.some((t) => t.state !== 'TERMINATED')).toBe(true);
   });
 
-  it('instruksi yang belum didukung (COND_WAIT) menghasilkan error jelas dari step()', () => {
+  it('COND_WAIT pada mutex yang tidak dideklarasikan ditolak saat load()', () => {
     const engine = new Engine();
-    engine.load(
-      makeConfig(undefined, {
-        threads: [
-          {
-            id: 'A',
-            label: 'A',
-            program: [{ op: 'COND_WAIT', cond: 'sinyal', mutex: 'papan' }],
-          },
-        ],
-        conditions: ['sinyal'],
-      }),
-      1,
-    );
-    expect(() => engine.step()).toThrow(/belum didukung/);
+    expect(() =>
+      engine.load(
+        makeConfig(undefined, {
+          threads: [
+            {
+              id: 'A',
+              label: 'A',
+              program: [{ op: 'COND_WAIT', cond: 'sinyal', mutex: 'papan' }],
+            },
+          ],
+          conditions: ['sinyal'],
+        }),
+        1,
+      ),
+    ).toThrow(/mutex "papan" tidak dideklarasikan/);
   });
 });
 
