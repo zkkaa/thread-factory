@@ -310,6 +310,6 @@ export const HALL = {
   bannerFontSize: '22px',
   robotStroke: 2,
   robotGlowStroke: 4,
-  robotLabelFontSize: '11px',
+  robotLabelFontSize: '10px',
   robotLabelGap: 4,
 } as const;

@@ -138,7 +138,11 @@ function RibbonIcon({
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {ok ? <path d="M5 12.5l4.5 4.5L19 7" /> : <path d="M6 6l12 12M18 6L6 18" />}
+      {ok ? (
+        <path d="M5 12.5l4.5 4.5L19 7" />
+      ) : (
+        <path d="M6 6l12 12M18 6L6 18" />
+      )}
     </svg>
   );
 }
@@ -185,7 +189,10 @@ function splitTitle(title: string): string[] {
   const mid = text.length / 2;
   let best = -1;
   for (let i = 0; i < text.length; i++) {
-    if (text[i] === ' ' && (best === -1 || Math.abs(i - mid) < Math.abs(best - mid))) {
+    if (
+      text[i] === ' ' &&
+      (best === -1 || Math.abs(i - mid) < Math.abs(best - mid))
+    ) {
       best = i;
     }
   }
