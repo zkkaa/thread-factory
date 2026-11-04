@@ -180,13 +180,13 @@ describe('executeInstruction: pengulangan dan terminasi', () => {
   });
 });
 
-describe('executeInstruction: instruksi yang belum didukung', () => {
-  it('COND_WAIT melempar error yang menyebut tugas terkait', () => {
+describe('executeInstruction: condition variable tanpa konteks sinkronisasi', () => {
+  it('COND_WAIT pada condition yang tidak ada melempar error yang menyebut namanya', () => {
     const thread = makeRunning([
       { op: 'COND_WAIT', cond: 'sinyal', mutex: 'm' },
     ]);
     expect(() => executeInstruction(thread, 1, {})).toThrow(
-      /belum didukung.*T-044/,
+      /condition variable "sinyal" yang tidak ada/,
     );
   });
 });

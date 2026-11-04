@@ -118,7 +118,10 @@ export function validateConfig(config: EngineConfig): void {
           `${instruction.op} pada thread "${thread.id}": condition "${instruction.cond}" tidak dideklarasikan`,
         );
       }
-      if (instruction.op === 'COND_WAIT' && !mutexNames.has(instruction.mutex)) {
+      if (
+        instruction.op === 'COND_WAIT' &&
+        !mutexNames.has(instruction.mutex)
+      ) {
         throw new Error(
           `COND_WAIT pada thread "${thread.id}": mutex "${instruction.mutex}" tidak dideklarasikan`,
         );
