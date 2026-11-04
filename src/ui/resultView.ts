@@ -1,6 +1,7 @@
 import type { LevelResult, Stars } from '../controller/evaluateLevel';
 import type { Snapshot } from '../engine/types';
 import type { LevelDefinition } from '../levels/types';
+import { areaOf } from './areaMode';
 
 export interface ResultView {
   ok: boolean;
@@ -31,6 +32,15 @@ function capitalize(text: string): string {
     : text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+/** Kalimat gelembung Pak Mandor untuk level berarea (mis. aula Level 1-3). */
+function areaQuote(ok: boolean, areaName: string, overload: number): string {
+  if (ok) return `Tanpa bentrok di ${areaName}, semua robot aman.`;
+  if (overload > 0) {
+    return `Seharusnya tanpa bentrok, hasilnya ${overload} tick bentrok.`;
+  }
+  return 'Simulasi berhenti sebelum semua robot selesai.';
+}
+
 /** Mengubah hasil penilaian controller menjadi data tampilan. Tidak menilai ulang. */
 export function deriveResultView(
   level: LevelDefinition,
@@ -40,6 +50,8 @@ export function deriveResultView(
   const { variable, value: target } = level.goal.target;
   const actual = snapshot.sharedVars[variable];
   const actualText = actual === undefined ? '-' : String(actual);
+  const area = areaOf(level);
+  const overload = snapshot.overloadTicks;
   const totalWait = Object.values(result.metrics.waitTicksByThread).reduce(
     (a, b) => a + b,
     0,
@@ -49,12 +61,60 @@ export function deriveResultView(
   const frugal = efficient && totalWait <= lowWait;
   const titles = level.resultTitle ?? DEFAULT_TITLES;
 
+  const tickCard = { label: 'Total tick', value: String(result.metrics.tick) };
+  const waitCard = { label: 'Waktu tunggu', value: String(totalWait) };
+  const cards =
+    area === null
+      ? [
+          {
+            label: 'Pembaruan hilang',
+            value: String(result.metrics.lostUpdates ?? '-'),
+          },
+          tickCard,
+          waitCard,
+          ...(snapshot.cores > 1
+            ? [
+                {
+                  label: 'Utilisasi core',
+                  value: `${Math.round(result.metrics.coreUtilization * 100)}%`,
+                },
+              ]
+            : []),
+        ]
+      : [
+          { label: 'Tick bentrok', value: String(overload) },
+          tickCard,
+          waitCard,
+          {
+            label: 'Utilisasi area',
+            value: `${Math.round(snapshot.areaUtilization * 100)}%`,
+          },
+        ];
+
+  const keyFigure =
+    area === null
+      ? {
+          label: capitalize(variable),
+          actual: actualText,
+          target: String(target),
+          match: actual === target,
+        }
+      : {
+          label: 'Bentrok',
+          actual: result.ok || overload > 0 ? String(overload) : 'belum selesai',
+          target: '0',
+          match: result.ok,
+        };
+
   return {
     ok: result.ok,
     title: result.ok ? titles.pass : titles.fail,
-    quote: result.ok
-      ? `Hasilnya ${actualText}, sesuai target ${target}.`
-      : `Seharusnya ${target}, hasilnya ${actualText}.`,
+    quote:
+      area !== null
+        ? areaQuote(result.ok, area.name, overload)
+        : result.ok
+          ? `Hasilnya ${actualText}, sesuai target ${target}.`
+          : `Seharusnya ${target}, hasilnya ${actualText}.`,
     message: result.message,
     stars: result.stars,
     seedNote:
@@ -62,7 +122,13 @@ export function deriveResultView(
         ? `Bintang hanya dinilai pada seed tutorial (${level.tutorialSeed ?? '-'}). Seed sekarang: ${snapshot.seed}.`
         : null,
     criteria: [
-      { label: 'Benar: tidak ada data rusak', met: result.ok },
+      {
+        label:
+          area === null
+            ? 'Benar: tidak ada data rusak'
+            : `Benar: tidak ada bentrok di ${area.name}`,
+        met: result.ok,
+      },
       {
         label: `Efisien: selesai dalam ${fast} tick atau kurang (tick: ${result.metrics.tick})`,
         met: efficient,
@@ -72,22 +138,7 @@ export function deriveResultView(
         met: frugal,
       },
     ],
-    cards: [
-      {
-        label: 'Pembaruan hilang',
-        value: String(result.metrics.lostUpdates ?? '-'),
-      },
-      { label: 'Total tick', value: String(result.metrics.tick) },
-      { label: 'Waktu tunggu', value: String(totalWait) },
-      ...(snapshot.cores > 1
-        ? [
-            {
-              label: 'Utilisasi core',
-              value: `${Math.round(result.metrics.coreUtilization * 100)}%`,
-            },
-          ]
-        : []),
-    ],
+    cards,
     explanation: level.explanation
       ? result.ok
         ? level.explanation.pass
@@ -97,11 +148,6 @@ export function deriveResultView(
       snapshot.cores > 1
         ? `${Math.round(result.metrics.coreUtilization * 100)}%`
         : null,
-    keyFigure: {
-      label: capitalize(variable),
-      actual: actualText,
-      target: String(target),
-      match: actual === target,
-    },
+    keyFigure,
   };
 }
