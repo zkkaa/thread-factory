@@ -101,7 +101,8 @@ export function deriveResultView(
         }
       : {
           label: 'Bentrok',
-          actual: result.ok || overload > 0 ? String(overload) : 'belum selesai',
+          actual:
+            result.ok || overload > 0 ? String(overload) : 'belum selesai',
           target: '0',
           match: result.ok,
         };
