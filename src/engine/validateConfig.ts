@@ -127,6 +127,22 @@ export function validateConfig(config: EngineConfig): void {
         );
       }
       if (
+        instruction.op === 'SPIN_UNTIL' &&
+        !hasKey(config.sharedVars, instruction.variable)
+      ) {
+        throw new Error(
+          `SPIN_UNTIL pada thread "${thread.id}": variabel bersama "${instruction.variable}" tidak ada`,
+        );
+      }
+      if (
+        instruction.op === 'SPIN_UNTIL' &&
+        !Number.isFinite(instruction.atLeast)
+      ) {
+        throw new Error(
+          `SPIN_UNTIL pada thread "${thread.id}": atLeast harus bilangan hingga`,
+        );
+      }
+      if (
         (instruction.op === 'ENTER_AREA' || instruction.op === 'LEAVE_AREA') &&
         !hasKey(areas, instruction.area)
       ) {
