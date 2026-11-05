@@ -102,6 +102,7 @@ export interface ThreadSnapshot {
   workRemaining: number;
   /** Total tick yang sudah dihabiskan di state WAITING. */
   waitTicks: number;
+  busyWaitTicks: number;
 }
 
 export interface MutexSnapshot {
