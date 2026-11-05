@@ -1,3 +1,5 @@
+import { findConditionSetup } from '../../conditionTool';
+import { ConditionToolbox } from './ConditionToolbox';
 import { useState } from 'react';
 import type {
   ControllerState,
@@ -52,8 +54,11 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
     mutex !== undefined && level.availableTools.includes('mutex');
   const hasSemaphore =
     sem !== undefined && level.availableTools.includes('semaphore');
+  const hasCondition =
+    level.availableTools.includes('condition') &&
+    findConditionSetup(level) !== null;
 
-  if (!hasMutex && !hasSemaphore) {
+  if (!hasMutex && !hasSemaphore && !hasCondition) {
     return null;
   }
 
@@ -77,6 +82,9 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
           threadIds={level.threads.map((thread) => thread.id)}
           ops={first.program.map((instruction) => instruction.op)}
         />
+      )}
+      {hasCondition && (
+        <ConditionToolbox controller={controller} state={state} />
       )}
     </>
   );
