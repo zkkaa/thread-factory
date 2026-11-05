@@ -275,7 +275,7 @@ export class Engine implements SimulationEngine {
       areaUtilization,
       cores: this.config.scheduler.cores,
       executedInstructions: this.executedInstructions,
-      busyWaitTicks: this.threads.reduce((sum, t) => sum + t.waitTicks, 0),
+      busyWaitTicks: this.threads.reduce((sum, t) => sum + t.busyWaitTicks, 0),
     };
   }
 }
