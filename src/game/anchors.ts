@@ -10,15 +10,16 @@ export interface Anchor {
 
 /**
  * Memetakan tiap instruksi efektif ke titik visual. Instruksi asli ke-i berada
- * di checkpoint ke-i; LOCK/UNLOCK sisipan berada di gerbang pada slotnya.
- * Robot yang menunggu LOCK berhenti di gerbang, tepat di depan pintu.
+ * di checkpoint ke-i; instruksi yang MENGGANTIKAN instruksi asli ke-i (alat
+ * Lampu Sinyal) juga di checkpoint ke-i; LOCK/UNLOCK sisipan berada di gerbang
+ * pada slotnya. Robot yang menunggu LOCK berhenti di gerbang, di depan pintu.
  */
 export function computeAnchors(
   origins: readonly InstructionOrigin[],
   layout: LoopLayout,
 ): Anchor[] {
   return origins.map((origin) => {
-    if (origin.kind === 'original') {
+    if (origin.kind === 'original' || origin.kind === 'replaced') {
       const fraction = layout.checkpoints[origin.index];
       if (fraction === undefined) {
         throw new Error(`Checkpoint ${origin.index} tidak ada di layout.`);
