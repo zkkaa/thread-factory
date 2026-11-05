@@ -8,13 +8,15 @@ export interface ClientPoint {
 
 /** Daftar event seret-lepas antara React (toolbox) dan Phaser (scene). */
 export interface ToolBusEvents {
-  dragStart: { kind: 'mutex' };
+  dragStart: { kind: 'mutex' | 'semaphore' };
   dragMove: ClientPoint;
   drop: ClientPoint;
   dragEnd: null;
   cancel: null;
   /** Dari scene ke React: pintu masuk dan keluar sudah lengkap. */
   doorPlaced: PlacementDoor;
+  /** Dari scene ke React: Kartu Akses dilepas di pintu aula (gerbang lengkap). */
+  gatePlaced: PlacementDoor;
   /** Dari scene ke React: fase pemasangan berubah (untuk label toolbox). */
   phase: PlacementState;
 }

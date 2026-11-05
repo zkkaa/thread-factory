@@ -1,4 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
+import type { GateDropState } from '../gateDrag';
 import type { HallLayout, Rect } from '../layouts/types';
 import { COLORS, DEPTH, HALL, TEXT_STYLE } from '../theme';
 
@@ -27,6 +28,8 @@ export class HallView {
   private readonly banner: GameObjects.Text;
   private readonly door: GameObjects.Rectangle;
   private readonly doorLabel: GameObjects.Text;
+  private readonly dropRing: GameObjects.Arc;
+  private readonly dropLabel: GameObjects.Text;
   private readonly machines: {
     box: GameObjects.Rectangle;
     label: GameObjects.Text;
@@ -114,6 +117,37 @@ export class HallView {
         .setOrigin(0.5, 1)
         .setDepth(DEPTH.gate),
     );
+
+    // Sasaran lepas Kartu Akses di pintu aula; hanya tampil saat kartu diseret.
+    this.dropRing = this.track(
+      scene.add
+        .circle(
+          layout.door.x,
+          layout.door.y,
+          HALL.doorDropRadius,
+          HALL.dropReady,
+          0,
+        )
+        .setStrokeStyle(HALL.dropStrokeWidth, HALL.dropReady)
+        .setDepth(DEPTH.robotFx)
+        .setVisible(false),
+    );
+    this.dropLabel = this.track(
+      scene.add
+        .text(
+          layout.door.x,
+          layout.door.y + HALL.doorDropRadius + HALL.doorLabelGap,
+          '',
+          {
+            ...TEXT_STYLE,
+            fontSize: HALL.doorLabelFontSize,
+            color: HALL.dropText,
+          },
+        )
+        .setOrigin(0.5, 0)
+        .setDepth(DEPTH.robotFx)
+        .setVisible(false),
+    );
   }
 
   update(state: HallViewState): void {
@@ -152,6 +186,27 @@ export class HallView {
       this.door.setFillStyle(HALL.doorClosed);
       this.doorLabel.setText('GERBANG KARTU · PENUH');
     }
+  }
+
+  /**
+   * Menyorot pintu aula sebagai sasaran lepas saat Kartu Akses diseret.
+   * Teks selalu menyertai warna: "LEPAS KARTU DI SINI" lalu "LEPAS SEKARANG".
+   */
+  setDropState(state: GateDropState): void {
+    const visible = state !== 'off';
+    this.dropRing.setVisible(visible);
+    this.dropLabel.setVisible(visible);
+    if (!visible) return;
+    const over = state === 'over';
+    this.dropRing.setFillStyle(
+      HALL.dropReady,
+      over ? HALL.dropOverAlpha : HALL.dropReadyAlpha,
+    );
+    this.dropRing.setStrokeStyle(
+      HALL.dropStrokeWidth,
+      over ? HALL.dropOver : HALL.dropReady,
+    );
+    this.dropLabel.setText(over ? 'LEPAS SEKARANG' : 'LEPAS KARTU DI SINI');
   }
 
   destroy(): void {

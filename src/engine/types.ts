@@ -129,6 +129,7 @@ export interface ConditionSnapshot {
 export interface Snapshot {
   tick: number;
   seed: number;
+  busyWaitTicks: number;
   finished: boolean;
   threads: ThreadSnapshot[];
   sharedVars: Record<string, number>;
