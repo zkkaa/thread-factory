@@ -59,6 +59,15 @@ const INITIAL_STATE: ControllerState = {
 
 /** Salinan alat agar perubahan oleh pemanggil setelah placeTool tidak ikut mengubah state. */
 function copyTool(tool: PlacedTool): PlacedTool {
+  const spans = tool.spans.map((span) => ({ ...span }));
+  if (tool.kind === 'condition') {
+    return {
+      ...tool,
+      waiter: { ...tool.waiter },
+      signaler: { ...tool.signaler },
+      spans,
+    };
+  }
   return { ...tool, spans: tool.spans.map((span) => ({ ...span })) };
 }
 
