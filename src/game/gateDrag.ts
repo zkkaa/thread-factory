@@ -1,4 +1,3 @@
-import type { PlacementDoor } from './doorPlacement';
 import type { Point } from './layouts/types';
 import type { ClientPoint, ToolBus } from './toolBus';
 

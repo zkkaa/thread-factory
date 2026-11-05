@@ -37,6 +37,9 @@ export interface Metrics {
   overloadTicks: number;
   /** Rata-rata utilisasi area berkapasitas (0..1). */
   areaUtilization: number;
+  busyWaitTicks: number;
+  /** Tick busy waiting per thread (0 bagi thread yang tidak berputar). */
+  busyWaitTicksByThread: Record<ThreadId, number>;
 }
 
 /**
@@ -81,10 +84,14 @@ export function computeMetrics(
   const waitTicksByThread: Record<ThreadId, number> = {};
   let totalWait = 0;
   let maxWaitTicks = 0;
+  const busyWaitTicksByThread: Record<ThreadId, number> = {};
+  let busyWaitTicks = 0;
   for (const t of threads) {
     waitTicksByThread[t.id] = t.waitTicks;
     totalWait += t.waitTicks;
     maxWaitTicks = Math.max(maxWaitTicks, t.waitTicks);
+    busyWaitTicksByThread[t.id] = t.busyWaitTicks;
+    busyWaitTicks += t.busyWaitTicks;
   }
   const avgWaitTicks = threads.length > 0 ? totalWait / threads.length : 0;
   const coreCapacity = snapshot.cores * snapshot.tick;
@@ -121,5 +128,7 @@ export function computeMetrics(
     lostUpdates,
     overloadTicks: snapshot.overloadTicks ?? 0,
     areaUtilization: snapshot.areaUtilization ?? 0,
+    busyWaitTicks,
+    busyWaitTicksByThread,
   };
 }

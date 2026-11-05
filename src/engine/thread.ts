@@ -26,6 +26,7 @@ export interface ThreadRuntime {
   /** Sisa tick untuk instruksi WORK yang sedang berjalan (0 = tidak sedang WORK). */
   workRemaining: number;
   waitTicks: number;
+  busyWaitTicks: number;
 }
 
 /**
@@ -73,6 +74,7 @@ export function createThread(def: ThreadDef): ThreadRuntime {
     waitingOn: null,
     workRemaining: 0,
     waitTicks: 0,
+    busyWaitTicks: 0,
   };
 }
 
@@ -88,6 +90,7 @@ export function snapshotThread(thread: ThreadRuntime): ThreadSnapshot {
     waitingOn: thread.waitingOn,
     workRemaining: thread.workRemaining,
     waitTicks: thread.waitTicks,
+    busyWaitTicks: thread.busyWaitTicks,
   };
 }
 
