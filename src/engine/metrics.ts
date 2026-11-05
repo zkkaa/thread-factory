@@ -40,6 +40,31 @@ export interface Metrics {
 }
 
 /**
+ * Kapasitas baterai bawaan: jumlah tick busy waiting yang menghabiskan baterai
+ * robot dari penuh sampai kosong. Level boleh memakai kapasitas lain (T-046).
+ */
+export const DEFAULT_BATTERY_TICKS = 20;
+
+/**
+ * Sisa baterai robot sebagai pecahan 0..1 (1 = penuh, 0 = habis). Baterai
+ * hanya terkuras oleh busy waiting: tiap tick `busyWaitTicks` mengurangi
+ * 1/`capacityTicks`. Thread yang tidur (WAITING) tidak menguras baterai.
+ * Fungsi murni; tampilan (Phaser) hanya menggambar angka ini.
+ */
+export function batteryLevel(
+  busyWaitTicks: number,
+  capacityTicks: number = DEFAULT_BATTERY_TICKS,
+): number {
+  if (!(capacityTicks > 0)) {
+    throw new Error(
+      `capacityTicks harus lebih dari 0, diterima: ${capacityTicks}`,
+    );
+  }
+  const used = Math.max(0, busyWaitTicks) / capacityTicks;
+  return Math.min(1, Math.max(0, 1 - used));
+}
+
+/**
  * Menghitung metrik dari snapshot. Fungsi murni: tidak mengubah masukan dan
  * boleh dipanggil kapan saja (tiap tick untuk tampilan langsung, atau sekali
  * setelah selesai untuk panel hasil).

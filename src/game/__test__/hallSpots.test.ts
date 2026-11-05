@@ -46,6 +46,7 @@ function thread(id: string, state: ThreadState, pc: number): ThreadSnapshot {
     waitingOn: null,
     workRemaining: 0,
     waitTicks: 0,
+    busyWaitTicks: 0,
   };
 }
 

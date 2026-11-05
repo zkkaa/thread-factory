@@ -26,7 +26,10 @@ export type Instruction =
   | { op: 'COND_SIGNAL'; cond: string }
   | { op: 'COND_BROADCAST'; cond: string }
   | { op: 'ENTER_AREA'; area: string }
-  | { op: 'LEAVE_AREA'; area: string };
+  | { op: 'LEAVE_AREA'; area: string }
+  // Busy waiting (T-045): tiap tick mengecek variabel bersama; selama nilainya
+  // masih di bawah `atLeast`, thread TIDAK tidur dan terus memakai core.
+  | { op: 'SPIN_UNTIL'; variable: string; atLeast: number };
 
 /** Nama operasi saja, mis. 'LOCK'. Dipakai di event INSTRUCTION. */
 export type Op = Instruction['op'];

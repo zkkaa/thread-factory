@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type {
   EngineConfig,
   SimEvent,
@@ -75,6 +75,7 @@ class FakeEngine implements SimulationEngine {
       areaUtilization: 0,
       cores: 1,
       executedInstructions: 0,
+      busyWaitTicks: 0,
     };
   }
 }

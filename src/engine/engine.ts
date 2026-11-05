@@ -1,7 +1,7 @@
-import { createPrng } from './prng';
 import { Condition } from './primitives/condition';
 import { Mutex } from './primitives/mutex';
 import { Semaphore } from './primitives/semaphore';
+import { createPrng } from './prng';
 import { createScheduler, type Scheduler } from './scheduler';
 import {
   createThread,
@@ -275,6 +275,7 @@ export class Engine implements SimulationEngine {
       areaUtilization,
       cores: this.config.scheduler.cores,
       executedInstructions: this.executedInstructions,
+      busyWaitTicks: this.threads.reduce((sum, t) => sum + t.waitTicks, 0),
     };
   }
 }
