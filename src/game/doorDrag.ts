@@ -36,7 +36,9 @@ export class DoorDragSession {
   constructor(private readonly deps: DoorDragDeps) {
     const { bus } = deps;
     this.unsubscribe = [
-      bus.on('dragStart', () => this.dispatch({ type: 'grab' })),
+      bus.on('dragStart', (event) => {
+        if (event.kind === 'mutex') this.dispatch({ type: 'grab' });
+      }),
       bus.on('dragMove', (point) => this.move(point)),
       bus.on('drop', (point) => this.drop(point)),
       bus.on('dragEnd', () => this.dispatch({ type: 'release' })),

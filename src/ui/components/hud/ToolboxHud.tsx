@@ -17,6 +17,8 @@ import {
 } from '../../doorSlots';
 import { useDoorPlacement } from '../../hooks/useDoorPlacement';
 import { mutexToolId, replaceTool } from '../../toolSpans';
+import { GateDragChip } from './GateDragChip';
+import { useGatePlacement } from '../../hooks/useGatePlacement';
 
 interface ToolboxHudProps {
   controller: SimulationController;
@@ -305,6 +307,12 @@ export function SemaphoreToolbox({
     setMessage(replaceTool(controller, toolId, tool));
   };
 
+  // Kartu Akses dilepas di pintu aula pada arena (lihat game/gateDrag.ts).
+  useGatePlacement((placed) => {
+    setClick(IDLE);
+    apply(placed);
+  });
+
   const handleValueChange = (newVal: number) => {
     if (!editable) return;
     const clamped = Math.max(1, Math.min(8, newVal));
@@ -437,6 +445,7 @@ export function SemaphoreToolbox({
         >
           Gerbang Kartu ({status})
         </button>
+        <GateDragChip editable={editable} />
 
         <button
           type="button"
