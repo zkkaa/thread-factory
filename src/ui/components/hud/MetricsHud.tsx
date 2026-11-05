@@ -4,7 +4,8 @@ import { deriveMetrics } from '../../metricsView';
 /**
  * Laci Metrik (PRD 17.2): tertutup secara default; ringkasan nilai target
  * tetap terlihat di judul. Isinya: pembaruan hilang, throughput, dan waktu
- * tunggu tiap robot.
+ * tunggu tiap robot. Level dengan robot busy waiting menambah tick busy
+ * waiting dan sisa baterai robot itu.
  */
 export function MetricsHud({ state }: { state: ControllerState }) {
   const view = deriveMetrics(state);
@@ -54,6 +55,19 @@ export function MetricsHud({ state }: { state: ControllerState }) {
             <dt className="text-ink-300">Utilisasi core</dt>
             <dd>{view.coreUtilization}</dd>
           </div>
+        )}
+
+        {view.busyWait !== null && (
+          <>
+            <dt className="text-ink-300">Tick busy waiting</dt>
+            <dd>{view.busyWait.totalTicks} tick</dd>
+            {view.busyWait.robots.map((robot) => (
+              <div key={robot.id} className="contents">
+                <dt className="text-ink-300">Baterai {robot.label}</dt>
+                <dd>{robot.battery}</dd>
+              </div>
+            ))}
+          </>
         )}
 
         {view.threads.map((thread) => (

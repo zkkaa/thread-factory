@@ -21,6 +21,18 @@ describe('describeOp', () => {
     ).toContain('stok');
   });
 
+  it('SPIN_UNTIL menjelaskan busy waiting dan baterai', () => {
+    const info = describeOp({
+      op: 'SPIN_UNTIL',
+      variable: 'barang',
+      atLeast: 3,
+    });
+    expect(info.short).toBe('SPIN');
+    expect(info.description).toContain('barang');
+    expect(info.description).toContain('3');
+    expect(info.description).toContain('busy waiting');
+  });
+
   it('instruksi lain memakai teks cadangan', () => {
     expect(describeOp({ op: 'LOCK', mutex: 'papan' }).short).toBe('LOCK');
   });

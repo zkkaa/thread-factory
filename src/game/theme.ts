@@ -177,6 +177,7 @@ export const DEPTH = {
   tooltip: 100,
   robotGlow: 4.5,
   robotFx: 6.5,
+  battery: 6.6,
 } as const;
 
 /** Ukuran gerbang, segmen terlindungi, dan ikon gembok (U-058). */
@@ -312,4 +313,32 @@ export const HALL = {
   robotGlowStroke: 4,
   robotLabelFontSize: '10px',
   robotLabelGap: 4,
+} as const;
+
+// ---------------------------------------------------------------------------
+// Meter baterai robot (BatteryMeter, T-045)
+// ---------------------------------------------------------------------------
+
+/**
+ * Gaya meter baterai. Warna SELALU disertai label teks (persen atau HABIS),
+ * sesuai aturan 8 CLAUDE.md. Ambang pita warna hanya urusan tampilan.
+ */
+export const BATTERY_STYLE = {
+  width: 56,
+  height: 16,
+  frameStroke: 2,
+  frameColor: 0xf9fafb,
+  backColor: 0x111827,
+  /** Tonjolan kutub di sisi kanan baterai. */
+  tipWidth: 5,
+  tipHeight: 8,
+  /** Jarak antara baterai dan label teks di sebelah kanannya. */
+  labelGap: 10,
+  /** Sisa baterai (0..1) di atas ambang ini = pita penuh (hijau). */
+  fullAbove: 0.5,
+  /** Di atas ambang ini (dan di bawah fullAbove) = pita menipis (kuning). */
+  lowAbove: 0.2,
+  fullColor: 0x22c55e,
+  lowColor: 0xf59e0b,
+  emptyColor: 0xef4444,
 } as const;

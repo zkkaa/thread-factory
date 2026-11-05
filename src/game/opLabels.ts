@@ -31,6 +31,11 @@ export function describeOp(instruction: Instruction): OpInfo {
         short: 'WRITE',
         description: `Menulis angka di catatan robot ke papan "${instruction.to}", menimpa nilai yang ada di sana.`,
       };
+    case 'SPIN_UNTIL':
+      return {
+        short: 'SPIN',
+        description: `Mengecek "${instruction.variable}" terus-menerus tanpa tidur sampai nilainya minimal ${instruction.atLeast}. Selama menunggu, robot tetap memakai core dan baterainya terkuras (busy waiting).`,
+      };
     default:
       return {
         short: instruction.op,
