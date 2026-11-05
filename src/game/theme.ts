@@ -349,3 +349,30 @@ export const BATTERY_STYLE = {
   lowColor: 0xf59e0b,
   emptyColor: 0xef4444,
 } as const;
+
+// ---------------------------------------------------------------------------
+// Arena meja barang (Level 1-4, T-092)
+// ---------------------------------------------------------------------------
+
+/** Gaya meja, lampu sinyal, dan penanda tidur. Warna lampu selalu disertai label. */
+export const TABLE = {
+  tableFill: 0x2b364f,
+  tableStroke: 0xf5c542,
+  tableStrokeWidth: 3,
+  tableTitleInset: 8,
+  titleFontSize: '13px',
+  countFontSize: '28px',
+  lampRadius: 16,
+  lampGreen: 0x22c55e,
+  lampRed: 0xef4444,
+  lampStrokeWidth: 3,
+  lampStroke: 0xf9fafb,
+  lampLabelGap: 10,
+  lampLabelFontSize: '12px',
+  /** Jarak zzz di atas titik pengepak. */
+  zzzLift: 40,
+  zzzFontSize: '18px',
+  /** Jarak teks status pengepak di bawah pusat meter baterai. */
+  modeGap: 24,
+  modeFontSize: '12px',
+} as const;
