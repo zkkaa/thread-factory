@@ -275,6 +275,9 @@ function wakeWaiter(
  * - COND_WAIT melepas mutex lalu tidur di condition (WAITING, pc tetap di
  *   COND_WAIT). Setelah disinyal, ia harus mengambil mutex lagi; COND_WAIT
  *   selesai saat mutex didapat (lihat wakeWaiter). Sinyal tanpa penunggu hilang.
+ * - SPIN_UNTIL mengecek variabel bersama tiap tick. Selama nilainya masih di
+ *   bawah batas, pc tidak maju dan thread tidak tidur (busy waiting), sehingga
+ *   busyWaitTicks bertambah dan core terpakai sia-sia.
  * - Setelah instruksi terakhir selesai, program diulang sampai `repeat`
  *   terpenuhi; setelah itu thread TERMINATED.
  */
@@ -445,6 +448,23 @@ export function executeInstruction(
         thread: id,
         area: instruction.area,
       });
+      break;
+    }
+    case 'SPIN_UNTIL': {
+      // Busy waiting: thread tetap READY/RUNNING dan memakai core tiap tick
+      // selama kondisi belum terpenuhi. Beda dengan WAITING (tidur, tanpa core).
+      // Tick pengecekan yang gagal dihitung sebagai busyWaitTicks; tick
+      // pengecekan yang berhasil sudah dianggap pekerjaan biasa.
+      const current = readNumber(
+        sharedVars,
+        instruction.variable,
+        id,
+        'variabel bersama',
+      );
+      if (current < instruction.atLeast) {
+        completed = false;
+        thread.busyWaitTicks += 1;
+      }
       break;
     }
     default: {
