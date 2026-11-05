@@ -1,5 +1,5 @@
 import type { ControllerState } from '../controller/SimulationController';
-import { computeMetrics } from '../engine/metrics';
+import { batteryLevel, computeMetrics } from '../engine/metrics';
 import { areaOf } from './areaMode';
 
 /**
@@ -8,6 +8,9 @@ import { areaOf } from './areaMode';
  * pembaruan hilang dan throughput baru ada setelah simulasi selesai.
  * Level berarea (mis. aula Level 1-3) mendapat `area` berisi isi, kapasitas,
  * tick bentrok, dan utilisasi; level lain `area` bernilai null.
+ * Level yang punya robot busy waiting (SPIN_UNTIL, mis. Level 1-4) mendapat
+ * `busyWait` berisi total tick dan sisa baterai tiap robot itu; level lain
+ * `busyWait` bernilai null.
  */
 export function deriveMetrics(state: ControllerState) {
   const { level, snapshot, result } = state;
@@ -17,6 +20,9 @@ export function deriveMetrics(state: ControllerState) {
   const metrics = result?.metrics;
   const liveUtilization = computeMetrics(snapshot).coreUtilization;
   const area = areaOf(level);
+  const spinners = level.threads.filter((def) =>
+    def.program.some((instruction) => instruction.op === 'SPIN_UNTIL'),
+  );
 
   return {
     variable,
@@ -37,6 +43,23 @@ export function deriveMetrics(state: ControllerState) {
             occupancy: snapshot.areaOccupancy[area.name] ?? 0,
             overloadTicks: snapshot.overloadTicks,
             utilization: `${Math.round(snapshot.areaUtilization * 100)}%`,
+          },
+    busyWait:
+      spinners.length === 0
+        ? null
+        : {
+            totalTicks: snapshot.busyWaitTicks,
+            robots: spinners.map((def) => {
+              const ticks =
+                snapshot.threads.find((t) => t.id === def.id)?.busyWaitTicks ??
+                0;
+              return {
+                id: def.id,
+                label: def.label,
+                ticks,
+                battery: `${Math.round(batteryLevel(ticks) * 100)}%`,
+              };
+            }),
           },
     threads: snapshot.threads.map((thread) => ({
       id: thread.id,
