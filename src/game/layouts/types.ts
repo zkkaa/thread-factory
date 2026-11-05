@@ -23,7 +23,7 @@ export interface RoadRect {
 }
 
 /**
- * Arena jenis loop (Level 1-1 sampai 1-4). Semua koordinat dalam piksel
+ * Arena jenis loop (Level 1-1 sampai 1-2). Semua koordinat dalam piksel
  * kanvas (lihat ARENA di theme.ts); posisi di jalan berupa fraksi 0..1.
  */
 export interface LoopLayout {
@@ -80,5 +80,31 @@ export interface HallLayout {
   tokenRack: Point;
 }
 
-// BeltLayout dan TableLayout ditambahkan saat levelnya dikerjakan.
-export type ArenaLayout = LoopLayout | HallLayout;
+/**
+ * Arena jenis meja barang (Level 1-4, T-092): satu perakit, satu pengepak, dan
+ * meja di antaranya. Robot diam di titiknya (tidak berjalan); yang berubah
+ * adalah angka di meja, lampu sinyal, meter baterai, dan penanda tidur.
+ * Semua koordinat dalam piksel kanvas.
+ */
+export interface TableLayout {
+  kind: 'table';
+  /** Sama dengan LevelDefinition.layoutId. */
+  id: string;
+  /** Id thread perakit (pengisi meja) pada level. */
+  assemblerId: string;
+  /** Id thread pengepak (penunggu) pada level. */
+  packerId: string;
+  workZone: Rect;
+  /** Meja barang: angka variabel target ditampilkan di sini. */
+  table: Rect;
+  packZone: Rect;
+  assemblerSpot: Point;
+  packerSpot: Point;
+  /** Pusat lampu sinyal, di atas meja. */
+  lamp: Point;
+  /** Pusat badan meter baterai pengepak. */
+  battery: Point;
+}
+
+// BeltLayout dan BoardLayout ditambahkan saat levelnya dikerjakan.
+export type ArenaLayout = LoopLayout | HallLayout | TableLayout;
