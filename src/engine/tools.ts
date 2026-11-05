@@ -21,7 +21,27 @@ export interface PlacedSemaphoreTool {
   spans: ToolSpan[];
 }
 
-export type PlacedTool = PlacedMutexTool | PlacedSemaphoreTool;
+/**
+ * Lampu Sinyal (condition variable), satu alat berpasangan:
+ * - `waiter`: instruksi SPIN_UNTIL (indeks ASLI) milik thread penunggu yang
+ *   DIGANTI menjadi LOCK, COND_WAIT, UNLOCK (tidur, bukan busy waiting);
+ * - `signaler`: slot di thread pemberi sinyal tempat LOCK, COND_SIGNAL, UNLOCK
+ *   DISISIPKAN (slot k = sebelum instruksi asli k; slot n = sesudah yang terakhir).
+ * `spans` selalu kosong; ada supaya kode generik yang membaca `tool.spans`
+ * (mis. salinan alat di controller) tetap aman.
+ */
+export interface PlacedConditionTool {
+  id: string;
+  kind: 'condition';
+  cond: string;
+  mutex: string;
+  waiter: { thread: ThreadId; index: number };
+  signaler: { thread: ThreadId; slot: number };
+  spans: ToolSpan[];
+}
+
+export type PlacedTool =
+  PlacedMutexTool | PlacedSemaphoreTool | PlacedConditionTool;
 
 interface OrderedSpan {
   resource: string;
@@ -36,9 +56,24 @@ export type InstructionOrigin =
   | { kind: 'original'; index: number }
   | {
       kind: 'inserted';
-      op: 'LOCK' | 'UNLOCK' | 'SEM_WAIT' | 'SEM_SIGNAL';
+      op: 'LOCK' | 'UNLOCK' | 'SEM_WAIT' | 'SEM_SIGNAL' | 'COND_SIGNAL';
       slot: number;
+    }
+  | {
+      // Menggantikan instruksi asli ke-`index` (alat Lampu Sinyal).
+      kind: 'replaced';
+      op: 'LOCK' | 'COND_WAIT' | 'UNLOCK';
+      index: number;
     };
+
+/** Satu instruksi hasil alat condition beserta asalnya. */
+interface PlannedStep {
+  instruction: Instruction;
+  origin: InstructionOrigin;
+}
+
+/** thread -> (indeks atau slot -> langkah yang direncanakan). */
+type StepMap = Map<ThreadId, Map<number, PlannedStep[]>>;
 
 const overlaps = (a: OrderedSpan, b: OrderedSpan): boolean =>
   a.start <= b.end && b.start <= a.end;
@@ -88,13 +123,131 @@ function validatePairs(spans: OrderedSpan[], thread: ThreadDef): void {
   }
 }
 
+function addSteps(
+  map: StepMap,
+  thread: ThreadId,
+  key: number,
+  steps: PlannedStep[],
+): void {
+  const perThread = map.get(thread) ?? new Map<number, PlannedStep[]>();
+  perThread.set(key, [...(perThread.get(key) ?? []), ...steps]);
+  map.set(thread, perThread);
+}
+
+/** LOCK, COND_WAIT, UNLOCK: pengganti SPIN_UNTIL pada indeks asli `index`. */
+function waitSteps(tool: PlacedConditionTool, index: number): PlannedStep[] {
+  const { cond, mutex } = tool;
+  return [
+    {
+      instruction: { op: 'LOCK', mutex },
+      origin: { kind: 'replaced', op: 'LOCK', index },
+    },
+    {
+      instruction: { op: 'COND_WAIT', cond, mutex },
+      origin: { kind: 'replaced', op: 'COND_WAIT', index },
+    },
+    {
+      instruction: { op: 'UNLOCK', mutex },
+      origin: { kind: 'replaced', op: 'UNLOCK', index },
+    },
+  ];
+}
+
+/** LOCK, COND_SIGNAL, UNLOCK: disisipkan pada slot pemberi sinyal. */
+function signalSteps(tool: PlacedConditionTool, slot: number): PlannedStep[] {
+  const { cond, mutex } = tool;
+  return [
+    {
+      instruction: { op: 'LOCK', mutex },
+      origin: { kind: 'inserted', op: 'LOCK', slot },
+    },
+    {
+      instruction: { op: 'COND_SIGNAL', cond },
+      origin: { kind: 'inserted', op: 'COND_SIGNAL', slot },
+    },
+    {
+      instruction: { op: 'UNLOCK', mutex },
+      origin: { kind: 'inserted', op: 'UNLOCK', slot },
+    },
+  ];
+}
+
+/** Memeriksa alat condition lalu mencatat rencananya ke `replaced` dan `inserted`. */
+function planCondition(
+  tool: PlacedConditionTool,
+  threads: ThreadDef[],
+  replaced: StepMap,
+  inserted: StepMap,
+): void {
+  const where = `Alat "${tool.id}"`;
+  const find = (id: ThreadId): ThreadDef => {
+    const thread = threads.find((t) => t.id === id);
+    if (!thread) {
+      throw new Error(`${where} menunjuk thread "${id}" yang tidak ada.`);
+    }
+    return thread;
+  };
+  const waiter = find(tool.waiter.thread);
+  const signaler = find(tool.signaler.thread);
+
+  if (waiter.id === signaler.id) {
+    throw new Error(
+      `${where}: penunggu dan pemberi sinyal tidak boleh thread yang sama.`,
+    );
+  }
+
+  const { index } = tool.waiter;
+  if (!Number.isInteger(index) || index < 0 || index >= waiter.program.length) {
+    throw new Error(
+      `${where}: indeks penunggu ${index} di luar program ${waiter.label} (panjang ${waiter.program.length}).`,
+    );
+  }
+  if (waiter.program[index]?.op !== 'SPIN_UNTIL') {
+    throw new Error(
+      `${where}: instruksi yang diganti harus SPIN_UNTIL (busy waiting).`,
+    );
+  }
+  if (replaced.get(waiter.id)?.has(index)) {
+    throw new Error(
+      `${where}: instruksi ${index} pada ${waiter.label} sudah digantikan alat lain.`,
+    );
+  }
+
+  const { slot } = tool.signaler;
+  if (!Number.isInteger(slot) || slot < 0 || slot > signaler.program.length) {
+    throw new Error(
+      `${where}: slot pemberi sinyal ${slot} di luar program ${signaler.label} (0..${signaler.program.length}).`,
+    );
+  }
+
+  addSteps(replaced, waiter.id, index, waitSteps(tool, index));
+  addSteps(inserted, signaler.id, slot, signalSteps(tool, slot));
+}
+
+/**
+ * Urutan pada satu titik: sisipan condition (slot k) dahulu, lalu pembuka
+ * rentang mutex/semaphore yang mulai di k, lalu instruksi (atau penggantinya),
+ * lalu penutup rentang yang berakhir di k. Sisipan slot n (sesudah instruksi
+ * terakhir) ditaruh paling akhir.
+ */
 function buildProgram(
   program: Instruction[],
   spans: OrderedSpan[],
+  replaced: ReadonlyMap<number, PlannedStep[]>,
+  inserted: ReadonlyMap<number, PlannedStep[]>,
 ): { program: Instruction[]; origins: InstructionOrigin[] } {
   const result: Instruction[] = [];
   const origins: InstructionOrigin[] = [];
+  const emit = (steps: readonly PlannedStep[]): void => {
+    for (const step of steps) {
+      result.push({ ...step.instruction });
+      origins.push(step.origin);
+    }
+  };
+
   program.forEach((instruction, index) => {
+    emit(inserted.get(index) ?? []);
+
     spans
       .filter((s) => s.start === index)
       .sort((a, b) => b.end - a.end || a.order - b.order)
@@ -108,8 +261,13 @@ function buildProgram(
         }
       });
 
-    result.push({ ...instruction });
-    origins.push({ kind: 'original', index });
+    const swap = replaced.get(index);
+    if (swap !== undefined) {
+      emit(swap);
+    } else {
+      result.push({ ...instruction });
+      origins.push({ kind: 'original', index });
+    }
 
     spans
       .filter((s) => s.end === index)
@@ -124,6 +282,8 @@ function buildProgram(
         }
       });
   });
+
+  emit(inserted.get(program.length) ?? []);
   return { program: result, origins };
 }
 
@@ -135,6 +295,8 @@ export function applyToolsDetailed(
   origins: Record<ThreadId, InstructionOrigin[]>;
 } {
   const byThread = new Map<ThreadId, OrderedSpan[]>();
+  const replaced: StepMap = new Map();
+  const inserted: StepMap = new Map();
   const seenIds = new Set<string>();
 
   placed.forEach((tool, order) => {
@@ -142,6 +304,11 @@ export function applyToolsDetailed(
       throw new Error(`Id alat "${tool.id}" dipakai lebih dari sekali.`);
     }
     seenIds.add(tool.id);
+
+    if (tool.kind === 'condition') {
+      planCondition(tool, threads, replaced, inserted);
+      return;
+    }
 
     if (tool.kind === 'semaphore') {
       if (!Number.isInteger(tool.value) || tool.value < 1 || tool.value > 8) {
@@ -177,7 +344,12 @@ export function applyToolsDetailed(
   const result = threads.map((thread) => {
     const spans = byThread.get(thread.id) ?? [];
     validatePairs(spans, thread);
-    const built = buildProgram(thread.program, spans);
+    const built = buildProgram(
+      thread.program,
+      spans,
+      replaced.get(thread.id) ?? new Map(),
+      inserted.get(thread.id) ?? new Map(),
+    );
     origins[thread.id] = built.origins;
     return { ...thread, program: built.program };
   });
