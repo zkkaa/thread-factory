@@ -67,12 +67,7 @@ describe('GateDragSession (T-042)', () => {
     bus.emit('drop', at(110, 100));
     bus.emit('dragEnd', null);
     expect(placed).toEqual([{ entry: 1, exit: 4 }]);
-    expect(log).toEqual([
-      'state:ready',
-      'state:over',
-      'state:off',
-      'placed',
-    ]);
+    expect(log).toEqual(['state:ready', 'state:over', 'state:off', 'placed']);
   });
 
   it('lepas jauh dari pintu: tidak terpasang dan sorotan mati', () => {
