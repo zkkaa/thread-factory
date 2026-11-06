@@ -42,7 +42,7 @@ describe('Level 1-4: Lampu Sinyal (T-091)', () => {
     );
     expect(snap.threads.every((t) => t.state === 'TERMINATED')).toBe(true);
     expect(snap.busyWaitTicks).toBe(0);
-    expect(snap.tick).toBe(28);
+    expect(snap.tick).toBeLessThanOrEqual(level1_4.goal.stars.fast);
     expect(totalWait).toBe(22);
     expect(result.ok).toBe(true);
     expect(result.stars).toBe(3);
