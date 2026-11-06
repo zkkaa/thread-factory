@@ -23,7 +23,7 @@ import { SlotMarkerView } from '../views/SlotMarkerView';
 import { TrackView } from '../views/TrackView';
 import { ARENA_BACKGROUND, robotFrameFor } from '../assetManifest';
 import { HallArena } from './HallArena';
-import { TableArena } from './TableArena';
+import { DeskArena } from './DeskArena';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
 export interface LevelSceneData {
@@ -36,7 +36,7 @@ export interface LevelSceneData {
  * (aturan arsitektur 3). Tata letak dibaca dari game/layouts/, bukan
  * di-hardcode di sini. Layout 'loop' (jalan, checkpoint, slot, papan) digambar
  * di sini; layout 'hall' (aula Level 1-3) diserahkan ke HallArena dan layout
- * 'table' (meja barang Level 1-4) ke TableArena.
+ * 'desk' (meja barang Level 1-4) ke DeskArena.
  *
  * Pada tick 0 (level dimuat, Reset, atau alat berubah) semua view dibangun
  * ulang. Pada tick berikutnya, event INSTRUCTION menggerakkan robot ke jangkar
@@ -49,7 +49,7 @@ export class LevelScene extends Scene {
   private robots: RobotView[] = [];
   private doors: DoorView[] = [];
   private hallArena: HallArena | null = null;
-  private tableArena: TableArena | null = null;
+  private deskArena: DeskArena | null = null;
   private board: BoardView | null = null;
   private slotMarkers: SlotMarkerView | null = null;
   private doorDrag: DoorDragSession | null = null;
@@ -97,7 +97,6 @@ export class LevelScene extends Scene {
   private handleState(state: ControllerState): void {
     const { level, snapshot } = state;
     if (level === null || snapshot === null) return;
-
     if (snapshot.tick === 0) {
       this.rebuild(state);
       return;
@@ -107,8 +106,8 @@ export class LevelScene extends Scene {
       this.hallArena.update(snapshot, durationMs);
       return;
     }
-    if (this.tableArena !== null) {
-      this.tableArena.update(snapshot);
+    if (this.deskArena !== null) {
+      this.deskArena.update(snapshot, state.events);
       return;
     }
     this.playEvents(state.events, durationMs);
@@ -142,8 +141,8 @@ export class LevelScene extends Scene {
       );
       return;
     }
-    if (layout.kind === 'table') {
-      this.tableArena = new TableArena(this, layout, level, snapshot);
+    if (layout.kind === 'desk') {
+      this.deskArena = new DeskArena(this, layout, level, snapshot);
       return;
     }
 
@@ -273,8 +272,8 @@ export class LevelScene extends Scene {
     this.doors = [];
     this.hallArena?.destroy();
     this.hallArena = null;
-    this.tableArena?.destroy();
-    this.tableArena = null;
+    this.deskArena?.destroy();
+    this.deskArena = null;
     this.board?.destroy();
     this.board = null;
     this.doorDrag?.dispose();

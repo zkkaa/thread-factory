@@ -3,7 +3,7 @@ import { roadRectErrors } from '../roadGeometry';
 import { ARENA, ROAD } from '../theme';
 import type { ArenaLayout, LoopLayout, Point } from './types';
 import { validateHallLayout } from './validateHall';
-import { validateTableLayout } from './validateTable';
+import { validateDeskLayout } from './validateDesk';
 
 const inArena = (p: Point): boolean =>
   p.x >= 0 && p.x <= ARENA.width && p.y >= 0 && p.y <= ARENA.height;
@@ -93,6 +93,6 @@ export function validateLayout(
   level: LevelDefinition,
 ): string[] {
   if (layout.kind === 'hall') return validateHallLayout(layout, level);
-  if (layout.kind === 'table') return validateTableLayout(layout, level);
+  if (layout.kind === 'desk') return validateDeskLayout(layout, level);
   return validateLoopLayout(layout, level);
 }

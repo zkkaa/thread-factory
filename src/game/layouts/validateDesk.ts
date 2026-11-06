@@ -1,6 +1,6 @@
 import type { LevelDefinition } from '../../levels/types';
 import { ARENA, HALL, HUD_SAFE } from '../theme';
-import type { Point, Rect, TableLayout } from './types';
+import type { Point, Rect, DeskLayout } from './types';
 
 const rectInArena = (rect: Rect): boolean =>
   rect.x >= 0 &&
@@ -27,8 +27,8 @@ const overlaps = (a: Rect, b: Rect): boolean =>
   b.y < a.y + a.height;
 
 /** Memeriksa layout meja terhadap level. Mengembalikan daftar masalah (kosong = sah). */
-export function validateTableLayout(
-  layout: TableLayout,
+export function validateDeskLayout(
+  layout: DeskLayout,
   level: LevelDefinition,
 ): string[] {
   const errors: string[] = [];

@@ -355,7 +355,7 @@ export const BATTERY_STYLE = {
 // ---------------------------------------------------------------------------
 
 /** Gaya meja, lampu sinyal, dan penanda tidur. Warna lampu selalu disertai label. */
-export const TABLE = {
+export const DESK = {
   tableFill: 0x2b364f,
   tableStroke: 0xf5c542,
   tableStrokeWidth: 3,
@@ -372,6 +372,9 @@ export const TABLE = {
   /** Jarak zzz di atas titik pengepak. */
   zzzLift: 40,
   zzzFontSize: '18px',
+  /** Gerak melayang zzz: jarak (piksel) dan durasi satu arah (ms). */
+  zzzFloat: 6,
+  zzzFloatMs: 900,
   /** Jarak teks status pengepak di bawah pusat meter baterai. */
   modeGap: 24,
   modeFontSize: '12px',
