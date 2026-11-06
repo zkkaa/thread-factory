@@ -216,12 +216,12 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-046** Data level 1-4 + tes: tanpa condition variable energi terkuras; dengan condition variable hemat dan benar.
 - [x] **T-091** *(baru)* Alat Lampu Sinyal: `PlacedTool` `kind: 'condition'` yang menyisipkan `COND_WAIT`/`COND_SIGNAL` bersama mutex; seret ke checkpoint pengepak. Tes `applyTools`.
 - [x] **T-092** *(baru)* Layout meja barang: pengepak dengan meter baterai, lampu sinyal merah atau hijau, efek tidur (zzz).
-- [ ] **T-093** *(baru)* Konten Level 1-4.
+- [x] **T-093** *(baru)* Konten Level 1-4.
 
 **Level 1-5 — Lini Gabungan** `P2`
-- [ ] **T-047** Gabungkan skenario 1-1 sampai 1-4; tes pemilihan kombinasi alat.
-- [ ] **T-094** *(baru)* Layout gabungan (elemen 1-1 sampai 1-4 dalam satu arena).
-- [ ] **T-095** *(baru)* Konten Level 1-5.
+- [x] **T-047** Gabungkan skenario 1-1 sampai 1-4; tes pemilihan kombinasi alat.
+- [x] **T-094** *(baru)* Layout gabungan (elemen 1-1 sampai 1-4 dalam satu arena).
+- [x] **T-095** *(baru)* Konten Level 1-5.
 
 ---
 
