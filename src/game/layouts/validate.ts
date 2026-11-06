@@ -1,9 +1,10 @@
 import type { LevelDefinition } from '../../levels/types';
 import { roadRectErrors } from '../roadGeometry';
 import { ARENA, ROAD } from '../theme';
-import type { ArenaLayout, LoopLayout, Point } from './types';
+import type { ArenaLayout, Point, TrackLayout } from './types';
 import { validateHallLayout } from './validateHall';
 import { validateDeskLayout } from './validateDesk';
+import { validateCombinedLayout } from './validateCombined';
 
 const inArena = (p: Point): boolean =>
   p.x >= 0 && p.x <= ARENA.width && p.y >= 0 && p.y <= ARENA.height;
@@ -11,9 +12,9 @@ const inArena = (p: Point): boolean =>
 const strictlyAscending = (values: readonly number[]): boolean =>
   values.every((v, i) => i === 0 || v > (values[i - 1] ?? 0));
 
-/** Memeriksa layout loop terhadap level. */
-function validateLoopLayout(
-  layout: LoopLayout,
+/** Memeriksa jalur, checkpoint, slot, dan papan terhadap level. */
+function validateTrackLayout(
+  layout: TrackLayout,
   level: LevelDefinition,
 ): string[] {
   const errors: string[] = [];
@@ -94,5 +95,9 @@ export function validateLayout(
 ): string[] {
   if (layout.kind === 'hall') return validateHallLayout(layout, level);
   if (layout.kind === 'desk') return validateDeskLayout(layout, level);
-  return validateLoopLayout(layout, level);
+  const errors = validateTrackLayout(layout, level);
+  if (layout.kind === 'combined') {
+    errors.push(...validateCombinedLayout(layout, level));
+  }
+  return errors;
 }

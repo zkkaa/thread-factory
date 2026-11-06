@@ -57,42 +57,49 @@ export const level1_4: LevelDefinition = {
     {
       mood: 'netral',
       text:
-        'Sekarang giliran lini pengepakan, Mandor! Perakit menaruh barang di ' +
-        'meja, dan Pengepak baru boleh bekerja setelah ada minimal 3 barang.',
+        'Sekarang kita mengurus lini pengepakan, Mandor. Perakit membuat satu ' +
+        'kloter berisi 3 barang di meja. Pengepak baru boleh mulai bekerja ' +
+        'setelah jumlah barang di meja mencapai 3.',
     },
     {
       mood: 'sedih',
       text:
-        'Masalahnya, Pengepak tidak sabaran. Ia berdiri di meja dan mengecek ' +
-        'terus tanpa henti. Core terpakai untuk mengecek saja, dan baterainya ' +
-        'cepat habis. Itu namanya busy waiting.',
+        'Tanpa pengaman, Pengepak mengecek meja terus-menerus. Core terpakai ' +
+        'untuk mengecek padahal belum ada pekerjaan; inilah busy waiting. ' +
+        'Lulus bila barang tetap berjumlah 3, Pengepak membaca sedikitnya 3, ' +
+        'dan busy waiting tidak lebih dari 10 tick.',
     },
     {
       mood: 'senang',
       text:
-        'Pasang Lampu Sinyal (condition variable) pada Pengepak. Ia akan ' +
-        'tidur (zzz) sampai Perakit menyalakan lampu hijau. Misimu: hasil ' +
-        'benar dan baterai Pengepak tetap hemat.',
+        'Pasang Lampu Sinyal (condition variable) untuk menidurkan Pengepak ' +
+        'saat menunggu. Perakit menyalakan lampu setelah menaruh barang. ' +
+        'Gunakan bersama Pintu Mutex dan kirim sinyal setelah jumlahnya 3. ' +
+        'Pada seed 10, bintang pertama perlu memenuhi misi, bintang kedua ' +
+        'selesai paling lama 32 tick, dan bintang ketiga total waktu tunggu ' +
+        'paling banyak 25 tick.',
     },
   ],
   hints: [
     'Perhatikan meter baterai Pengepak. Apa yang ia lakukan selama menunggu barang?',
-    'Mengecek terus-menerus disebut busy waiting: core terpakai padahal belum ada pekerjaan. Lebih baik thread tidur sampai dibangunkan.',
-    'Pasang Lampu Sinyal pada Perakit, tepat sesudah barang selesai ditaruh. Bila lampu menyala terlalu ccepat, Pengepak bangun saat barang belum cukup.',
+    'Mengecek terus-menerus disebut busy waiting: core terpakai padahal belum ada pekerjaan. Condition variable membuat Pengepak tidur; saat menunggu, ia melepas mutex dan mengambilnya lagi ketika bangun.',
+    'Gunakan condition variable bersama Pintu Mutex. Pasang penunggu pada Pengepak dan sinyal pada Perakit setelah WRITE yang membuat jumlah barang menjadi 3. Setelah bangun, periksa lagi syaratnya; sinyal terlalu awal dapat membangunkan Pengepak sebelum barang cukup.',
   ],
   concepts: ['Condition variable', 'Blocking vs busy waiting', 'Wait & Signal'],
   explanation: {
     pass:
-      'Pengepak tidur di Lampu Sinyal (condition variable) dan baru bangun ' +
-      'saat Perakit memberi sinyal. Selama tidur ia berstatus WAITING dan ' +
-      'tidak memakai core, jadi baterainya hemat. Condition variable selalu ' +
-      'dipakai bersama mutex: Pengepak melepas mutex sebelum tidur dan ' +
-      'mengambilnya lagi saat bangun.',
+      'Pengepak menunggu pada Lampu Sinyal (condition variable), sehingga ' +
+      'berstatus WAITING dan tidak memakai core untuk mengecek meja. Saat ' +
+      'menunggu, ia melepas Pintu Mutex; ketika bangun, ia mengambil mutex ' +
+      'kembali sebelum memeriksa jumlah barang. Condition variable bukan ' +
+      'pengganti mutex: sinyal membangunkan penunggu, sedangkan syarat jumlah ' +
+      'barang tetap harus diperiksa.',
     fail:
-      'Pengepak melakukan busy waiting: tiap tick ia mengecek meja dan ' +
-      'memakai core walau barang belum cukup, sehingga baterainya terkuras. ' +
-      'Pasang Lampu Sinyal agar ia tidur (blocking) sampai Perakit memberi ' +
-      'sinyal.',
+      'Tanpa menunggu pada Lampu Sinyal, Pengepak melakukan busy waiting: ia ' +
+      'terus mengecek meja dan memakai core walau barang belum cukup. Jika ' +
+      'sinyal dikirim sebelum jumlah barang mencapai 3, Pengepak juga dapat ' +
+      'bangun terlalu awal. Gunakan condition variable bersama mutex dan ' +
+      'kirim sinyal setelah Perakit menulis barang ketiga.',
   },
   resultTitle: {
     pass: 'Bagus! Pengepak Hemat Baterai!',

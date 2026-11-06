@@ -1,5 +1,5 @@
 import type { InstructionOrigin } from '../engine/tools';
-import type { LoopLayout } from './layouts/types';
+import type { TrackLayout } from './layouts/types';
 
 /** Titik visual satu instruksi efektif: di checkpoint atau di gerbang (slot). */
 export interface Anchor {
@@ -16,7 +16,7 @@ export interface Anchor {
  */
 export function computeAnchors(
   origins: readonly InstructionOrigin[],
-  layout: LoopLayout,
+  layout: TrackLayout,
 ): Anchor[] {
   return origins.map((origin) => {
     if (origin.kind === 'original' || origin.kind === 'replaced') {
