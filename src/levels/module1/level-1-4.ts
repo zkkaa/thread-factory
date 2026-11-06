@@ -22,6 +22,7 @@ export const LEVEL_1_4_ASSEMBLER_PROGRAM: Instruction[] = [
  */
 export const LEVEL_1_4_PACKER_PROGRAM: Instruction[] = [
   { op: 'SPIN_UNTIL', variable: 'barang', atLeast: 3 },
+  { op: 'READ', from: 'barang', into: 'n' },
   { op: 'WORK', ticks: 3 },
 ];
 
@@ -77,7 +78,7 @@ export const level1_4: LevelDefinition = {
   hints: [
     'Perhatikan meter baterai Pengepak. Apa yang ia lakukan selama menunggu barang?',
     'Mengecek terus-menerus disebut busy waiting: core terpakai padahal belum ada pekerjaan. Lebih baik thread tidur sampai dibangunkan.',
-    'Pasang Lampu Sinyal pada Pengepak: ia tidur sampai Perakit memberi sinyal bahwa barang sudah cukup.',
+    'Pasang Lampu Sinyal pada Perakit, tepat sesudah barang selesai ditaruh. Bila lampu menyala terlalu ccepat, Pengepak bangun saat barang belum cukup.',
   ],
   concepts: ['Condition variable', 'Blocking vs busy waiting', 'Wait & Signal'],
   explanation: {
@@ -118,6 +119,15 @@ export const level1_4: LevelDefinition = {
           message: `Barang di meja ${barang}, seharusnya 3.`,
         };
       }
+      const seen = snap.threads.find((t) => t.id === 'P')?.registers['n'];
+      if (seen === undefined || seen < 3) {
+        return {
+          ok: false,
+          message:
+            `Pengepak bangun saat barang baru ${seen ?? 0}, padahal ia ` +
+            'butuh 3. Lampu harus menyala SESUDAH barang cukup.',
+        };
+      }
       if (snap.busyWaitTicks > LEVEL_1_4_BUSY_WAIT_LIMIT) {
         return {
           ok: false,
@@ -134,6 +144,6 @@ export const level1_4: LevelDefinition = {
     // Hitungan tangan pada seed 10 (belum diukur; sesuaikan bila tes gagal):
     //   tanpa alat (SPIN_UNTIL): tick 24 sampai 25, busy waiting 20 sampai 21 -> gagal
     //   dengan Lampu Sinyal: tick 28, total tunggu 22, busy waiting 0 -> 3 bintang
-    stars: { fast: 30, lowWait: 25 },
+    stars: { fast: 32, lowWait: 25 },
   },
 };
