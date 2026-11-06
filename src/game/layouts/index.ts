@@ -21,5 +21,5 @@ export type {
   LoopLayout,
   Point,
   Rect,
-  TableLayout,
+  DeskLayout,
 } from './types';

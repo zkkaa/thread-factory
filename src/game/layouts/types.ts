@@ -86,8 +86,8 @@ export interface HallLayout {
  * adalah angka di meja, lampu sinyal, meter baterai, dan penanda tidur.
  * Semua koordinat dalam piksel kanvas.
  */
-export interface TableLayout {
-  kind: 'table';
+export interface DeskLayout {
+  kind: 'desk';
   /** Sama dengan LevelDefinition.layoutId. */
   id: string;
   /** Id thread perakit (pengisi meja) pada level. */
@@ -107,4 +107,4 @@ export interface TableLayout {
 }
 
 // BeltLayout dan BoardLayout ditambahkan saat levelnya dikerjakan.
-export type ArenaLayout = LoopLayout | HallLayout | TableLayout;
+export type ArenaLayout = LoopLayout | HallLayout | DeskLayout;

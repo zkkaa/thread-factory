@@ -215,7 +215,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-045** Metrik `busyWaitTicks` dan visual baterai robot.
 - [x] **T-046** Data level 1-4 + tes: tanpa condition variable energi terkuras; dengan condition variable hemat dan benar.
 - [x] **T-091** *(baru)* Alat Lampu Sinyal: `PlacedTool` `kind: 'condition'` yang menyisipkan `COND_WAIT`/`COND_SIGNAL` bersama mutex; seret ke checkpoint pengepak. Tes `applyTools`.
-- [ ] **T-092** *(baru)* Layout meja barang: pengepak dengan meter baterai, lampu sinyal merah atau hijau, efek tidur (zzz).
+- [x] **T-092** *(baru)* Layout meja barang: pengepak dengan meter baterai, lampu sinyal merah atau hijau, efek tidur (zzz).
 - [ ] **T-093** *(baru)* Konten Level 1-4.
 
 **Level 1-5 — Lini Gabungan** `P2`
