@@ -4,10 +4,9 @@ import { MODULES, findModuleById, findModuleOfLevel } from '../modules';
 
 /**
  * Level yang sudah direncanakan di modul tetapi datanya belum dibuat.
- * Saat sebuah level didaftarkan di ALL_LEVELS, hapus id-nya dari daftar ini
- * (tes di bawah akan gagal bila lupa).
+ * Saat sebuah level didaftarkan di ALL_LEVELS, hapus id-nya dari daftar ini.
  */
-const BELUM_DIBUAT = ['1-5', '2-1', '2-2', '2-3', '2-4'];
+const BELUM_DIBUAT = ['2-1', '2-2', '2-3', '2-4'];
 
 describe('Daftar modul', () => {
   it('id modul unik dan tiap modul punya level dan konsep', () => {

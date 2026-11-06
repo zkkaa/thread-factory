@@ -4,6 +4,7 @@ import { SimulationController } from '../../controller/SimulationController';
 import type { Clock } from '../../controller/clock';
 import type { PlacedTool } from '../../engine/tools';
 import { level1_1 } from '../../levels/module1/level-1-1';
+import { level1_5 } from '../../levels/module1/level-1-5';
 import { ToolboxHud } from '../components/hud/ToolboxHud';
 
 const noClock: Clock = { requestFrame: () => 1, cancelFrame: () => {} };
@@ -71,5 +72,16 @@ describe('ToolboxHud', () => {
       />,
     );
     expect(html).toBe('');
+  });
+
+  it('Level 1-5 menawarkan mutex, semaphore, dan condition variable', () => {
+    const controller = new SimulationController(undefined, noClock);
+    controller.loadLevel(level1_5);
+    const html = render(controller);
+
+    expect(html).toContain('Pintu Mutex (belum dipasang)');
+    expect(html).toContain('Kartu Akses (Semaphore)');
+    expect(html).toContain('Lampu Sinyal (Condition Variable)');
+    expect(html).toContain('Slot 4, antara WRITE dan ENTER_AREA');
   });
 });
