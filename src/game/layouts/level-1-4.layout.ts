@@ -1,4 +1,4 @@
-import type { TableLayout } from './types';
+import type { DeskLayout } from './types';
 
 /**
  * Meja barang Level 1-4 (kanvas 1280x720), semuanya di dalam HUD_SAFE
@@ -7,8 +7,8 @@ import type { TableLayout } from './types';
  * dan akan disetel dari tangkapan layar; tes validasi menjaga zona, jarak,
  * dan batas HUD.
  */
-export const layout1_4: TableLayout = {
-  kind: 'table',
+export const layout1_4: DeskLayout = {
+  kind: 'desk',
   id: '1-4',
   assemblerId: 'A',
   packerId: 'P',

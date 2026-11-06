@@ -1,15 +1,20 @@
 import { batteryLevel } from '../engine/metrics';
-import type { Snapshot } from '../engine/types';
+import type { SimEvent, Snapshot } from '../engine/types';
 
 /** Keadaan pengepak yang perlu ditampilkan; semuanya diturunkan dari snapshot. */
 export type PackerMode =
-  'sleeping' | 'spinning' | 'waiting' | 'working' | 'done';
+  | 'sleeping'
+  | 'spinning'
+  | 'waiting'
+  | 'preparing'
+  | 'working'
+  | 'done';
 
-export interface TableState {
+export interface DeskState {
   /** Nilai variabel target di meja (mis. jumlah barang). */
   items: number;
   target: number;
-  /** Lampu hijau bila barang sudah cukup. */
+  /** Hijau bila Perakit sudah mengirim sinyal (COND_SIGNAL), bukan karena barang cukup. */
   lampGreen: boolean;
   lampLabel: string;
   packerMode: PackerMode;
@@ -22,45 +27,56 @@ const MODE_LABEL: Record<PackerMode, string> = {
   sleeping: 'Tidur (hemat baterai)',
   spinning: 'Mengecek terus (busy waiting)',
   waiting: 'Menunggu kunci meja',
-  working: 'Siap bekerja',
+  preparing: 'Bersiap',
+  working: 'Bekerja (mengepak)',
   done: 'Selesai',
 };
 
+/** True bila di antara `events` ada eksekusi COND_SIGNAL (lampu dinyalakan). */
+export function sawSignal(events: readonly SimEvent[]): boolean {
+  return events.some(
+    (event) => event.type === 'INSTRUCTION' && event.op === 'COND_SIGNAL',
+  );
+}
+
 /**
  * Menurunkan tampilan meja dari snapshot. Fungsi murni tanpa Phaser. Tidak ada
- * aturan permainan di sini: baterai dihitung `batteryLevel` dari engine, dan
- * mode hanya membaca state thread. Catatan: mode 'spinning' baru terbaca
+ * aturan permainan di sini: baterai dihitung `batteryLevel` dari engine, mode
+ * hanya membaca state thread, dan `signaled` (sinyal sudah dikirim) diberikan
+ * pemanggil karena snapshot tidak menyimpannya. Mode 'spinning' baru terbaca
  * setelah ada tick pengecekan yang gagal (busyWaitTicks > 0).
  */
-export function deriveTableState(
+export function deriveDeskState(
   snapshot: Readonly<Snapshot>,
   packerId: string,
   variable: string,
   target: number,
-): TableState {
+  signaled: boolean,
+): DeskState {
   const packer = snapshot.threads.find((thread) => thread.id === packerId);
   if (packer === undefined) {
     throw new Error(`Pengepak "${packerId}" tidak ada di snapshot.`);
   }
   const items = snapshot.sharedVars[variable] ?? 0;
-
-  let packerMode: PackerMode = 'working';
+  let packerMode: PackerMode;
   if (packer.state === 'TERMINATED') {
     packerMode = 'done';
   } else if (packer.state === 'WAITING') {
     packerMode = packer.waitingOn?.startsWith('cond:') ? 'sleeping' : 'waiting';
   } else if (items < target && packer.busyWaitTicks > 0) {
     packerMode = 'spinning';
+  } else if (items >= target || signaled) {
+    packerMode = 'working';
+  } else {
+    packerMode = 'preparing';
   }
-
-  const lampGreen = items >= target;
   return {
     items,
     target,
-    lampGreen,
-    lampLabel: lampGreen
-      ? 'LAMPU HIJAU (barang cukup)'
-      : 'LAMPU MERAH (barang belum cukup)',
+    lampGreen: signaled,
+    lampLabel: signaled
+      ? 'LAMPU HIJAU (sinyal dikirim)'
+      : 'LAMPU MERAH (belum ada sinyal)',
     packerMode,
     modeLabel: MODE_LABEL[packerMode],
     battery: batteryLevel(packer.busyWaitTicks),

@@ -1,20 +1,22 @@
 import type { Scene } from 'phaser';
-import type { Snapshot } from '../../engine/types';
+import type { SimEvent, Snapshot } from '../../engine/types';
 import type { LevelDefinition } from '../../levels/types';
 import { robotFrameFor } from '../assetManifest';
-import type { TableLayout } from '../layouts/types';
-import { deriveTableState } from '../tableState';
+import { deriveDeskState, sawSignal } from '../deskState';
+import type { DeskLayout } from '../layouts/types';
 import { BatteryMeter } from '../views/BatteryMeter';
+import { DeskView } from '../views/DeskView';
 import { HallRobotView } from '../views/HallRobotView';
-import { TableView } from '../views/TableView';
 
 /**
  * Arena meja barang (Level 1-4), dipakai LevelScene bila layout berjenis
- * 'table'. Memakai ulang HallRobotView dan BatteryMeter; keadaan meja berasal
- * dari deriveTableState (murni). Tidak ada aturan permainan di sini.
+ * 'desk'. Memakai ulang HallRobotView dan BatteryMeter; keadaan meja berasal
+ * dari deriveDeskState (murni). Lampu hijau begitu event COND_SIGNAL terlihat
+ * dan tetap hijau sampai arena dibangun ulang (Reset atau alat berubah).
+ * Tidak ada aturan permainan di sini.
  */
-export class TableArena {
-  private readonly view: TableView;
+export class DeskArena {
+  private readonly view: DeskView;
   private readonly assembler: HallRobotView;
   private readonly packer: HallRobotView;
   private readonly battery: BatteryMeter;
@@ -22,20 +24,20 @@ export class TableArena {
   private readonly packerIndex: number;
   private readonly variable: string;
   private readonly target: number;
+  private signaled = false;
 
   constructor(
     scene: Scene,
-    private readonly layout: TableLayout,
+    private readonly layout: DeskLayout,
     level: LevelDefinition,
     snapshot: Readonly<Snapshot>,
   ) {
     this.variable = level.goal.target.variable;
     this.target = level.goal.target.value;
-    this.view = new TableView(scene, layout);
-
+    this.view = new DeskView(scene, layout);
     this.assemblerIndex = this.indexOf(snapshot, layout.assemblerId);
     this.packerIndex = this.indexOf(snapshot, layout.packerId);
-    const make = (index: number, at: TableLayout['assemblerSpot']) => {
+    const make = (index: number, at: DeskLayout['assemblerSpot']) => {
       const thread = snapshot.threads[index];
       if (thread === undefined) throw new Error('Thread tidak ada.');
       return new HallRobotView(scene, thread, {
@@ -56,17 +58,21 @@ export class TableArena {
     this.update(snapshot);
   }
 
-  update(snapshot: Readonly<Snapshot>): void {
+  update(
+    snapshot: Readonly<Snapshot>,
+    events: readonly SimEvent[] = [],
+  ): void {
+    if (!this.signaled && sawSignal(events)) this.signaled = true;
     const assembler = snapshot.threads[this.assemblerIndex];
     const packer = snapshot.threads[this.packerIndex];
     if (assembler !== undefined) this.assembler.update(assembler, false);
     if (packer !== undefined) this.packer.update(packer, false);
-
-    const state = deriveTableState(
+    const state = deriveDeskState(
       snapshot,
       this.layout.packerId,
       this.variable,
       this.target,
+      this.signaled,
     );
     this.view.update(state);
     this.battery.update(state.battery);

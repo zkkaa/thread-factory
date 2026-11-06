@@ -4,8 +4,8 @@ import { BATTERY_STYLE, DEPTH, TEXT_STYLE } from '../theme';
 
 /**
  * Meter baterai robot (Level 1-4). Hanya menggambar sisa baterai (0..1) yang
- * dihitung engine dari busyWaitTicks; view tidak menghitung apa pun. Bisa
- * dipasang di arena mana pun (layout meja barang menyusul di T-092).
+ * dihitung engine dari busyWaitTicks; view tidak menghitung apa pun. Dipakai
+ * DeskArena dan bisa dipasang di arena mana pun.
  * Posisi (x, y) adalah titik tengah badan baterai.
  */
 export class BatteryMeter {
