@@ -23,6 +23,22 @@ function run(tools: PlacedTool[], seed = level1_4.tutorialSeed ?? 1) {
 }
 
 describe('Level 1-4: Lampu Sinyal (T-091)', () => {
+  it('T-093 menyediakan intro, petunjuk, konsep, dan kriteria bintang yang sesuai', () => {
+    const intro = level1_4.intro.map((page) => page.text).join(' ');
+    const hints = level1_4.hints.join(' ');
+    const explanation = `${level1_4.explanation?.pass} ${level1_4.explanation?.fail}`;
+
+    expect(level1_4.intro).toHaveLength(3);
+    expect(intro).toContain('10 tick');
+    expect(intro).toContain('32 tick');
+    expect(intro).toContain('25 tick');
+    expect(hints).toContain('busy waiting');
+    expect(hints).toContain('condition variable');
+    expect(level1_4.concepts).toContain('Condition variable');
+    expect(explanation).toContain('mutex');
+    expect(explanation).toContain('busy waiting');
+  });
+
   it('tanpa alat: pengepak busy waiting dan level gagal pada seed tutorial', () => {
     const snap = run([]);
     const result = evaluateLevel(level1_4, snap);
