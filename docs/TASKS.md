@@ -219,9 +219,9 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-093** *(baru)* Konten Level 1-4.
 
 **Level 1-5 — Lini Gabungan** `P2`
-- [ ] **T-047** Gabungkan skenario 1-1 sampai 1-4; tes pemilihan kombinasi alat.
-- [ ] **T-094** *(baru)* Layout gabungan (elemen 1-1 sampai 1-4 dalam satu arena).
-- [ ] **T-095** *(baru)* Konten Level 1-5.
+- [x] **T-047** Gabungkan skenario 1-1 sampai 1-4; tes pemilihan kombinasi alat.
+- [x] **T-094** *(baru)* Layout gabungan (elemen 1-1 sampai 1-4 dalam satu arena).
+- [x] **T-095** *(baru)* Konten Level 1-5.
 
 ---
 

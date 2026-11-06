@@ -25,7 +25,7 @@ function buatKonteks(progress: ProgressData, demoMode = false): UnlockContext {
   };
 }
 
-/** Kondisi repo saat ini: hanya Level 1-1 yang datanya ada. */
+/** Callback khusus untuk menguji tampilan ketika hanya Level 1-1 yang terdaftar. */
 const hanya11 = (levelId: string) =>
   levelId === '1-1' ? 'Bug Papan Stok' : undefined;
 

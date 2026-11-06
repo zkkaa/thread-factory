@@ -24,6 +24,7 @@ import { TrackView } from '../views/TrackView';
 import { ARENA_BACKGROUND, robotFrameFor } from '../assetManifest';
 import { HallArena } from './HallArena';
 import { DeskArena } from './DeskArena';
+import { CombinedArena } from './CombinedArena';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
 export interface LevelSceneData {
@@ -50,6 +51,7 @@ export class LevelScene extends Scene {
   private doors: DoorView[] = [];
   private hallArena: HallArena | null = null;
   private deskArena: DeskArena | null = null;
+  private combinedArena: CombinedArena | null = null;
   private board: BoardView | null = null;
   private slotMarkers: SlotMarkerView | null = null;
   private doorDrag: DoorDragSession | null = null;
@@ -110,6 +112,7 @@ export class LevelScene extends Scene {
       this.deskArena.update(snapshot, state.events);
       return;
     }
+    this.combinedArena?.update(snapshot, state.tools, state.events);
     this.playEvents(state.events, durationMs);
     this.refresh(snapshot);
   }
@@ -144,6 +147,15 @@ export class LevelScene extends Scene {
     if (layout.kind === 'desk') {
       this.deskArena = new DeskArena(this, layout, level, snapshot);
       return;
+    }
+    if (layout.kind === 'combined') {
+      this.combinedArena = new CombinedArena(
+        this,
+        layout,
+        level,
+        snapshot,
+        state.tools,
+      );
     }
 
     const road = buildRoad(layout.road);
@@ -274,6 +286,8 @@ export class LevelScene extends Scene {
     this.hallArena = null;
     this.deskArena?.destroy();
     this.deskArena = null;
+    this.combinedArena?.destroy();
+    this.combinedArena = null;
     this.board?.destroy();
     this.board = null;
     this.doorDrag?.dispose();

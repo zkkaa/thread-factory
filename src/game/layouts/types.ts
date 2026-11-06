@@ -22,24 +22,44 @@ export interface RoadRect {
   height: number;
 }
 
+/** Data jalur bersama untuk arena yang memakai checkpoint dan slot. */
+export interface TrackLayout {
+  /** Sama dengan LevelDefinition.layoutId. */
+  id: string;
+  road: RoadRect;
+  checkpoints: number[];
+  slots: number[];
+  laneOffsets: number[];
+  board: { x: number; y: number; width: number; height: number };
+  boardLinks: { checkpoint: number; direction: 'read' | 'write' }[];
+}
+
 /**
  * Arena jenis loop (Level 1-1 sampai 1-2). Semua koordinat dalam piksel
  * kanvas (lihat ARENA di theme.ts); posisi di jalan berupa fraksi 0..1.
  */
-export interface LoopLayout {
+export interface LoopLayout extends TrackLayout {
   kind: 'loop';
-  /** Sama dengan LevelDefinition.layoutId. */
-  id: string;
-  /** Kotak luar jalan; ubin dan garis tengah dihitung roadGeometry. */
-  road: RoadRect;
-  /** Posisi tiap checkpoint (fraksi panjang jalan), urut program asli. */
-  checkpoints: number[];
-  /** n+1 posisi slot (fraksi); slot k berada sebelum checkpoint k. */
-  slots: number[];
-  /** Jarak tegak lurus jalan (piksel) untuk tiap robot: jalur sejajar. */
-  laneOffsets: number[];
-  board: { x: number; y: number; width: number; height: number };
-  boardLinks: { checkpoint: number; direction: 'read' | 'write' }[];
+}
+
+export interface CombinedLayout extends TrackLayout {
+  kind: 'combined';
+  tools: { mutexId: string; semaphoreId: string; conditionId: string };
+  assembler: { threadId: string; zone: Rect };
+  warehouse: { threadId: string; zone: Rect };
+  area: {
+    id: string;
+    zone: Rect;
+    gate: { start: number; end: number };
+    door: Point;
+    machines: Point[];
+  };
+  packer: {
+    threadId: string;
+    zone: Rect;
+    lamp: Point;
+    battery: Point;
+  };
 }
 
 /**
@@ -107,4 +127,8 @@ export interface DeskLayout {
 }
 
 // BeltLayout dan BoardLayout ditambahkan saat levelnya dikerjakan.
-export type ArenaLayout = LoopLayout | HallLayout | DeskLayout;
+export type ArenaLayout =
+  | LoopLayout
+  | HallLayout
+  | DeskLayout
+  | CombinedLayout;

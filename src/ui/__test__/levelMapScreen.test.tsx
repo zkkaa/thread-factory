@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { MODULES } from '../../levels/modules';
+import { findLevelById } from '../../levels';
 import type { LevelProgress, ProgressData } from '../../progress/progressStore';
 import type { UnlockContext } from '../../progress/unlocks';
 import type { Navigation } from '../navigation';
@@ -57,6 +58,24 @@ function hitung(html: string, pola: RegExp): number {
 }
 
 describe('LevelMapScreen', () => {
+  it('menampilkan Level 1-5 sebagai level tersedia setelah terdaftar', () => {
+    const moduleDef = MODULES[0];
+    const html = renderToStaticMarkup(
+      <LevelMapScreen
+        navigation={buatNavigasi(moduleDef.id)}
+        moduleDef={moduleDef}
+        context={buatKonteks(buatProgress())}
+        progress={buatProgress()}
+        getLevelTitle={(levelId) => findLevelById(levelId)?.title}
+      />,
+    );
+
+    expect(html).toContain(
+      'aria-label="Level 1-5: Lini Gabungan, terkunci"',
+    );
+    expect(html).not.toContain('Level 1-5, segera hadir');
+  });
+
   it('tanpa progres: 1-1 dipilih dan berikutnya, tombol Mulai Level 1-1 aktif', () => {
     const html = render(0, buatProgress());
     expect(html).toContain('Modul 1');
