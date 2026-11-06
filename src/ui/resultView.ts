@@ -27,6 +27,14 @@ const DEFAULT_TITLES = {
   fail: 'Waduh, Hasilnya Salah!',
 };
 
+const TIMING_FAIL_TITLE = 'Waduh, Lampu Terlalu Cepat!';
+
+const TIMING_FAIL_EXPLANATION =
+  'Condition variable hanya boleh membangunkan thread setelah kondisinya ' +
+  'benar (barang minimal 3). Sinyal yang datang lebih awal membangunkan ' +
+  'Pengepak terlalu dini. Pada program sungguhan, thread yang bangun juga ' +
+  'mengecek ulang kondisinya (while), bukan langsung melanjutkan.';
+
 function capitalize(text: string): string {
   return text.length === 0
     ? text
@@ -58,9 +66,11 @@ function batteryQuote(
   completed: boolean,
   busyWait: number,
   percent: number,
+  timingFail: boolean,
 ): string {
   if (!completed) return 'Simulasi berhenti sebelum semua robot selesai.';
   if (ok) return `Baterai masih ${percent}%, hemat sekali.`;
+  if (timingFail) return 'Lampu menyala sebelum barang cukup.';
   if (busyWait > 0) {
     return `Mengecek ${busyWait} kali sia-sia, baterai tinggal ${percent}%.`;
   }
@@ -82,6 +92,9 @@ export function deriveResultView(
   const busyWait = result.metrics.busyWaitTicks;
   const percent = Math.round(batteryLevel(busyWait) * 100);
   const completed = snapshot.threads.every((t) => t.state === 'TERMINATED');
+  // Level berbaterai yang gagal padahal selesai dan tanpa busy waiting:
+  // masalahnya waktu sinyal (Pengepak dibangunkan sebelum barang cukup).
+  const timingFail = battery && completed && !result.ok && busyWait === 0;
   const totalWait = Object.values(result.metrics.waitTicksByThread).reduce(
     (a, b) => a + b,
     0,
@@ -136,6 +149,13 @@ export function deriveResultView(
       target: '0',
       match: result.ok,
     };
+  } else if (timingFail) {
+    keyFigure = {
+      label: 'Waktu lampu',
+      actual: 'terlalu cepat',
+      target: 'tepat',
+      match: false,
+    };
   } else if (battery) {
     keyFigure = {
       label: 'Baterai',
@@ -156,7 +176,7 @@ export function deriveResultView(
   if (area !== null) {
     quote = areaQuote(result.ok, area.name, overload);
   } else if (battery) {
-    quote = batteryQuote(result.ok, completed, busyWait, percent);
+    quote = batteryQuote(result.ok, completed, busyWait, percent, timingFail);
   } else if (result.ok) {
     quote = `Hasilnya ${actualText}, sesuai target ${target}.`;
   } else {
@@ -170,9 +190,20 @@ export function deriveResultView(
     correctLabel = 'Benar: barang lengkap dan baterai hemat';
   }
 
+  let title = titles.fail;
+  if (result.ok) title = titles.pass;
+  else if (timingFail) title = TIMING_FAIL_TITLE;
+
+  let explanation: string | null = null;
+  if (timingFail) {
+    explanation = TIMING_FAIL_EXPLANATION;
+  } else if (level.explanation) {
+    explanation = result.ok ? level.explanation.pass : level.explanation.fail;
+  }
+
   return {
     ok: result.ok,
-    title: result.ok ? titles.pass : titles.fail,
+    title,
     quote,
     message: result.message,
     stars: result.stars,
@@ -192,11 +223,7 @@ export function deriveResultView(
       },
     ],
     cards,
-    explanation: level.explanation
-      ? result.ok
-        ? level.explanation.pass
-        : level.explanation.fail
-      : null,
+    explanation,
     coreUtilization:
       snapshot.cores > 1
         ? `${Math.round(result.metrics.coreUtilization * 100)}%`
