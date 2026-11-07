@@ -10,8 +10,6 @@ export type ThreadState =
 
 /**
  * Satu instruksi dalam program sebuah thread. Satu tick = satu instruksi.
- * Instruksi khusus skenario Modul 2 (mis. PUT_ITEM, TAKE_ITEM) akan
- * ditambahkan di sini saat Modul 2 dikerjakan (T-048 dan seterusnya).
  */
 export type Instruction =
   | { op: 'WORK'; ticks: number } // pekerjaan lokal, tanpa data bersama
@@ -27,8 +25,13 @@ export type Instruction =
   | { op: 'COND_BROADCAST'; cond: string }
   | { op: 'ENTER_AREA'; area: string }
   | { op: 'LEAVE_AREA'; area: string }
+
+  // Ban berjalan (T-048). Tidak memblokir; pembatasnya semaphore empty/full.
+  | { op: 'PUT_ITEM'; buffer: string } // taruh satu barang; ban penuh = overflow
+  | { op: 'TAKE_ITEM'; buffer: string } // ambil satu barang; ban kosong = underflow
+
   // Busy waiting (T-045): tiap tick mengecek variabel bersama; selama nilainya
-  // masih di bawah `atLeast`, thread TIDAK tidur dan terus memakai core.
+  // masih di bawah atLeast, thread TIDAK tidur dan terus memakai core.
   | { op: 'SPIN_UNTIL'; variable: string; atLeast: number };
 
 /** Nama operasi saja, mis. 'LOCK'. Dipakai di event INSTRUCTION. */
@@ -37,9 +40,12 @@ export type Op = Instruction['op'];
 /** Definisi sebuah thread: program + jumlah pengulangan. */
 export interface ThreadDef {
   id: ThreadId;
+
   /** Nama tampilan di layar, mis. 'Robot A'. */
   label: string;
+
   program: Instruction[];
+
   /** Berapa kali program dijalankan berulang. Default 1. */
   repeat?: number;
 }
@@ -53,7 +59,7 @@ export interface ThreadDef {
  * - random   : tiap tick memilih acak (dari PRNG berbasis seed) di antara thread READY.
  * - scripted : urutan eksekusi diberikan eksplisit (agar race condition PASTI muncul
  *              di level tutorial). Detail perilaku saat script habis diatur di T-014.
- * `cores` = jumlah thread yang boleh mengeksekusi instruksi dalam satu tick.
+ * cores = jumlah thread yang boleh mengeksekusi instruksi dalam satu tick.
  */
 export type SchedulerConfig =
   | { kind: 'random'; cores: number }
@@ -68,17 +74,27 @@ export type SchedulerConfig =
  */
 export interface EngineConfig {
   threads: ThreadDef[];
+
   /** Nilai awal variabel bersama, mis. { stok: 0 }. */
   sharedVars: Record<string, number>;
+
   /** Daftar nama mutex. */
   mutexes: string[];
+
   /** Nama semaphore -> nilai awal. */
   semaphores: Record<string, number>;
+
   /** Daftar nama condition variable. */
   conditions: string[];
+
   scheduler: SchedulerConfig;
+
   /** Kapasitas area berkapasitas, mis. { aula: 3 }. Bila tidak dispesifikasikan, default {}. */
   areas?: Record<string, number>;
+
+  /** Kapasitas ban berjalan, mis. { ban: 3 }. Bila tidak ada, default {}. */
+  buffers?: Record<string, number>;
+
   /** Batas pengaman: simulasi dihentikan paksa setelah tick ini. */
   maxTicks: number;
 }
@@ -91,17 +107,24 @@ export interface ThreadSnapshot {
   id: ThreadId;
   label: string;
   state: ThreadState;
+
   /** Indeks instruksi berikutnya yang akan dieksekusi. */
   pc: number;
+
   /** Pengulangan program ke berapa (mulai 0). */
   iteration: number;
+
   registers: Record<string, number>;
+
   /** Nama resource yang sedang ditunggu (mis. 'mutex:papan'), atau null. */
   waitingOn: string | null;
+
   /** Sisa tick untuk instruksi WORK yang sedang berjalan. */
   workRemaining: number;
+
   /** Total tick yang sudah dihabiskan di state WAITING. */
   waitTicks: number;
+
   busyWaitTicks: number;
 }
 
@@ -122,9 +145,28 @@ export interface ConditionSnapshot {
   queue: ThreadId[];
 }
 
+export interface BufferSnapshot {
+  id: string;
+  capacity: number;
+
+  /** Barang di ban saat ini. */
+  items: number;
+
+  /** Berapa kali PUT_ITEM pada ban penuh (barang jatuh). */
+  overflows: number;
+
+  /** Berapa kali TAKE_ITEM pada ban kosong (tangan meraih kosong). */
+  underflows: number;
+
+  /** Barang yang berhasil ditaruh dan diambil. */
+  totalPut: number;
+  totalTaken: number;
+}
+
 /**
  * Keadaan penuh simulasi. Bagi pemanggil (controller, Phaser, React) snapshot
  * bersifat BACA-SAJA: jangan dimodifikasi.
+ *
  * Metrik (throughput, lostUpdates, dst.) dihitung terpisah oleh metrics.ts (computeMetrics).
  */
 export interface Snapshot {
@@ -132,6 +174,7 @@ export interface Snapshot {
   seed: number;
   busyWaitTicks: number;
   finished: boolean;
+
   threads: ThreadSnapshot[];
   sharedVars: Record<string, number>;
   mutexes: MutexSnapshot[];
@@ -140,15 +183,25 @@ export interface Snapshot {
 
   /** Jumlah thread yang saat ini berada di dalam tiap area, mis. { aula: 2 }. */
   areaOccupancy: Record<string, number>;
+
   /** Total tick dengan kejadian overload kapasitas area. */
   overloadTicks: number;
+
   /** Rata-rata utilisasi area (0..1). */
   areaUtilization: number;
 
   /** Jumlah core yang dipakai scheduler (dari konfigurasi level). */
   cores: number;
+
   /** Total eksekusi instruksi sejak tick 0 (satu per thread terpilih per tick). */
   executedInstructions: number;
+
+  /** Keadaan tiap ban berjalan (kosong bila level tanpa ban). */
+  buffers: BufferSnapshot[];
+
+  /** Jumlah overflow dan underflow dari semua ban. */
+  overflowCount: number;
+  underflowCount: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -179,13 +232,43 @@ export type SimEvent =
       oldValue: number;
       newValue: number;
     }
-  | { type: 'LOCK_ACQUIRED'; tick: number; thread: ThreadId; mutex: string }
-  | { type: 'LOCK_RELEASED'; tick: number; thread: ThreadId; mutex: string }
-  /** Thread berhenti menunggu resource `on` (mis. 'mutex:papan'). */
-  | { type: 'BLOCKED'; tick: number; thread: ThreadId; on: string }
-  | { type: 'DEADLOCK_DETECTED'; tick: number; cycle: ThreadId[] }
-  | { type: 'AREA_ENTERED'; tick: number; thread: ThreadId; area: string }
-  | { type: 'AREA_LEFT'; tick: number; thread: ThreadId; area: string }
+  | {
+      type: 'LOCK_ACQUIRED';
+      tick: number;
+      thread: ThreadId;
+      mutex: string;
+    }
+  | {
+      type: 'LOCK_RELEASED';
+      tick: number;
+      thread: ThreadId;
+      mutex: string;
+    }
+
+  /** Thread berhenti menunggu resource on (mis. 'mutex:papan'). */
+  | {
+      type: 'BLOCKED';
+      tick: number;
+      thread: ThreadId;
+      on: string;
+    }
+  | {
+      type: 'DEADLOCK_DETECTED';
+      tick: number;
+      cycle: ThreadId[];
+    }
+  | {
+      type: 'AREA_ENTERED';
+      tick: number;
+      thread: ThreadId;
+      area: string;
+    }
+  | {
+      type: 'AREA_LEFT';
+      tick: number;
+      thread: ThreadId;
+      area: string;
+    }
   | {
       type: 'AREA_OVERLOAD';
       tick: number;
@@ -193,7 +276,37 @@ export type SimEvent =
       count: number;
       capacity: number;
     }
-  | { type: 'FINISHED'; tick: number };
+  | {
+      type: 'BUFFER_PUT';
+      tick: number;
+      thread: ThreadId;
+      buffer: string;
+      items: number;
+    }
+  | {
+      type: 'BUFFER_TAKEN';
+      tick: number;
+      thread: ThreadId;
+      buffer: string;
+      items: number;
+    }
+  | {
+      type: 'BUFFER_OVERFLOW';
+      tick: number;
+      thread: ThreadId;
+      buffer: string;
+      capacity: number;
+    }
+  | {
+      type: 'BUFFER_UNDERFLOW';
+      tick: number;
+      thread: ThreadId;
+      buffer: string;
+    }
+  | {
+      type: 'FINISHED';
+      tick: number;
+    };
 
 /** Hasil dari satu pemanggilan engine.step(). */
 export interface StepResult {
@@ -212,10 +325,14 @@ export interface StepResult {
  */
 export interface SimulationEngine {
   load(config: EngineConfig, seed: number): void;
+
   /** Maju tepat satu tick. */
   step(): StepResult;
+
   /** Mulai ulang dengan konfigurasi yang sama; seed opsional (default: seed terakhir). */
   reset(seed?: number): void;
+
   getSnapshot(): Readonly<Snapshot>;
+
   readonly isFinished: boolean;
 }
