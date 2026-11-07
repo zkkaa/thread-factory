@@ -75,6 +75,9 @@ class FakeEngine implements SimulationEngine {
       areaUtilization: 0,
       cores: 1,
       executedInstructions: 0,
+      buffers: [],
+      overflowCount: 0,
+      underflowCount: 0,
       busyWaitTicks: 0,
     };
   }
