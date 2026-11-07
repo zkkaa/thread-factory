@@ -379,3 +379,34 @@ export const DESK = {
   modeGap: 24,
   modeFontSize: '12px',
 } as const;
+
+// ---------------------------------------------------------------------------
+// Ban berjalan (BufferView, T-049)
+// ---------------------------------------------------------------------------
+
+/** Gaya ban berjalan. Warna selalu disertai teks (status, overflow, underflow). */
+export const BELT = {
+  panelFill: 0x132238,
+  panelFillAlpha: 0.7,
+  panelStroke: 0xf5c542,
+  panelStrokeWidth: 3,
+  panelProblemStroke: 0xef4444,
+  headerFontSize: '14px',
+  headerInset: 8,
+  statsFontSize: '12px',
+  /** Ruang atas dan bawah di dalam panel untuk header dan statistik. */
+  headerHeight: 34,
+  footerHeight: 30,
+  padding: 14,
+  gap: 8,
+  maxSlotSize: 48,
+  slotEmpty: 0x2b364f,
+  slotFilled: 0x166534,
+  slotStroke: 0x93a4c8,
+  slotStrokeWidth: 2,
+  warnText: '#fecaca',
+  /** Efek: peti jatuh (overflow) dan teks tangan kosong (underflow). */
+  fallDistance: 70,
+  minFxMs: 300,
+  fxFontSize: '16px',
+} as const;
