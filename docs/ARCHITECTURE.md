@@ -149,8 +149,9 @@ export type Instruction =
   | { op: 'COND_BROADCAST'; cond: string }
   | { op: 'ENTER_AREA'; area: string }            // masuk area berkapasitas (Level 1-3)
   | { op: 'LEAVE_AREA'; area: string };           // keluar area berkapasitas (Level 1-3)
-// Instruksi khusus skenario (mis. PUT_ITEM, TAKE_ITEM, ACQUIRE_FORK) ditambahkan
-// ke union ini saat Modul 2 dikerjakan, dan didokumentasikan di sini.
+  | { op: 'PUT_ITEM'; buffer: string }            // ban berjalan: taruh barang (Level 2-1)
+  | { op: 'TAKE_ITEM'; buffer: string };          // ban berjalan: ambil barang (Level 2-1)
+// Instruksi khusus skenario lain (mis. ACQUIRE_FORK) ditambahkan saat levelnya dikerjakan.
 
 export interface ThreadDef {
   id: ThreadId;
@@ -269,6 +270,7 @@ Aula mesin dimodelkan sebagai **area dengan kapasitas** yang dilindungi semaphor
 - Instruksi baru wajib didokumentasikan di bagian 4.2 dan diberi tes (CLAUDE.md bagian 4 aturan 7).
 
 ### 4.10 Instruksi lain yang direncanakan
+`PUT_ITEM` dan `TAKE_ITEM` (T-048) tidak memblokir dan atomik dalam satu tick. Ban penuh menghasilkan overflow, ban kosong underflow, keduanya dihitung. Pembatasnya semaphore `empty` dan `full`.
 `PUT_ITEM`, `TAKE_ITEM` (Level 2-1), instruksi akses pembaca/penulis (Level 2-2), dan `ACQUIRE_FORK` (Level 2-3) ditambahkan saat levelnya dikerjakan, dengan prosedur di bagian 11.
 
 ## 5. Simulation Controller *(diubah sesuai kesepakatan akhir, 26 Okt 2026)*
