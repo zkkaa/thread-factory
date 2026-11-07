@@ -228,10 +228,10 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 ## Fase 7 — Modul 2: Masalah Klasik (2 sampai 19 Nov) *(diubah sesuai kesepakatan akhir, 26 Okt 2026)*
 
 **Level 2-1 — Ban Berjalan (Producer-Consumer)** `P1`
-- [ ] **T-048** Tambah instruksi buffer (mis. `PUT_ITEM`, `TAKE_ITEM`) ke engine + dokumentasikan di `ARCHITECTURE.md` 4.2.
-- [ ] **T-049** `BufferView` (slot ban berjalan, overflow, underflow).
-- [ ] **T-050** Data level 2-1 (parameter jumlah producer, consumer, kapasitas) + tes tiga semaphore (`empty`, `full`, mutex).
-- [ ] **T-096** *(baru)* Layout ban (`BeltLayout`): jalur producer di kiri dan consumer di kanan (program berbeda, jalur terpisah), efek barang jatuh (overflow) dan tangan meraih kosong (underflow).
+- [x] **T-048** Tambah instruksi buffer (mis. `PUT_ITEM`, `TAKE_ITEM`) ke engine + dokumentasikan di `ARCHITECTURE.md` 4.2.
+- [x] **T-049** `BufferView` (slot ban berjalan, overflow, underflow).
+- [x] **T-050** Data level 2-1 (parameter jumlah producer, consumer, kapasitas) + tes tiga semaphore (`empty`, `full`, mutex).
+- [] **T-096** *(baru)* Layout ban (`BeltLayout`): jalur producer di kiri dan consumer di kanan (program berbeda, jalur terpisah), efek barang jatuh (overflow) dan tangan meraih kosong (underflow).
 - [ ] **T-097** *(baru)* Konten Level 2-1.
 - [ ] **T-098** *(baru)* Alat untuk tiga semaphore (`empty`, `full`) dan mutex pelindung ban di toolbox (memakai T-088); tes `applyTools`.
 

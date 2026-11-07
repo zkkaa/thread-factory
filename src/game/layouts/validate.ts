@@ -5,6 +5,7 @@ import type { ArenaLayout, Point, TrackLayout } from './types';
 import { validateHallLayout } from './validateHall';
 import { validateDeskLayout } from './validateDesk';
 import { validateCombinedLayout } from './validateCombined';
+import { validateBeltLayout } from './validateBelt';
 
 const inArena = (p: Point): boolean =>
   p.x >= 0 && p.x <= ARENA.width && p.y >= 0 && p.y <= ARENA.height;
@@ -95,6 +96,7 @@ export function validateLayout(
 ): string[] {
   if (layout.kind === 'hall') return validateHallLayout(layout, level);
   if (layout.kind === 'desk') return validateDeskLayout(layout, level);
+  if (layout.kind === 'belt') return validateBeltLayout(layout, level);
   const errors = validateTrackLayout(layout, level);
   if (layout.kind === 'combined') {
     errors.push(...validateCombinedLayout(layout, level));
