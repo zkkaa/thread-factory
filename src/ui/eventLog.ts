@@ -119,6 +119,38 @@ export function describeEvent(
         text: `BENTROK di area "${event.area}": ${event.count} robot (kapasitas ${event.capacity})!`,
         minor: false,
       };
+
+    case 'BUFFER_PUT':
+      return {
+        tick,
+        kind: 'instruction',
+        text: `${nameOf(event.thread)} menaruh barang di ban "${event.buffer}" (${event.items} barang)`,
+        minor: false,
+      };
+
+    case 'BUFFER_TAKEN':
+      return {
+        tick,
+        kind: 'instruction',
+        text: `${nameOf(event.thread)} mengambil barang dari ban "${event.buffer}" (${event.items} barang tersisa)`,
+        minor: false,
+      };
+
+    case 'BUFFER_OVERFLOW':
+      return {
+        tick,
+        kind: 'overload',
+        text: `OVERFLOW di ban "${event.buffer}": kapasitas ${event.capacity} tercapai!`,
+        minor: false,
+      };
+
+    case 'BUFFER_UNDERFLOW':
+      return {
+        tick,
+        kind: 'blocked',
+        text: `${nameOf(event.thread)} gagal mengambil barang: ban "${event.buffer}" kosong!`,
+        minor: false,
+      };
     case 'FINISHED':
       return { tick, kind: 'finished', text: 'Simulasi selesai', minor: false };
     default:
