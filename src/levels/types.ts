@@ -74,6 +74,8 @@ export interface LevelDefinition {
   tutorialSeed?: number;
   /** Kapasitas area, mis. { aula: 3 }. Bila tidak dispesifikasikan, default {}. */
   areas?: Record<string, number>;
+  /** Kapasitas ban berjalan, mis. { ban: 3 }. Bila tidak ada, default {}. */
+  buffers?: Record<string, number>;
   /** Batas pengaman tick eksekusi simulasi sebelum timeout (default 2000 jika tidak diset). */
   maxTicks?: number;
   /** Kriteria keberhasilan dan penilaian bintang. */
