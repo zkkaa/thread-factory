@@ -3,12 +3,7 @@ import type { SimEvent, Snapshot } from '../engine/types';
 
 /** Keadaan pengepak yang perlu ditampilkan; semuanya diturunkan dari snapshot. */
 export type PackerMode =
-  | 'sleeping'
-  | 'spinning'
-  | 'waiting'
-  | 'preparing'
-  | 'working'
-  | 'done';
+  'sleeping' | 'spinning' | 'waiting' | 'preparing' | 'working' | 'done';
 
 export interface DeskState {
   /** Nilai variabel target di meja (mis. jumlah barang). */

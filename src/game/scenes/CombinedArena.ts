@@ -127,11 +127,7 @@ export class CombinedArena {
       packer.zone.y + 108,
       '',
     );
-    this.battery = new BatteryMeter(
-      scene,
-      packer.battery.x,
-      packer.battery.y,
-    );
+    this.battery = new BatteryMeter(scene, packer.battery.x, packer.battery.y);
     this.gateDrag = new GateDragSession({
       bus: toolBus,
       door: layout.area.door,
@@ -163,7 +159,10 @@ export class CombinedArena {
     if (!visible) return;
     const over = state === 'over';
     this.dropRing
-      .setFillStyle(HALL.dropReady, over ? HALL.dropOverAlpha : HALL.dropReadyAlpha)
+      .setFillStyle(
+        HALL.dropReady,
+        over ? HALL.dropOverAlpha : HALL.dropReadyAlpha,
+      )
       .setStrokeStyle(
         HALL.dropStrokeWidth,
         over ? HALL.dropOver : HALL.dropReady,

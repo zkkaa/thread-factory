@@ -147,11 +147,13 @@ export const level1_5: LevelDefinition = {
       if (snapshot.busyWaitTicks > 0) {
         return {
           ok: false,
-          message:
-            `Pengepak melakukan busy waiting selama ${snapshot.busyWaitTicks} tick.`,
+          message: `Pengepak melakukan busy waiting selama ${snapshot.busyWaitTicks} tick.`,
         };
       }
-      return { ok: true, message: 'Stok, kapasitas aula, dan sinyal sudah benar.' };
+      return {
+        ok: true,
+        message: 'Stok, kapasitas aula, dan sinyal sudah benar.',
+      };
     },
     stars: { fast: 70, lowWait: 80 },
   },

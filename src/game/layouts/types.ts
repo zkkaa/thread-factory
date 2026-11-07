@@ -127,8 +127,4 @@ export interface DeskLayout {
 }
 
 // BeltLayout dan BoardLayout ditambahkan saat levelnya dikerjakan.
-export type ArenaLayout =
-  | LoopLayout
-  | HallLayout
-  | DeskLayout
-  | CombinedLayout;
+export type ArenaLayout = LoopLayout | HallLayout | DeskLayout | CombinedLayout;

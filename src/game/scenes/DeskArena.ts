@@ -58,10 +58,7 @@ export class DeskArena {
     this.update(snapshot);
   }
 
-  update(
-    snapshot: Readonly<Snapshot>,
-    events: readonly SimEvent[] = [],
-  ): void {
+  update(snapshot: Readonly<Snapshot>, events: readonly SimEvent[] = []): void {
     if (!this.signaled && sawSignal(events)) this.signaled = true;
     const assembler = snapshot.threads[this.assemblerIndex];
     const packer = snapshot.threads[this.packerIndex];

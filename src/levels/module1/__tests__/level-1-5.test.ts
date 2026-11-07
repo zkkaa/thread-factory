@@ -78,9 +78,9 @@ describe('Level 1-5: Lini Gabungan (T-047)', () => {
   it('kombinasi mutex, semaphore 1, dan sinyal sesudah WRITE lulus', () => {
     const { snapshot, result } = play();
 
-    expect(snapshot.threads.every((thread) => thread.state === 'TERMINATED')).toBe(
-      true,
-    );
+    expect(
+      snapshot.threads.every((thread) => thread.state === 'TERMINATED'),
+    ).toBe(true);
     expect(snapshot.sharedVars['barang']).toBe(5);
     expect(snapshot.overloadTicks).toBe(0);
     expect(snapshot.busyWaitTicks).toBe(0);
