@@ -3,6 +3,8 @@ import { layout1_2 } from './level-1-2.layout';
 import { hall1_3 } from './level-1-3.hall.layout';
 import { layout1_4 } from './level-1-4.layout';
 import { layout1_5 } from './level-1-5.combined.layout';
+import { layout2_1 } from './level-2-1.layout';
+
 import type { ArenaLayout } from './types';
 
 const LAYOUTS: Readonly<Record<string, ArenaLayout>> = {
@@ -11,6 +13,7 @@ const LAYOUTS: Readonly<Record<string, ArenaLayout>> = {
   [hall1_3.id]: hall1_3,
   [layout1_4.id]: layout1_4,
   [layout1_5.id]: layout1_5,
+  [layout2_1.id]: layout2_1,
 };
 
 export function getLayout(id: string): ArenaLayout | undefined {
