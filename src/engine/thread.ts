@@ -1,6 +1,7 @@
 import type { Condition, ConditionWaiter } from './primitives/condition';
 import type { Mutex } from './primitives/mutex';
 import type { Semaphore } from './primitives/semaphore';
+import type { BoundedBuffer } from './primitives/buffer';
 import type {
   SimEvent,
   ThreadDef,
@@ -37,6 +38,7 @@ export interface SyncContext {
   mutexes: ReadonlyMap<string, Mutex>;
   semaphores?: ReadonlyMap<string, Semaphore>;
   conditions?: ReadonlyMap<string, Condition>;
+  buffers?: ReadonlyMap<string, BoundedBuffer>;
   enterArea?: (threadId: ThreadId, area: string) => void;
   leaveArea?: (threadId: ThreadId, area: string) => void;
   /** Mengambil thread lain (untuk dibangunkan). Melempar error bila tidak ada. */
@@ -104,16 +106,27 @@ export function transition(
   tick: number,
 ): SimEvent | null {
   const from = thread.state;
+
   if (from === to) return null;
+
   if (!ALLOWED_TRANSITIONS[from].includes(to)) {
     throw new Error(
       `Transisi state tidak sah pada thread "${thread.def.id}": ${from} -> ${to}`,
     );
   }
+
   thread.state = to;
+
   // Keluar dari WAITING berarti tidak lagi menunggu resource apa pun.
   if (from === 'WAITING') thread.waitingOn = null;
-  return { type: 'THREAD_STATE', tick, thread: thread.def.id, from, to };
+
+  return {
+    type: 'THREAD_STATE',
+    tick,
+    thread: thread.def.id,
+    from,
+    to,
+  };
 }
 
 function hasKey(record: Record<string, number>, key: string): boolean {
@@ -131,6 +144,7 @@ function readNumber(
       `Thread "${threadId}" memakai ${kind} "${key}" yang tidak ada`,
     );
   }
+
   return record[key] as number;
 }
 
@@ -140,11 +154,13 @@ function requireMutex(
   threadId: string,
 ): Mutex {
   const mutex = sync.mutexes.get(name);
+
   if (mutex === undefined) {
     throw new Error(
       `Thread "${threadId}" memakai mutex "${name}" yang tidak ada`,
     );
   }
+
   return mutex;
 }
 
@@ -154,11 +170,13 @@ function requireSemaphore(
   threadId: string,
 ): Semaphore {
   const sem = sync.semaphores?.get(name);
+
   if (sem === undefined) {
     throw new Error(
       `Thread "${threadId}" memakai semaphore "${name}" yang tidak ada`,
     );
   }
+
   return sem;
 }
 
@@ -168,12 +186,28 @@ function requireCondition(
   threadId: string,
 ): Condition {
   const cond = sync.conditions?.get(name);
+
   if (cond === undefined) {
     throw new Error(
       `Thread "${threadId}" memakai condition variable "${name}" yang tidak ada`,
     );
   }
+
   return cond;
+}
+
+function requireBuffer(
+  sync: SyncContext,
+  name: string,
+  threadId: ThreadId,
+): BoundedBuffer {
+  const buffer = sync.buffers?.get(name);
+
+  if (buffer === undefined) {
+    throw new Error(`Thread "${threadId}": ban "${name}" tidak dideklarasikan`);
+  }
+
+  return buffer;
 }
 
 /**
@@ -183,13 +217,16 @@ function requireCondition(
  */
 function advancePc(thread: ThreadRuntime, tick: number): SimEvent | null {
   thread.pc += 1;
+
   if (thread.pc < thread.def.program.length) return null;
 
   thread.pc = 0;
   thread.iteration += 1;
+
   if (thread.iteration >= (thread.def.repeat ?? 1)) {
     return transition(thread, 'TERMINATED', tick);
   }
+
   return null;
 }
 
@@ -209,23 +246,35 @@ function releaseMutex(
 ): SimEvent[] {
   const id = thread.def.id;
   const events: SimEvent[] = [];
+
   const push = (event: SimEvent | null): void => {
     if (event) events.push(event);
   };
 
   const next = mutex.unlock(id); // melempar error bila bukan pemilik
-  events.push({ type: 'LOCK_RELEASED', tick, thread: id, mutex: mutexName });
+
+  events.push({
+    type: 'LOCK_RELEASED',
+    tick,
+    thread: id,
+    mutex: mutexName,
+  });
+
   if (next !== null) {
     const woken = sync.getThread(next);
+
     push(transition(woken, 'READY', tick));
+
     events.push({
       type: 'LOCK_ACQUIRED',
       tick,
       thread: next,
       mutex: mutexName,
     });
+
     push(advancePc(woken, tick));
   }
+
   return events;
 }
 
@@ -247,20 +296,31 @@ function wakeWaiter(
 
   if (mutex.lock(waiter.thread)) {
     const change = transition(woken, 'READY', tick);
+
     if (change) events.push(change);
+
     events.push({
       type: 'LOCK_ACQUIRED',
       tick,
       thread: waiter.thread,
       mutex: waiter.mutex,
     });
+
     const end = advancePc(woken, tick);
+
     if (end) events.push(end);
   } else {
     const on = `mutex:${waiter.mutex}`;
     woken.waitingOn = on;
-    events.push({ type: 'BLOCKED', tick, thread: waiter.thread, on });
+
+    events.push({
+      type: 'BLOCKED',
+      tick,
+      thread: waiter.thread,
+      on,
+    });
   }
+
   return events;
 }
 
@@ -293,6 +353,7 @@ export function executeInstruction(
   const id = thread.def.id;
   const index = thread.pc;
   const instruction = thread.def.program[index];
+
   if (instruction === undefined) {
     throw new Error(
       `Thread "${id}" tidak punya instruksi pada indeks ${index}`,
@@ -300,20 +361,32 @@ export function executeInstruction(
   }
 
   const events: SimEvent[] = [
-    { type: 'INSTRUCTION', tick, thread: id, index, op: instruction.op },
+    {
+      type: 'INSTRUCTION',
+      tick,
+      thread: id,
+      index,
+      op: instruction.op,
+    },
   ];
+
   const push = (event: SimEvent | null): void => {
     if (event) events.push(event);
   };
+
   let completed = true;
 
   switch (instruction.op) {
     case 'WORK': {
-      if (thread.workRemaining === 0) thread.workRemaining = instruction.ticks;
+      if (thread.workRemaining === 0) {
+        thread.workRemaining = instruction.ticks;
+      }
+
       thread.workRemaining -= 1;
       completed = thread.workRemaining === 0;
       break;
     }
+
     case 'READ': {
       // Sengaja terpisah dari WRITE: jeda di antaranya yang memunculkan race condition.
       thread.registers[instruction.into] = readNumber(
@@ -324,6 +397,7 @@ export function executeInstruction(
       );
       break;
     }
+
     case 'COMPUTE': {
       const current = readNumber(
         thread.registers,
@@ -331,9 +405,11 @@ export function executeInstruction(
         id,
         'register',
       );
+
       thread.registers[instruction.reg] = current + instruction.add;
       break;
     }
+
     case 'WRITE': {
       const oldValue = readNumber(
         sharedVars,
@@ -341,13 +417,16 @@ export function executeInstruction(
         id,
         'variabel bersama',
       );
+
       const newValue = readNumber(
         thread.registers,
         instruction.reg,
         id,
         'register',
       );
+
       sharedVars[instruction.to] = newValue;
+
       events.push({
         type: 'VAR_WRITTEN',
         tick,
@@ -356,10 +435,13 @@ export function executeInstruction(
         oldValue,
         newValue,
       });
+
       break;
     }
+
     case 'LOCK': {
       const mutex = requireMutex(sync, instruction.mutex, id);
+
       if (mutex.lock(id)) {
         events.push({
           type: 'LOCK_ACQUIRED',
@@ -369,90 +451,191 @@ export function executeInstruction(
         });
       } else {
         completed = false;
+
         const on = `mutex:${instruction.mutex}`;
         thread.waitingOn = on;
-        events.push({ type: 'BLOCKED', tick, thread: id, on });
+
+        events.push({
+          type: 'BLOCKED',
+          tick,
+          thread: id,
+          on,
+        });
+
         push(transition(thread, 'WAITING', tick));
       }
+
       break;
     }
+
     case 'UNLOCK': {
       const mutex = requireMutex(sync, instruction.mutex, id);
+
       events.push(
         ...releaseMutex(mutex, instruction.mutex, thread, tick, sync),
       );
+
       break;
     }
+
     case 'SEM_WAIT': {
       const sem = requireSemaphore(sync, instruction.sem, id);
+
       if (!sem.wait(id)) {
         completed = false;
+
         const on = `sem:${instruction.sem}`;
         thread.waitingOn = on;
-        events.push({ type: 'BLOCKED', tick, thread: id, on });
+
+        events.push({
+          type: 'BLOCKED',
+          tick,
+          thread: id,
+          on,
+        });
+
         push(transition(thread, 'WAITING', tick));
       }
+
       break;
     }
+
     case 'SEM_SIGNAL': {
       const sem = requireSemaphore(sync, instruction.sem, id);
       const next = sem.signal();
+
       if (next !== null) {
         const woken = sync.getThread(next);
+
         push(transition(woken, 'READY', tick));
         push(advancePc(woken, tick));
       }
+
       break;
     }
+
     case 'COND_WAIT': {
       const cond = requireCondition(sync, instruction.cond, id);
       const mutex = requireMutex(sync, instruction.mutex, id);
+
       // 1. Lepas mutex (melempar error bila thread bukan pemiliknya).
       events.push(
         ...releaseMutex(mutex, instruction.mutex, thread, tick, sync),
       );
+
       // 2. Tidur di condition sampai disinyal.
       cond.wait(id, instruction.mutex);
       completed = false;
+
       const on = `cond:${instruction.cond}`;
       thread.waitingOn = on;
-      events.push({ type: 'BLOCKED', tick, thread: id, on });
+
+      events.push({
+        type: 'BLOCKED',
+        tick,
+        thread: id,
+        on,
+      });
+
       push(transition(thread, 'WAITING', tick));
+
       break;
     }
+
     case 'COND_SIGNAL': {
       const cond = requireCondition(sync, instruction.cond, id);
       const waiter = cond.signal(); // null = tidak ada yang menunggu, sinyal hilang
-      if (waiter !== null) events.push(...wakeWaiter(waiter, tick, sync));
+
+      if (waiter !== null) {
+        events.push(...wakeWaiter(waiter, tick, sync));
+      }
+
       break;
     }
+
     case 'COND_BROADCAST': {
       const cond = requireCondition(sync, instruction.cond, id);
+
       for (const waiter of cond.broadcast()) {
         events.push(...wakeWaiter(waiter, tick, sync));
       }
+
       break;
     }
+
     case 'ENTER_AREA': {
       sync.enterArea?.(id, instruction.area);
+
       events.push({
         type: 'AREA_ENTERED',
         tick,
         thread: id,
         area: instruction.area,
       });
+
       break;
     }
+
     case 'LEAVE_AREA': {
       sync.leaveArea?.(id, instruction.area);
+
       events.push({
         type: 'AREA_LEFT',
         tick,
         thread: id,
         area: instruction.area,
       });
+
       break;
     }
+
+    case 'PUT_ITEM': {
+      const buffer = requireBuffer(sync, instruction.buffer, id);
+
+      if (buffer.put()) {
+        events.push({
+          type: 'BUFFER_PUT',
+          tick,
+          thread: id,
+          buffer: instruction.buffer,
+          items: buffer.count,
+        });
+      } else {
+        events.push({
+          type: 'BUFFER_OVERFLOW',
+          tick,
+          thread: id,
+          buffer: instruction.buffer,
+          capacity: buffer.capacity,
+        });
+      }
+
+      break;
+    }
+
+    case 'TAKE_ITEM': {
+      const buffer = requireBuffer(sync, instruction.buffer, id);
+
+      if (buffer.take()) {
+        events.push({
+          type: 'BUFFER_TAKEN',
+          tick,
+          thread: id,
+          buffer: instruction.buffer,
+          items: buffer.count,
+        });
+      } else {
+        events.push({
+          type: 'BUFFER_UNDERFLOW',
+          tick,
+          thread: id,
+          buffer: instruction.buffer,
+        });
+      }
+
+      break;
+    }
+
     case 'SPIN_UNTIL': {
       // Busy waiting: thread tetap READY/RUNNING dan memakai core tiap tick
       // selama kondisi belum terpenuhi. Beda dengan WAITING (tidur, tanpa core).
@@ -464,16 +647,20 @@ export function executeInstruction(
         id,
         'variabel bersama',
       );
+
       if (current < instruction.atLeast) {
         completed = false;
         thread.busyWaitTicks += 1;
       }
+
       break;
     }
+
     default: {
       // Semua instruksi sudah ditangani; bila union Instruction bertambah,
       // TypeScript akan menandai baris ini sebagai error.
       const unhandled: never = instruction;
+
       throw new Error(
         `Instruksi belum didukung engine: ${JSON.stringify(unhandled)}`,
       );
@@ -481,5 +668,6 @@ export function executeInstruction(
   }
 
   if (completed) push(advancePc(thread, tick));
+
   return events;
 }
