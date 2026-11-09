@@ -56,26 +56,32 @@ export const level2_1: LevelDefinition = {
     {
       mood: 'netral',
       text:
-        'Mandor, lihat ban berjalan ini! Dua perakit menaruh barang di satu ujung, ' +
-        'dua pengepak mengambilnya di ujung lain. Ban hanya muat 3 barang.',
+        'Selamat datang di ban berjalan, Mandor! Dua perakit menaruh barang di satu ujung ban, ' +
+        'dua pengepak mengambilnya di ujung lain. Ban ini hanya muat 3 barang, ' +
+        'sedangkan total ada 8 barang yang harus sampai ke pengepak.',
     },
     {
       mood: 'sedih',
       text:
-        'Tanpa aturan, perakit tetap menaruh barang saat ban penuh sehingga barang ' +
-        'jatuh (overflow), dan pengepak meraih ban kosong (underflow).',
+        'Sekarang belum ada aturan, jadi kacau. Begitu mulai, pengepak langsung meraih ban yang ' +
+        'masih kosong (underflow), dan kalau perakit lebih cepat, ban penuh lalu barang jatuh (overflow). ' +
+        'Misimu: kedelapan barang lewat tanpa jatuh dan tanpa meraih kosong. ' +
+        'Selesai cepat dan sedikit menunggu memberi bintang tambahan.',
     },
     {
       mood: 'berpikir',
       text:
-        'Kita butuh dua penghitung: satu untuk slot kosong, satu untuk slot berisi. ' +
-        'Perakit menunggu slot kosong, pengepak menunggu barang. Semua 8 barang harus lewat tanpa masalah.',
+        'Kuncinya dua penghitung, bukan satu kunci. "Slot Kosong" dimulai dari 3, ' +
+        '"Barang Tersedia" dimulai dari 0. Perakit menunggu slot kosong sebelum menaruh, ' +
+        'lalu menambah hitungan barang. Pengepak sebaliknya. Robot yang harus menunggu akan tidur, ' +
+        'bukan terus mengecek.',
     },
   ],
   hints: [
-    'Ada dua hal yang bisa salah: menaruh barang di ban penuh, dan mengambil dari ban kosong.',
-    'Setiap masalah butuh satu penghitung (semaphore): satu menghitung slot kosong, satu menghitung barang yang tersedia.',
-    'Semaphore "empty" dimulai dari kapasitas ban (3) dan "full" dimulai dari 0. Perakit: wait(empty) lalu signal(full). Pengepak: wait(full) lalu signal(empty).',
+    'Ada dua hal yang bisa salah di ban: menaruh barang saat ban penuh, dan mengambil barang saat ban kosong. Sebelum bertindak, tiap robot perlu bertanya: "boleh lanjut sekarang?"',
+    'Tiap masalah butuh satu penghitung (semaphore): satu menghitung slot yang masih kosong, satu menghitung barang yang siap diambil.',
+    'Penghitung slot kosong ("empty") dimulai dari kapasitas ban, yaitu 3. Penghitung barang ("full") dimulai dari 0 karena ban awalnya kosong.',
+    'Perakit: wait(empty), taruh barang, lalu signal(full). Pengepak: wait(full), ambil barang, lalu signal(empty). Urutan "tunggu dulu, baru taruh atau ambil" tidak boleh terbalik.',
   ],
   concepts: [
     'Producer-Consumer',
@@ -85,13 +91,17 @@ export const level2_1: LevelDefinition = {
   ],
   explanation: {
     pass:
-      'Tidak ada overflow maupun underflow: semaphore empty membuat perakit menunggu ' +
-      'saat ban penuh, dan semaphore full membuat pengepak menunggu saat ban kosong. ' +
-      'Robot yang menunggu tidur (WAITING), tidak terus mengecek.',
+      'Tidak ada overflow maupun underflow. Semaphore empty (Slot Kosong) membuat perakit menunggu ' +
+      'saat ban penuh, dan semaphore full (Barang Tersedia) membuat pengepak menunggu saat ban kosong. ' +
+      'Keduanya counting semaphore: penghitung, bukan kunci dengan satu pemilik seperti mutex. ' +
+      'Robot yang menunggu tidur (WAITING), tidak terus mengecek. ' +
+      'Di sistem nyata ban juga butuh mutex agar dua robot tidak mengubahnya bersamaan; ' +
+      'di simulasi ini taruh dan ambil selesai dalam satu tick, jadi pembatas utamanya dua semaphore tadi.',
     fail:
-      'Terjadi overflow atau underflow: robot menaruh barang di ban penuh atau mengambil ' +
-      'dari ban kosong. Pembatasnya adalah dua semaphore: empty (slot kosong) dan full ' +
-      '(barang tersedia).',
+      'Ban belum aman: robot menaruh barang di ban penuh (overflow), mengambil dari ban kosong ' +
+      '(underflow), atau robot saling menunggu sampai simulasi macet. Pembatasnya dua semaphore: ' +
+      'empty (slot kosong, nilai awal sama dengan kapasitas ban, 3) dan full (barang tersedia, ' +
+      'nilai awal 0), dengan urutan tunggu dulu, baru taruh atau ambil.',
   },
   resultTitle: {
     pass: 'Bagus! Ban Lancar Jaya!',
