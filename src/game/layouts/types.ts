@@ -125,10 +125,28 @@ export interface DeskLayout {
   /** Pusat badan meter baterai pengepak. */
   battery: Point;
 }
-
+/**
+ * Arena jenis ban berjalan (Level 2-1, T-096): perakit (producer) di kiri,
+ * pengepak (consumer) di kanan, ban di tengah. Robot diam di titiknya; yang
+ * berubah adalah isi ban (BufferView). Semua koordinat dalam piksel kanvas
+ * dan berada di dalam HUD_SAFE (theme.ts).
+ */
+export interface BeltLayout {
+  kind: 'belt';
+  /** Sama dengan LevelDefinition.layoutId. */
+  id: string;
+  /** Id ban di EngineConfig.buffers. */
+  bufferId: string;
+  belt: Rect;
+  producerZone: Rect;
+  consumerZone: Rect;
+  /** Id thread perakit, sejajar dengan `producerSpots`. */
+  producerIds: string[];
+  producerSpots: Point[];
+  /** Id thread pengepak, sejajar dengan `consumerSpots`. */
+  consumerIds: string[];
+  consumerSpots: Point[];
+}
 // BeltLayout dan BoardLayout ditambahkan saat levelnya dikerjakan.
 export type ArenaLayout =
-  | LoopLayout
-  | HallLayout
-  | DeskLayout
-  | CombinedLayout;
+  LoopLayout | HallLayout | DeskLayout | CombinedLayout | BeltLayout;

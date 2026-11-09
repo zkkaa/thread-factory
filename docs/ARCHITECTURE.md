@@ -147,6 +147,11 @@ export type Instruction =
   | { op: 'COND_WAIT'; cond: string; mutex: string }
   | { op: 'COND_SIGNAL'; cond: string }
   | { op: 'COND_BROADCAST'; cond: string }
+  | { op: 'ENTER_AREA'; area: string }
+  | { op: 'LEAVE_AREA'; area: string }
+  | { op: 'PUT_ITEM'; buffer: string }    // taruh barang; ban penuh = overflow
+  | { op: 'TAKE_ITEM'; buffer: string }   // ambil barang; ban kosong = underflow
+  | { op: 'SPIN_UNTIL'; variable: string; atLeast: number }; // busy waiting
   | { op: 'ENTER_AREA'; area: string }            // masuk area berkapasitas (Level 1-3)
   | { op: 'LEAVE_AREA'; area: string };           // keluar area berkapasitas (Level 1-3)
   | { op: 'PUT_ITEM'; buffer: string }            // ban berjalan: taruh barang (Level 2-1)

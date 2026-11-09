@@ -70,9 +70,7 @@ describe('LevelMapScreen', () => {
       />,
     );
 
-    expect(html).toContain(
-      'aria-label="Level 1-5: Lini Gabungan, terkunci"',
-    );
+    expect(html).toContain('aria-label="Level 1-5: Lini Gabungan, terkunci"');
     expect(html).not.toContain('Level 1-5, segera hadir');
   });
 

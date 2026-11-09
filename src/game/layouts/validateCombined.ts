@@ -81,9 +81,15 @@ export function validateCombinedLayout(
   if (capacity === undefined) {
     errors.push(`level tidak punya area "${layout.area.id}"`);
   } else if (layout.area.machines.length !== capacity) {
-    errors.push(`mesin ${layout.area.machines.length}, kapasitas area ${capacity}`);
+    errors.push(
+      `mesin ${layout.area.machines.length}, kapasitas area ${capacity}`,
+    );
   }
-  if (layout.area.machines.some((machine) => !pointInRect(machine, layout.area.zone))) {
+  if (
+    layout.area.machines.some(
+      (machine) => !pointInRect(machine, layout.area.zone),
+    )
+  ) {
     errors.push('posisi mesin di luar zona aula');
   }
   if (!pointInRect(layout.area.door, layout.area.zone)) {
@@ -98,7 +104,9 @@ export function validateCombinedLayout(
     lastGateInstruction?.op !== 'LEAVE_AREA' ||
     lastGateInstruction.area !== layout.area.id
   ) {
-    errors.push('gerbang Kartu Akses harus membungkus ENTER_AREA dan LEAVE_AREA');
+    errors.push(
+      'gerbang Kartu Akses harus membungkus ENTER_AREA dan LEAVE_AREA',
+    );
   }
   const resources = new Map(
     level.resources.map((resource) => [resource.id, resource.kind]),
@@ -107,7 +115,9 @@ export function validateCombinedLayout(
     errors.push(`mutex "${layout.tools.mutexId}" tidak terdaftar di level`);
   }
   if (resources.get(layout.tools.semaphoreId) !== 'semaphore') {
-    errors.push(`semaphore "${layout.tools.semaphoreId}" tidak terdaftar di level`);
+    errors.push(
+      `semaphore "${layout.tools.semaphoreId}" tidak terdaftar di level`,
+    );
   }
   if (resources.get(layout.tools.conditionId) !== 'condition') {
     errors.push(
