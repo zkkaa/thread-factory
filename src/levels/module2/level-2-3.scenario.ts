@@ -151,9 +151,10 @@ export function buildStrategyThreads(strategy: TechnicianStrategy): ThreadDef[] 
 export function buildLevel23StrategyConfig(
   strategy: TechnicianStrategy,
 ): EngineConfig {
-  const semaphores =
-    strategy === 'limit4'
-      ? { [LEVEL_2_3_SEAT_SEMAPHORE]: LEVEL_2_3_MAX_SEATED }
-      : {};
+  const semaphores: Record<string, number> = {};
+  if (strategy === 'limit4') {
+    semaphores[LEVEL_2_3_SEAT_SEMAPHORE] = LEVEL_2_3_MAX_SEATED;
+  }
+
   return buildLevel23Config(buildStrategyThreads(strategy), semaphores);
 }
