@@ -154,7 +154,9 @@ export const level2_1: LevelDefinition = {
         message: 'Semua barang lewat ban tanpa jatuh atau meraih kosong.',
       };
     },
-    // TODO: ukur pada seed 10 setelah T-098, lalu ganti angka perkiraan ini.
-    stars: { fast: 60, lowWait: 200 },
+    // Diukur pada seed 10 dengan kedua penjaga: 19 tick, total waitTicks 6.
+    // Hanya ada satu susunan benar, jadi ★★ dan ★★★ ikut bersama ★; ambang
+    // diberi sedikit ruang agar tidak rapuh.
+    stars: { fast: 24, lowWait: 12 },
   },
 };

@@ -101,6 +101,15 @@ describe('beltTool (Level 2-1)', () => {
     }
   });
 
+  it('seed tutorial 10 dengan kedua penjaga: lulus dengan 3 bintang', () => {
+    if (setup === null) throw new Error('setup kosong');
+    const tools = [buildBeltTool(setup, 'slot'), buildBeltTool(setup, 'item')];
+    const snap = run(buildEngineConfig(level2_1, tools), 10);
+    const result = evaluateLevel(level2_1, snap);
+    expect(result.ok).toBe(true);
+    expect(result.stars).toBe(3);
+  });
+
   it('hanya satu penjaga: level tetap gagal', () => {
     if (setup === null) throw new Error('setup kosong');
     for (const guard of ['slot', 'item'] as const) {
