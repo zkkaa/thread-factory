@@ -81,7 +81,7 @@ export function LevelPedestal({
           {node.levelId}
         </span>
       </span>
-      {node.isNext && (
+      {selected && (
         <MapPin className="absolute top-[-28%] left-1/2 z-10 h-[3cqw] w-[2.4cqw] -translate-x-1/2" />
       )}
       {(cleared || locked) && (
