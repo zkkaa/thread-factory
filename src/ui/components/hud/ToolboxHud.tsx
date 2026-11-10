@@ -1,5 +1,7 @@
 import { findConditionSetup } from '../../conditionTool';
 import { ConditionToolbox } from './ConditionToolbox';
+import { BeltToolbox } from './BeltToolbox';
+import { findBeltSetup } from '../../beltTool';
 import { useState } from 'react';
 import type {
   ControllerState,
@@ -57,13 +59,15 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
   const hasCondition =
     level.availableTools.includes('condition') &&
     findConditionSetup(level) !== null;
+  const hasBelt = findBeltSetup(level) !== null;
 
-  if (!hasMutex && !hasSemaphore && !hasCondition) {
+  if (!hasMutex && !hasSemaphore && !hasCondition && !hasBelt) {
     return null;
   }
 
   return (
     <>
+      {hasBelt && <BeltToolbox controller={controller} state={state} />}
       {hasMutex && (
         <MutexToolbox
           controller={controller}

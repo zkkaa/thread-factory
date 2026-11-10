@@ -46,7 +46,8 @@ export const LEVEL_2_1_THREADS: ThreadDef[] = [
  * Catatan penyederhanaan: PUT_ITEM dan TAKE_ITEM atomik dalam satu tick, jadi
  * mutex pelindung ban tidak mengubah hasil. Pembatas yang benar adalah
  * semaphore empty dan full.
- * TODO T-098: alat pemain untuk empty/full; sampai itu ada, availableTools kosong.
+ * Alat pemain: dua penjaga semaphorePair (Penjaga Slot dan Penjaga Barang),
+ * lihat ui/beltTool.ts.
  */
 export const level2_1: LevelDefinition = {
   id: '2-1',
@@ -74,7 +75,8 @@ export const level2_1: LevelDefinition = {
         'Kuncinya dua penghitung, bukan satu kunci. "Slot Kosong" dimulai dari 3, ' +
         '"Barang Tersedia" dimulai dari 0. Perakit menunggu slot kosong sebelum menaruh, ' +
         'lalu menambah hitungan barang. Pengepak sebaliknya. Robot yang harus menunggu akan tidur, ' +
-        'bukan terus mengecek.',
+        'bukan terus mengecek. Di toolbox ada dua penjaga: Penjaga Slot untuk perakit dan ' +
+        'Penjaga Barang untuk pengepak. Nyalakan keduanya, lalu tekan Run.',
     },
   ],
   hints: [
@@ -126,7 +128,7 @@ export const level2_1: LevelDefinition = {
     },
     { kind: 'mutex', id: 'ban-lock', label: 'Kunci Ban' },
   ],
-  availableTools: [],
+  availableTools: ['semaphorePair'],
   scheduler: { kind: 'random', cores: 4 },
   tutorialSeed: 10,
   maxTicks: 2000,

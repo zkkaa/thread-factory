@@ -12,7 +12,7 @@ function run(config: EngineConfig, seed: number) {
   return engine.getSnapshot();
 }
 
-/** Program yang SUDAH diberi tiga pengaman (meniru hasil alat T-098). */
+/** Program yang SUDAH diberi dua semaphore (meniru hasil alat T-098). */
 function guardedThreads(): ThreadDef[] {
   return level2_1.threads.map((t) => {
     const isProducer = t.id.startsWith('P');
