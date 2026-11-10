@@ -246,7 +246,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 **Level 2-3 — Meja Teknisi (Dining Philosophers)** `P1`
 - [x] **T-055** `engine/deadlock.ts`: deteksi siklus tunggu + event `DEADLOCK_DETECTED`.
 - [x] **T-056** Skenario 5 teknisi dan 5 kunci; tes: tanpa strategi terdeteksi deadlock.
-- [ ] **T-057** Strategi: urutan pengambilan resource, batasi 4 teknisi (semaphore), asimetris genap/ganjil; tes tiap strategi bebas deadlock.
+- [x] **T-057** Strategi: urutan pengambilan resource, batasi 4 teknisi (semaphore), asimetris genap/ganjil; tes tiap strategi bebas deadlock.
 - [ ] **T-058** Strategi pemulihan ("Rampas kunci" / preemption) + UI.
 - [ ] **T-059** Visual: garis merah siklus tunggu dan empat kotak kondisi Coffman yang menyala/padam sesuai strategi.
 - [ ] **T-060** Metrik fairness (jumlah makan per teknisi).
