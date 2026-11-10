@@ -231,13 +231,13 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-048** Tambah instruksi buffer (mis. `PUT_ITEM`, `TAKE_ITEM`) ke engine + dokumentasikan di `ARCHITECTURE.md` 4.2.
 - [x] **T-049** `BufferView` (slot ban berjalan, overflow, underflow).
 - [x] **T-050** Data level 2-1 (parameter jumlah producer, consumer, kapasitas) + tes tiga semaphore (`empty`, `full`, mutex).
-- [x] **T-096** *(baru)* Layout ban (`BeltLayout`): jalur producer di kiri dan consumer di kanan (program berbeda, jalur terpisah), efek barang jatuh (overflow) dan tangan meraih kosong (underflow).
+- [x    ] **T-096** *(baru)* Layout ban (`BeltLayout`): jalur producer di kiri dan consumer di kanan (program berbeda, jalur terpisah), efek barang jatuh (overflow) dan tangan meraih kosong (underflow).
 - [ ] **T-097** *(baru)* Konten Level 2-1.
 - [ ] **T-098** *(baru)* Alat untuk tiga semaphore (`empty`, `full`) dan mutex pelindung ban di toolbox (memakai T-088); tes `applyTools`.
 
 **Level 2-2 — Papan Pengumuman (Readers-Writers)** `P1`
 - [x] **T-051** Mekanisme akses banyak-reader/satu-writer di engine.
-- [ ] **T-052** Tiga kebijakan: reader priority, writer priority, fair (FIFO) sebagai pilihan di level.
+- [x] **T-052** Tiga kebijakan: reader priority, writer priority, fair (FIFO) sebagai pilihan di level.
 - [ ] **T-053** Deteksi starvation (waktu tunggu maksimum) dan visual bar kesabaran writer.
 - [ ] **T-054** Tes: reader priority → writer kelaparan pada seed tertentu; fair → tidak.
 - [ ] **T-099** *(baru)* Layout papan pengumuman (barisan reader dan writer), sakelar kebijakan di papan (komponen UI), tampilan tulisan setengah jadi saat tanpa pengaman.
