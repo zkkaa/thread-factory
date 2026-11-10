@@ -1,120 +1,265 @@
 import { describe, expect, it } from 'vitest';
-import { RwLock, type RwPolicy } from '../primitives/rwlock';
+import { Engine } from '../engine';
+import type { RwPolicy } from '../primitives/rwlock';
+import {
+  applyTools,
+  applyToolsDetailed,
+  type PlacedRwLockTool,
+  type PlacedTool,
+} from '../tools';
+import type { EngineConfig, Instruction, ThreadDef } from '../types';
 
-const lock = (policy: RwPolicy) => new RwLock('papan', policy);
+const POLICIES: RwPolicy[] = ['reader', 'writer', 'fair'];
 
-describe('RwLock: dasar (semua kebijakan)', () => {
-  for (const policy of ['reader', 'writer', 'fair'] as const) {
-    it(`${policy}: banyak pembaca boleh bersamaan`, () => {
-      const l = lock(policy);
-      expect(l.acquireRead('R1')).toBe(true);
-      expect(l.acquireRead('R2')).toBe(true);
-      expect(l.snapshot().readers).toEqual(['R1', 'R2']);
-    });
+// Program ASLI (tanpa pengaman): pembaca langsung membaca papan, penulis
+// menulis dua langkah (START, kerja, END).
+const READ_PROGRAM: Instruction[] = [
+  { op: 'WORK', ticks: 1 },
+  { op: 'BOARD_READ', board: 'papan' },
+];
+const WRITE_PROGRAM: Instruction[] = [
+  { op: 'WORK', ticks: 1 },
+  { op: 'BOARD_WRITE_START', board: 'papan' },
+  { op: 'WORK', ticks: 2 },
+  { op: 'BOARD_WRITE_END', board: 'papan' },
+];
 
-    it(`${policy}: penulis harus sendirian`, () => {
-      const l = lock(policy);
-      expect(l.acquireWrite('W1')).toBe(true);
-      expect(l.acquireRead('R1')).toBe(false);
-      expect(l.acquireWrite('W2')).toBe(false);
-      expect(l.snapshot().writer).toBe('W1');
-    });
+// Program yang sama bila dijaga kunci baca-tulis (ditulis tangan sebagai pembanding).
+const READ_GUARDED: Instruction[] = [
+  { op: 'WORK', ticks: 1 },
+  { op: 'RW_ACQUIRE_READ', lock: 'papan' },
+  { op: 'BOARD_READ', board: 'papan' },
+  { op: 'RW_RELEASE_READ', lock: 'papan' },
+];
+const WRITE_GUARDED: Instruction[] = [
+  { op: 'WORK', ticks: 1 },
+  { op: 'RW_ACQUIRE_WRITE', lock: 'papan' },
+  { op: 'BOARD_WRITE_START', board: 'papan' },
+  { op: 'WORK', ticks: 2 },
+  { op: 'BOARD_WRITE_END', board: 'papan' },
+  { op: 'RW_RELEASE_WRITE', lock: 'papan' },
+];
 
-    it(`${policy}: penulis menunggu sampai semua pembaca selesai`, () => {
-      const l = lock(policy);
-      l.acquireRead('R1');
-      l.acquireRead('R2');
-      expect(l.acquireWrite('W1')).toBe(false);
-      expect(l.releaseRead('R1')).toEqual([]);
-      expect(l.releaseRead('R2')).toEqual(['W1']);
-      expect(l.snapshot().writer).toBe('W1');
+function thread(id: string, program: Instruction[], repeat = 1): ThreadDef {
+  return { id, label: id, program: program.map((i) => ({ ...i })), repeat };
+}
+
+function threads(): ThreadDef[] {
+  return [
+    thread('R1', READ_PROGRAM, 3),
+    thread('R2', READ_PROGRAM, 3),
+    thread('W1', WRITE_PROGRAM, 2),
+    thread('W2', WRITE_PROGRAM, 2),
+  ];
+}
+
+/** Pengaman papan: semua pembaca membungkus BOARD_READ, semua penulis START..END. */
+function guard(): PlacedRwLockTool {
+  return {
+    id: 'rw:papan',
+    kind: 'rwlock',
+    lock: 'papan',
+    readers: [
+      { thread: 'R1', start: 1, end: 1 },
+      { thread: 'R2', start: 1, end: 1 },
+    ],
+    writers: [
+      { thread: 'W1', start: 1, end: 3 },
+      { thread: 'W2', start: 1, end: 3 },
+    ],
+    spans: [],
+  };
+}
+
+function config(
+  defs: ThreadDef[],
+  policy: RwPolicy,
+  seedless = true,
+): EngineConfig {
+  void seedless;
+  return {
+    threads: defs,
+    sharedVars: {},
+    mutexes: [],
+    semaphores: {},
+    conditions: [],
+    scheduler: { kind: 'random', cores: 4 },
+    rwLocks: { papan: policy },
+    boards: ['papan'],
+    maxTicks: 500,
+  };
+}
+
+function runToEnd(cfg: EngineConfig, seed: number) {
+  const engine = new Engine();
+  engine.load(cfg, seed);
+  while (!engine.isFinished) engine.step();
+  return engine.getSnapshot();
+}
+
+describe('applyTools: alat rwlock', () => {
+  it('pembaca: RW_ACQUIRE_READ dan RW_RELEASE_READ membungkus BOARD_READ', () => {
+    const out = applyTools(threads(), [guard()]);
+    expect(out.find((t) => t.id === 'R1')?.program).toEqual(READ_GUARDED);
+    expect(out.find((t) => t.id === 'R2')?.program).toEqual(READ_GUARDED);
+  });
+
+  it('penulis: RW_ACQUIRE_WRITE dan RW_RELEASE_WRITE membungkus START sampai END', () => {
+    const out = applyTools(threads(), [guard()]);
+    expect(out.find((t) => t.id === 'W1')?.program).toEqual(WRITE_GUARDED);
+    expect(out.find((t) => t.id === 'W2')?.program).toEqual(WRITE_GUARDED);
+  });
+
+  it('thread tanpa rentang tidak berubah', () => {
+    const tool: PlacedRwLockTool = {
+      ...guard(),
+      readers: [{ thread: 'R1', start: 1, end: 1 }],
+      writers: [],
+    };
+    const out = applyTools(threads(), [tool]);
+    expect(out.find((t) => t.id === 'R2')?.program).toEqual(READ_PROGRAM);
+    expect(out.find((t) => t.id === 'W1')?.program).toEqual(WRITE_PROGRAM);
+  });
+
+  it('peta asal: sisipan memakai slot start dan end + 1, instruksi asli tetap tercatat', () => {
+    const { origins } = applyToolsDetailed(threads(), [guard()]);
+    expect(origins['W1']).toEqual([
+      { kind: 'original', index: 0 },
+      { kind: 'inserted', op: 'RW_ACQUIRE_WRITE', slot: 1 },
+      { kind: 'original', index: 1 },
+      { kind: 'original', index: 2 },
+      { kind: 'original', index: 3 },
+      { kind: 'inserted', op: 'RW_RELEASE_WRITE', slot: 4 },
+    ]);
+    expect(origins['R1']).toEqual([
+      { kind: 'original', index: 0 },
+      { kind: 'inserted', op: 'RW_ACQUIRE_READ', slot: 1 },
+      { kind: 'original', index: 1 },
+      { kind: 'inserted', op: 'RW_RELEASE_READ', slot: 2 },
+    ]);
+  });
+
+  it('setiap instruksi efektif punya asal (panjang program = panjang asal)', () => {
+    const result = applyToolsDetailed(threads(), [guard()]);
+    for (const def of result.threads) {
+      expect(result.origins[def.id]?.length, def.id).toBe(def.program.length);
+    }
+  });
+
+  it('input tidak termutasi', () => {
+    const input = threads();
+    const before = JSON.stringify(input);
+    const tool = guard();
+    const toolBefore = JSON.stringify(tool);
+    applyTools(input, [tool]);
+    expect(JSON.stringify(input)).toBe(before);
+    expect(JSON.stringify(tool)).toBe(toolBefore);
+  });
+
+  it('applyTools sama dengan threads dari applyToolsDetailed', () => {
+    expect(applyTools(threads(), [guard()])).toEqual(
+      applyToolsDetailed(threads(), [guard()]).threads,
+    );
+  });
+
+  it('bisa digabung dengan alat lain (mutex) pada thread berbeda', () => {
+    const extra: PlacedTool = {
+      id: 'mutex:m',
+      kind: 'mutex',
+      mutex: 'm',
+      spans: [{ thread: 'R1', start: 0, end: 0 }],
+    };
+    const out = applyTools(threads(), [guard(), extra]);
+    expect(out.find((t) => t.id === 'R1')?.program.map((i) => i.op)).toEqual([
+      'LOCK',
+      'WORK',
+      'UNLOCK',
+      'RW_ACQUIRE_READ',
+      'BOARD_READ',
+      'RW_RELEASE_READ',
+    ]);
+  });
+});
+
+describe('applyTools: alat rwlock, input tidak valid', () => {
+  it('rentang di luar program ditolak', () => {
+    const tool: PlacedRwLockTool = {
+      ...guard(),
+      readers: [{ thread: 'R1', start: 1, end: 5 }],
+      writers: [],
+    };
+    expect(() => applyTools(threads(), [tool])).toThrow(/di luar program/);
+  });
+
+  it('thread yang tidak ada ditolak', () => {
+    const tool: PlacedRwLockTool = {
+      ...guard(),
+      readers: [{ thread: 'X', start: 1, end: 1 }],
+      writers: [],
+    };
+    expect(() => applyTools(threads(), [tool])).toThrow(/tidak ada/);
+  });
+
+  it('dua rentang tumpang tindih pada kunci yang sama di satu thread ditolak', () => {
+    const tool: PlacedRwLockTool = {
+      ...guard(),
+      readers: [
+        { thread: 'R1', start: 0, end: 1 },
+        { thread: 'R1', start: 1, end: 1 },
+      ],
+      writers: [],
+    };
+    expect(() => applyTools(threads(), [tool])).toThrow(/kunci baca-tulis/);
+  });
+
+  it('id alat ganda ditolak', () => {
+    expect(() => applyTools(threads(), [guard(), guard()])).toThrow(
+      /dipakai lebih dari sekali/,
+    );
+  });
+});
+
+describe('alat rwlock + engine', () => {
+  it('tanpa alat, pembaca melihat data setengah jadi pada setiap kebijakan', () => {
+    for (const policy of POLICIES) {
+      const snap = runToEnd(config(threads(), policy), 1);
+      expect(snap.inconsistentReadCount, policy).toBeGreaterThan(0);
+    }
+  });
+
+  for (const policy of POLICIES) {
+    it(`${policy}: dengan alat, tidak ada data setengah jadi, tidak ada bentrok, semua selesai`, () => {
+      const guarded = applyTools(threads(), [guard()]);
+      for (let seed = 1; seed <= 100; seed += 1) {
+        const snap = runToEnd(config(guarded, policy), seed);
+        const label = `${policy} seed ${seed}`;
+        expect(snap.inconsistentReadCount, label).toBe(0);
+        expect(snap.writeConflictCount, label).toBe(0);
+        expect(
+          snap.threads.every((t) => t.state === 'TERMINATED'),
+          label,
+        ).toBe(true);
+        expect(snap.rwLocks[0]?.readers, label).toEqual([]);
+        expect(snap.rwLocks[0]?.writer, label).toBeNull();
+      }
     });
   }
-});
 
-describe('RwLock: reader priority', () => {
-  it('pembaca baru tetap masuk walau penulis menunggu (penulis bisa kelaparan)', () => {
-    const l = lock('reader');
-    expect(l.acquireRead('R1')).toBe(true);
-    expect(l.acquireWrite('W1')).toBe(false);
-    expect(l.acquireRead('R2')).toBe(true);
-    expect(l.releaseRead('R1')).toEqual([]);
-    expect(l.releaseRead('R2')).toEqual(['W1']);
-  });
-
-  it('setelah penulis selesai, pembaca menunggu didahulukan dari penulis', () => {
-    const l = lock('reader');
-    l.acquireWrite('W0');
-    l.acquireWrite('W1');
-    l.acquireRead('R1');
-    expect(l.releaseWrite('W0')).toEqual(['R1']);
-    expect(l.releaseRead('R1')).toEqual(['W1']);
-  });
-});
-
-describe('RwLock: writer priority', () => {
-  it('pembaca baru antre bila ada penulis menunggu', () => {
-    const l = lock('writer');
-    l.acquireRead('R1');
-    expect(l.acquireWrite('W1')).toBe(false);
-    expect(l.acquireRead('R2')).toBe(false);
-    expect(l.releaseRead('R1')).toEqual(['W1']);
-    expect(l.releaseWrite('W1')).toEqual(['R2']);
-  });
-
-  it('setelah penulis selesai, penulis menunggu didahulukan dari pembaca', () => {
-    const l = lock('writer');
-    l.acquireWrite('W0');
-    l.acquireRead('R1');
-    l.acquireWrite('W1');
-    expect(l.releaseWrite('W0')).toEqual(['W1']);
-    expect(l.releaseWrite('W1')).toEqual(['R1']);
-  });
-});
-
-describe('RwLock: fair (FIFO)', () => {
-  it('pembaca di belakang penulis tidak melangkahinya', () => {
-    const l = lock('fair');
-    expect(l.acquireRead('R1')).toBe(true);
-    expect(l.acquireWrite('W1')).toBe(false);
-    expect(l.acquireRead('R2')).toBe(false);
-    expect(l.releaseRead('R1')).toEqual(['W1']);
-    expect(l.releaseWrite('W1')).toEqual(['R2']);
-  });
-
-  it('pembaca berurutan di depan masuk bersamaan, penulis menghalangi sisanya', () => {
-    const l = lock('fair');
-    l.acquireWrite('W0');
-    l.acquireRead('R1');
-    l.acquireRead('R2');
-    l.acquireWrite('W1');
-    l.acquireRead('R3');
-    expect(l.releaseWrite('W0')).toEqual(['R1', 'R2']);
-    expect(l.releaseRead('R1')).toEqual([]);
-    expect(l.releaseRead('R2')).toEqual(['W1']);
-    expect(l.releaseWrite('W1')).toEqual(['R3']);
-  });
-});
-
-describe('RwLock: pelanggaran penggunaan dan snapshot', () => {
-  it('melepas oleh bukan pemegang melempar error jelas', () => {
-    const l = lock('fair');
-    expect(() => l.releaseRead('R1')).toThrow(/bukan pembaca aktif/);
-    expect(() => l.releaseWrite('W1')).toThrow(/bukan penulis aktif/);
-  });
-
-  it('meminta dua kali oleh thread yang sama melempar error', () => {
-    const l = lock('reader');
-    l.acquireRead('R1');
-    expect(() => l.acquireRead('R1')).toThrow(/sudah memegang atau mengantre/);
-  });
-
-  it('snapshot adalah salinan', () => {
-    const l = lock('fair');
-    l.acquireWrite('W1');
-    l.acquireRead('R1');
-    const snap = l.snapshot();
-    snap.queue.length = 0;
-    expect(l.snapshot().queue).toEqual([{ thread: 'R1', mode: 'read' }]);
+  it('hasil dengan alat identik dengan program yang dijaga tangan (seed sama)', () => {
+    const byTool = applyTools(threads(), [guard()]);
+    const byHand: ThreadDef[] = [
+      thread('R1', READ_GUARDED, 3),
+      thread('R2', READ_GUARDED, 3),
+      thread('W1', WRITE_GUARDED, 2),
+      thread('W2', WRITE_GUARDED, 2),
+    ];
+    for (const policy of POLICIES) {
+      const a = runToEnd(config(byTool, policy), 7);
+      const b = runToEnd(config(byHand, policy), 7);
+      expect(a.tick, policy).toBe(b.tick);
+      expect(a.threads.map((t) => t.waitTicks), policy).toEqual(
+        b.threads.map((t) => t.waitTicks),
+      );
+    }
   });
 });

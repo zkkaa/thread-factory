@@ -240,7 +240,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-052** Tiga kebijakan: reader priority, writer priority, fair (FIFO) sebagai pilihan di level.
 - [x] **T-053** Deteksi starvation (waktu tunggu maksimum) dan visual bar kesabaran writer.
 - [x] **T-054** Tes: reader priority → writer kelaparan pada seed tertentu; fair → tidak.
-- [ ] **T-099** *(baru)* Layout papan pengumuman (barisan reader dan writer), sakelar kebijakan di papan (komponen UI), tampilan tulisan setengah jadi saat tanpa pengaman.
+- [x] **T-099** *(baru)* Layout papan pengumuman (barisan reader dan writer), sakelar kebijakan di papan (komponen UI), tampilan tulisan setengah jadi saat tanpa pengaman.
 - [ ] **T-100** *(baru)* Konten Level 2-2.
 
 **Level 2-3 — Meja Teknisi (Dining Philosophers)** `P1`
