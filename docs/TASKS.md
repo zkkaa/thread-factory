@@ -236,7 +236,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [ ] **T-098** *(baru)* Alat untuk tiga semaphore (`empty`, `full`) dan mutex pelindung ban di toolbox (memakai T-088); tes `applyTools`.
 
 **Level 2-2 — Papan Pengumuman (Readers-Writers)** `P1`
-- [ ] **T-051** Mekanisme akses banyak-reader/satu-writer di engine.
+- [x] **T-051** Mekanisme akses banyak-reader/satu-writer di engine.
 - [ ] **T-052** Tiga kebijakan: reader priority, writer priority, fair (FIFO) sebagai pilihan di level.
 - [ ] **T-053** Deteksi starvation (waktu tunggu maksimum) dan visual bar kesabaran writer.
 - [ ] **T-054** Tes: reader priority → writer kelaparan pada seed tertentu; fair → tidak.
