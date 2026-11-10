@@ -40,6 +40,10 @@ export interface Metrics {
   busyWaitTicks: number;
   /** Tick busy waiting per thread (0 bagi thread yang tidak berputar). */
   busyWaitTicksByThread: Record<ThreadId, number>;
+  /** Bacaan papan saat sedang ditulis (data setengah jadi), Level 2-2. */
+  inconsistentReads: number;
+  /** Penulisan papan yang bertabrakan dengan penulis lain, Level 2-2. */
+  writeConflicts: number;
 }
 
 /**
@@ -130,5 +134,7 @@ export function computeMetrics(
     areaUtilization: snapshot.areaUtilization ?? 0,
     busyWaitTicks,
     busyWaitTicksByThread,
+    inconsistentReads: snapshot.inconsistentReadCount,
+    writeConflicts: snapshot.writeConflictCount,
   };
 }

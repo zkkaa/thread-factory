@@ -181,6 +181,32 @@ export function validateConfig(config: EngineConfig): void {
         );
       }
 
+      if (
+        (instruction.op === 'RW_ACQUIRE_READ' ||
+          instruction.op === 'RW_RELEASE_READ' ||
+          instruction.op === 'RW_ACQUIRE_WRITE' ||
+          instruction.op === 'RW_RELEASE_WRITE') &&
+        !Object.prototype.hasOwnProperty.call(
+          config.rwLocks ?? {},
+          instruction.lock,
+        )
+      ) {
+        throw new Error(
+          `${instruction.op} pada thread "${thread.id}": kunci baca-tulis "${instruction.lock}" tidak dideklarasikan`,
+        );
+      }
+
+      if (
+        (instruction.op === 'BOARD_READ' ||
+          instruction.op === 'BOARD_WRITE_START' ||
+          instruction.op === 'BOARD_WRITE_END') &&
+        !(config.boards ?? []).includes(instruction.board)
+      ) {
+        throw new Error(
+          `${instruction.op} pada thread "${thread.id}": papan "${instruction.board}" tidak dideklarasikan`,
+        );
+      }
+
       // Validasi instruksi PUT_ITEM dan TAKE_ITEM.
       if (
         (instruction.op === 'PUT_ITEM' || instruction.op === 'TAKE_ITEM') &&

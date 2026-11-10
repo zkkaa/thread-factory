@@ -9,6 +9,8 @@ import type {
   ThreadSnapshot,
   ThreadState,
 } from './types';
+import type { Board } from './primitives/board';
+import type { RwLock } from './primitives/rwlock';
 
 /**
  * Keadaan sebuah thread selama simulasi berjalan.
@@ -39,6 +41,8 @@ export interface SyncContext {
   semaphores?: ReadonlyMap<string, Semaphore>;
   conditions?: ReadonlyMap<string, Condition>;
   buffers?: ReadonlyMap<string, BoundedBuffer>;
+  rwLocks?: ReadonlyMap<string, RwLock>;
+  boards?: ReadonlyMap<string, Board>;
   enterArea?: (threadId: ThreadId, area: string) => void;
   leaveArea?: (threadId: ThreadId, area: string) => void;
   /** Mengambil thread lain (untuk dibangunkan). Melempar error bila tidak ada. */
@@ -228,6 +232,74 @@ function advancePc(thread: ThreadRuntime, tick: number): SimEvent | null {
   }
 
   return null;
+}
+
+function requireRwLock(
+  sync: SyncContext,
+  name: string,
+  threadId: ThreadId,
+): RwLock {
+  const lock = sync.rwLocks?.get(name);
+
+  if (lock === undefined) {
+    throw new Error(
+      `Thread "${threadId}" memakai kunci baca-tulis "${name}" yang tidak ada`,
+    );
+  }
+
+  return lock;
+}
+
+function requireBoard(
+  sync: SyncContext,
+  name: string,
+  threadId: ThreadId,
+): Board {
+  const board = sync.boards?.get(name);
+
+  if (board === undefined) {
+    throw new Error(
+      `Thread "${threadId}": papan "${name}" tidak dideklarasikan`,
+    );
+  }
+
+  return board;
+}
+
+/**
+ * Thread yang dibangunkan RwLock sudah menjadi pemegang kunci (handoff, seperti
+ * mutex): ia READY, instruksi acquire-nya dianggap selesai, dan pc dimajukan.
+ */
+function wakeRwGranted(
+  lock: RwLock,
+  lockName: string,
+  granted: readonly ThreadId[],
+  tick: number,
+  sync: SyncContext,
+): SimEvent[] {
+  const events: SimEvent[] = [];
+  const holders = lock.snapshot();
+
+  for (const id of granted) {
+    const woken = sync.getThread(id);
+    const change = transition(woken, 'READY', tick);
+
+    if (change) events.push(change);
+
+    events.push({
+      type: 'RW_ACQUIRED',
+      tick,
+      thread: id,
+      lock: lockName,
+      mode: holders.writer === id ? 'write' : 'read',
+    });
+
+    const end = advancePc(woken, tick);
+
+    if (end) events.push(end);
+  }
+
+  return events;
 }
 
 /**
@@ -632,6 +704,100 @@ export function executeInstruction(
           buffer: instruction.buffer,
         });
       }
+
+      break;
+    }
+
+    case 'RW_ACQUIRE_READ':
+    case 'RW_ACQUIRE_WRITE': {
+      const lock = requireRwLock(sync, instruction.lock, id);
+      const isRead = instruction.op === 'RW_ACQUIRE_READ';
+      const granted = isRead ? lock.acquireRead(id) : lock.acquireWrite(id);
+
+      if (granted) {
+        events.push({
+          type: 'RW_ACQUIRED',
+          tick,
+          thread: id,
+          lock: instruction.lock,
+          mode: isRead ? 'read' : 'write',
+        });
+      } else {
+        completed = false;
+
+        const on = `rw:${instruction.lock}`;
+        thread.waitingOn = on;
+
+        events.push({ type: 'BLOCKED', tick, thread: id, on });
+
+        push(transition(thread, 'WAITING', tick));
+      }
+
+      break;
+    }
+
+    case 'RW_RELEASE_READ':
+    case 'RW_RELEASE_WRITE': {
+      const lock = requireRwLock(sync, instruction.lock, id);
+      const isRead = instruction.op === 'RW_RELEASE_READ';
+      const granted = isRead ? lock.releaseRead(id) : lock.releaseWrite(id);
+
+      events.push({
+        type: 'RW_RELEASED',
+        tick,
+        thread: id,
+        lock: instruction.lock,
+        mode: isRead ? 'read' : 'write',
+      });
+      events.push(
+        ...wakeRwGranted(lock, instruction.lock, granted, tick, sync),
+      );
+
+      break;
+    }
+
+    case 'BOARD_READ': {
+      const board = requireBoard(sync, instruction.board, id);
+
+      events.push({
+        type: 'BOARD_READ',
+        tick,
+        thread: id,
+        board: instruction.board,
+        consistent: board.read(),
+      });
+
+      break;
+    }
+
+    case 'BOARD_WRITE_START': {
+      const board = requireBoard(sync, instruction.board, id);
+
+      events.push({
+        type: 'BOARD_WRITE',
+        tick,
+        thread: id,
+        board: instruction.board,
+        phase: 'start',
+        conflict: board.startWrite(),
+      });
+
+      break;
+    }
+
+    case 'BOARD_WRITE_END': {
+      const board = requireBoard(sync, instruction.board, id);
+
+      board.endWrite();
+
+      events.push({
+        type: 'BOARD_WRITE',
+        tick,
+        thread: id,
+        board: instruction.board,
+        phase: 'end',
+        conflict: false,
+      });
 
       break;
     }

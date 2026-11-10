@@ -79,6 +79,10 @@ class FakeEngine implements SimulationEngine {
       overflowCount: 0,
       underflowCount: 0,
       busyWaitTicks: 0,
+      boards: [],
+      rwLocks: [],
+      inconsistentReadCount: 0,
+      writeConflictCount: 0,
     };
   }
 }

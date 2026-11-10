@@ -1,3 +1,4 @@
+import type { RwLockSnapshot, RwMode, RwPolicy } from './primitives/rwlock';
 export type ThreadId = string;
 
 /**
@@ -30,6 +31,16 @@ export type Instruction =
   | { op: 'PUT_ITEM'; buffer: string } // taruh satu barang; ban penuh = overflow
   | { op: 'TAKE_ITEM'; buffer: string } // ambil satu barang; ban kosong = underflow
 
+  // Readers-Writers (T-051, Level 2-2). Acquire bisa memblokir (WAITING).
+  | { op: 'RW_ACQUIRE_READ'; lock: string }
+  | { op: 'RW_RELEASE_READ'; lock: string }
+  | { op: 'RW_ACQUIRE_WRITE'; lock: string }
+  | { op: 'RW_RELEASE_WRITE'; lock: string }
+
+  // Papan pengumuman: penulisan dua langkah; bacaan di antaranya setengah jadi.
+  | { op: 'BOARD_READ'; board: string }
+  | { op: 'BOARD_WRITE_START'; board: string }
+  | { op: 'BOARD_WRITE_END'; board: string }
   // Busy waiting (T-045): tiap tick mengecek variabel bersama; selama nilainya
   // masih di bawah atLeast, thread TIDAK tidur dan terus memakai core.
   | { op: 'SPIN_UNTIL'; variable: string; atLeast: number };
@@ -95,6 +106,12 @@ export interface EngineConfig {
   /** Kapasitas ban berjalan, mis. { ban: 3 }. Bila tidak ada, default {}. */
   buffers?: Record<string, number>;
 
+  /** Kunci pembaca/penulis: nama -> kebijakan (Level 2-2). Bila tidak ada, default {}. */
+  rwLocks?: Record<string, RwPolicy>;
+
+  /** Nama papan pengumuman (Level 2-2). Bila tidak ada, default []. */
+  boards?: string[];
+
   /** Batas pengaman: simulasi dihentikan paksa setelah tick ini. */
   maxTicks: number;
 }
@@ -143,6 +160,24 @@ export interface SemaphoreSnapshot {
 export interface ConditionSnapshot {
   id: string;
   queue: ThreadId[];
+}
+
+export interface BoardSnapshot {
+  id: string;
+
+  /** Jumlah penulis yang sedang menulis (0 = papan utuh). */
+  activeWriters: number;
+
+  /** Berapa kali penulisan selesai. */
+  version: number;
+
+  reads: number;
+
+  /** Bacaan saat papan sedang ditulis (data setengah jadi). */
+  inconsistentReads: number;
+
+  /** Penulisan yang dimulai saat penulis lain masih menulis. */
+  writeConflicts: number;
 }
 
 export interface BufferSnapshot {
@@ -202,6 +237,18 @@ export interface Snapshot {
   /** Jumlah overflow dan underflow dari semua ban. */
   overflowCount: number;
   underflowCount: number;
+
+  /** Papan pengumuman (Level 2-2); kosong bila level tanpa papan. */
+  boards: BoardSnapshot[];
+
+  /** Kunci pembaca/penulis (Level 2-2); kosong bila level tanpa kunci itu. */
+  rwLocks: RwLockSnapshot[];
+
+  /** Jumlah bacaan papan saat sedang ditulis, dari semua papan. */
+  inconsistentReadCount: number;
+
+  /** Jumlah penulisan papan yang bertabrakan, dari semua papan. */
+  writeConflictCount: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -296,6 +343,35 @@ export type SimEvent =
       thread: ThreadId;
       buffer: string;
       capacity: number;
+    }
+  | {
+      type: 'RW_ACQUIRED';
+      tick: number;
+      thread: ThreadId;
+      lock: string;
+      mode: RwMode;
+    }
+  | {
+      type: 'RW_RELEASED';
+      tick: number;
+      thread: ThreadId;
+      lock: string;
+      mode: RwMode;
+    }
+  | {
+      type: 'BOARD_READ';
+      tick: number;
+      thread: ThreadId;
+      board: string;
+      consistent: boolean;
+    }
+  | {
+      type: 'BOARD_WRITE';
+      tick: number;
+      thread: ThreadId;
+      board: string;
+      phase: 'start' | 'end';
+      conflict: boolean;
     }
   | {
       type: 'BUFFER_UNDERFLOW';

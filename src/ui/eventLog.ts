@@ -151,6 +151,50 @@ export function describeEvent(
         text: `${nameOf(event.thread)} gagal mengambil barang: ban "${event.buffer}" kosong!`,
         minor: false,
       };
+    case 'RW_ACQUIRED':
+      return {
+        tick,
+        kind: 'lock',
+        text: `${nameOf(event.thread)} ${
+          event.mode === 'read' ? 'mulai membaca' : 'mulai menulis'
+        } lewat kunci papan "${event.lock}"`,
+        minor: false,
+      };
+    case 'RW_RELEASED':
+      return {
+        tick,
+        kind: 'unlock',
+        text: `${nameOf(event.thread)} selesai ${
+          event.mode === 'read' ? 'membaca' : 'menulis'
+        } (kunci papan "${event.lock}" dilepas)`,
+        minor: false,
+      };
+    case 'BOARD_READ':
+      return event.consistent
+        ? {
+            tick,
+            kind: 'instruction',
+            text: `${nameOf(event.thread)} membaca papan "${event.board}" (utuh)`,
+            minor: false,
+          }
+        : {
+            tick,
+            kind: 'overload',
+            text: `${nameOf(event.thread)} membaca papan "${event.board}" saat sedang ditulis: DATA SETENGAH JADI!`,
+            minor: false,
+          };
+    case 'BOARD_WRITE':
+      return {
+        tick,
+        kind: event.conflict ? 'overload' : 'write',
+        text:
+          event.phase === 'start'
+            ? `${nameOf(event.thread)} mulai menulis papan "${event.board}"${
+                event.conflict ? ': BENTROK, ada penulis lain!' : ''
+              }`
+            : `${nameOf(event.thread)} selesai menulis papan "${event.board}"`,
+        minor: false,
+      };
     case 'FINISHED':
       return { tick, kind: 'finished', text: 'Simulasi selesai', minor: false };
     default:

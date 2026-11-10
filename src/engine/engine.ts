@@ -4,6 +4,8 @@ import { Semaphore } from './primitives/semaphore';
 import { BoundedBuffer } from './primitives/buffer';
 import { createPrng } from './prng';
 import { createScheduler, type Scheduler } from './scheduler';
+import { Board } from './primitives/board';
+import { RwLock } from './primitives/rwlock';
 import {
   createThread,
   executeInstruction,
@@ -49,6 +51,8 @@ export class Engine implements SimulationEngine {
   private semaphores = new Map<string, Semaphore>();
   private conditions = new Map<string, Condition>();
   private buffers = new Map<string, BoundedBuffer>();
+  private rwLocks = new Map<string, RwLock>();
+  private boards = new Map<string, Board>();
   private sync: SyncContext | null = null;
   private sharedVars: Record<string, number> = {};
   private scheduler: Scheduler | null = null;
@@ -100,6 +104,17 @@ export class Engine implements SimulationEngine {
       ]),
     );
 
+    this.rwLocks = new Map(
+      Object.entries(config.rwLocks ?? {}).map(([name, policy]) => [
+        name,
+        new RwLock(name, policy),
+      ]),
+    );
+
+    this.boards = new Map(
+      (config.boards ?? []).map((name) => [name, new Board(name)]),
+    );
+
     this.areaCapacities = new Map(Object.entries(config.areas ?? {}));
 
     this.areaMembers = new Map(
@@ -120,6 +135,8 @@ export class Engine implements SimulationEngine {
       semaphores: this.semaphores,
       conditions: this.conditions,
       buffers: this.buffers,
+      rwLocks: this.rwLocks,
+      boards: this.boards,
 
       enterArea: (threadId, area) => {
         let members = this.areaMembers.get(area);
@@ -309,6 +326,10 @@ export class Engine implements SimulationEngine {
       areaUtilization = totalRatio / this.areaCapacities.size;
     }
 
+    const boards = Array.from(this.boards.values(), (board) =>
+      board.snapshot(),
+    );
+
     const buffers = Array.from(this.buffers.values(), (buffer) =>
       buffer.snapshot(),
     );
@@ -336,6 +357,16 @@ export class Engine implements SimulationEngine {
       overflowCount: buffers.reduce((sum, buffer) => sum + buffer.overflows, 0),
       underflowCount: buffers.reduce(
         (sum, buffer) => sum + buffer.underflows,
+        0,
+      ),
+      boards,
+      rwLocks: Array.from(this.rwLocks.values(), (lock) => lock.snapshot()),
+      inconsistentReadCount: boards.reduce(
+        (sum, board) => sum + board.inconsistentReads,
+        0,
+      ),
+      writeConflictCount: boards.reduce(
+        (sum, board) => sum + board.writeConflicts,
         0,
       ),
       busyWaitTicks: this.threads.reduce(
