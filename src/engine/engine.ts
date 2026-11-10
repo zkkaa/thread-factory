@@ -14,12 +14,14 @@ import {
   type SyncContext,
   type ThreadRuntime,
 } from './thread';
+import { findDeadlockCycle } from './deadlock';
 import type {
   EngineConfig,
   SimEvent,
   SimulationEngine,
   Snapshot,
   StepResult,
+  ThreadId, // BARU
 } from './types';
 import { validateConfig } from './validateConfig';
 
@@ -184,6 +186,18 @@ export class Engine implements SimulationEngine {
    * Maju tepat satu tick. Bila simulasi sudah selesai, tidak terjadi apa-apa
    * (tick tidak bertambah dan events kosong).
    */
+    /** Siklus tunggu bila tidak ada thread yang bisa jalan; null bila bukan deadlock. */
+  private findWaitCycle(): ThreadId[] | null {
+    return findDeadlockCycle({
+      threads: this.threads.map((thread) => {
+        const snap = snapshotThread(thread);
+        return { id: snap.id, state: snap.state, waitingOn: snap.waitingOn };
+      }),
+      mutexes: Array.from(this.mutexes.values(), (m) => m.snapshot()),
+      rwLocks: Array.from(this.rwLocks.values(), (lock) => lock.snapshot()),
+    });
+  }
+
   step(): StepResult {
     if (this.config === null || this.scheduler === null || this.sync === null) {
       throw new Error('step() dipanggil sebelum load()');
@@ -226,8 +240,14 @@ export class Engine implements SimulationEngine {
     // 2. Pemilihan oleh scheduler
     const runnable = this.threads.filter(isRunnable).map((t) => t.def.id);
 
-    if (runnable.length === 0) {
+      if (runnable.length === 0) {
       this.finished = true;
+
+      const cycle = this.findWaitCycle(); // BARU
+      if (cycle !== null) {
+        events.push({ type: 'DEADLOCK_DETECTED', tick, cycle }); // BARU: sebelum FINISHED
+      }
+
       events.push({ type: 'FINISHED', tick });
 
       return { tick, events, finished: true };
