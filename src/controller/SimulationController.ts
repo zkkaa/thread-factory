@@ -57,7 +57,12 @@ const INITIAL_STATE: ControllerState = {
   result: null,
 };
 
-/** Salinan alat agar perubahan oleh pemanggil setelah placeTool tidak ikut mengubah state. */
+/**
+ * Salinan alat agar perubahan oleh pemanggil setelah placeTool tidak ikut
+ * mengubah state. Alat yang punya daftar atau objek bersarang selain `spans`
+ * (condition: waiter dan signaler; rwlock: readers dan writers) harus disalin
+ * sendiri, kalau tidak isinya dipakai bersama oleh pemanggil dan controller.
+ */
 function copyTool(tool: PlacedTool): PlacedTool {
   const spans = tool.spans.map((span) => ({ ...span }));
   if (tool.kind === 'condition') {
@@ -68,7 +73,15 @@ function copyTool(tool: PlacedTool): PlacedTool {
       spans,
     };
   }
-  return { ...tool, spans: tool.spans.map((span) => ({ ...span })) };
+  if (tool.kind === 'rwlock') {
+    return {
+      ...tool,
+      readers: tool.readers.map((span) => ({ ...span })),
+      writers: tool.writers.map((span) => ({ ...span })),
+      spans,
+    };
+  }
+  return { ...tool, spans };
 }
 
 /**

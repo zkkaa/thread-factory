@@ -60,6 +60,9 @@ export class Engine implements SimulationEngine {
   private areaCapacities = new Map<string, number>();
   private overloadTickCount = 0;
   private areaOccupancySum = new Map<string, number>();
+  // Starvation (T-053): rentetan menunggu saat ini dan puncaknya per thread.
+  private waitStreaks = new Map<string, number>();
+  private peakWaitStreaks = new Map<string, number>();
 
   get isFinished(): boolean {
     return this.finished;
@@ -81,6 +84,8 @@ export class Engine implements SimulationEngine {
 
     const threadById = new Map(this.threads.map((t) => [t.def.id, t]));
     this.threadById = threadById;
+    this.waitStreaks = new Map(this.threads.map((t) => [t.def.id, 0]));
+    this.peakWaitStreaks = new Map(this.threads.map((t) => [t.def.id, 0]));
 
     this.mutexes = new Map(
       config.mutexes.map((name) => [name, new Mutex(name)]),
@@ -198,8 +203,17 @@ export class Engine implements SimulationEngine {
 
     // 1. Waktu tunggu dan admisi thread baru
     for (const thread of this.threads) {
+      const id = thread.def.id;
       if (thread.state === 'WAITING') {
         thread.waitTicks += 1;
+        const streak = (this.waitStreaks.get(id) ?? 0) + 1;
+        this.waitStreaks.set(id, streak);
+        if (streak > (this.peakWaitStreaks.get(id) ?? 0)) {
+          this.peakWaitStreaks.set(id, streak);
+        }
+      } else {
+        // Dibangunkan (handoff) atau tidak menunggu: rentetan putus.
+        this.waitStreaks.set(id, 0);
       }
     }
 
@@ -373,6 +387,9 @@ export class Engine implements SimulationEngine {
         (sum, thread) => sum + thread.busyWaitTicks,
         0,
       ),
+      waitStreaks: Object.fromEntries(this.waitStreaks),
+      peakWaitStreaks: Object.fromEntries(this.peakWaitStreaks),
+      starvationTicks: this.config.starvationTicks ?? null,
     };
   }
 }

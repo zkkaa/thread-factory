@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { RwPolicy } from '../../engine/primitives/rwlock';
 import type { PlacedTool } from '../../engine/tools';
 import { level1_1 } from '../../levels/module1/level-1-1';
 import type { LevelDefinition } from '../../levels/types';
@@ -95,5 +96,79 @@ describe('buildEngineConfig', () => {
     };
     const config = buildEngineConfig(level1_1, [semTool]);
     expect(config.semaphores['akses-baru']).toBe(5);
+  });
+});
+
+describe('buildEngineConfig: Readers-Writers (T-052)', () => {
+  const POLICIES: RwPolicy[] = ['reader', 'writer', 'fair'];
+
+  const withRw = (policy: RwPolicy): LevelDefinition => ({
+    ...level1_1,
+    resources: [
+      { kind: 'rwlock', id: 'papan', policy },
+      { kind: 'board', id: 'papan' },
+    ],
+  });
+
+  for (const policy of POLICIES) {
+    it(`kebijakan "${policy}" dari data level terbawa ke EngineConfig`, () => {
+      const config = buildEngineConfig(withRw(policy), []);
+      expect(config.rwLocks).toEqual({ papan: policy });
+      expect(config.boards).toEqual(['papan']);
+    });
+  }
+
+  it('rwlock dan board tidak salah masuk ke mutex, semaphore, atau condition', () => {
+    const config = buildEngineConfig(withRw('fair'), []);
+    expect(config.mutexes).toEqual([]);
+    expect(config.semaphores).toEqual({});
+    expect(config.conditions).toEqual([]);
+  });
+
+  it('opsi rwPolicy menimpa kebijakan bawaan level', () => {
+    const config = buildEngineConfig(withRw('reader'), [], {
+      rwPolicy: 'writer',
+    });
+    expect(config.rwLocks).toEqual({ papan: 'writer' });
+  });
+
+  it('opsi rwPolicy menimpa semua kunci baca-tulis di level', () => {
+    const level: LevelDefinition = {
+      ...level1_1,
+      resources: [
+        { kind: 'rwlock', id: 'a', policy: 'reader' },
+        { kind: 'rwlock', id: 'b', policy: 'fair' },
+      ],
+    };
+    const config = buildEngineConfig(level, [], { rwPolicy: 'writer' });
+    expect(config.rwLocks).toEqual({ a: 'writer', b: 'writer' });
+  });
+
+  it('tanpa opsi, data level tidak diubah oleh penimpaan sebelumnya', () => {
+    const level = withRw('reader');
+    buildEngineConfig(level, [], { rwPolicy: 'fair' });
+    expect(buildEngineConfig(level, []).rwLocks).toEqual({ papan: 'reader' });
+    expect(level.resources[0]).toEqual({
+      kind: 'rwlock',
+      id: 'papan',
+      policy: 'reader',
+    });
+  });
+
+  it('level tanpa rwlock menghasilkan rwLocks dan boards kosong', () => {
+    const config = buildEngineConfig(level1_1, []);
+    expect(config.rwLocks).toEqual({});
+    expect(config.boards).toEqual([]);
+  });
+});
+
+describe('buildEngineConfig: ambang starvation (T-053)', () => {
+  it('meneruskan starvationTicks dari data level', () => {
+    const level: LevelDefinition = { ...level1_1, starvationTicks: 12 };
+    expect(buildEngineConfig(level, []).starvationTicks).toBe(12);
+  });
+
+  it('tanpa starvationTicks di level, deteksi mati (undefined)', () => {
+    expect(buildEngineConfig(level1_1, []).starvationTicks).toBeUndefined();
   });
 });

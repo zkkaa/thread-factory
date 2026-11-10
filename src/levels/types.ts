@@ -1,7 +1,8 @@
+import type { RwPolicy } from '../engine/primitives/rwlock';
 import type { SchedulerConfig, Snapshot, ThreadDef } from '../engine/types';
 
 /** Jenis alat sinkronisasi yang dapat disediakan atau ditaruh pemain. */
-export type ToolType = 'mutex' | 'semaphore' | 'semaphorePair' | 'condition';
+export type ToolType = 'mutex' | 'semaphore' | 'semaphorePair' | 'condition' | 'rwlock'; 
 
 /** Ekspresi potret Pak Mandor (PRD bagian 18.3). */
 export type MandorMood = 'netral' | 'senang' | 'sedih' | 'berpikir';
@@ -21,7 +22,11 @@ export interface IntroPage {
 export type ResourceDef =
   | { kind: 'mutex'; id: string; label?: string }
   | { kind: 'semaphore'; id: string; initialValue: number; label?: string }
-  | { kind: 'condition'; id: string; mutex: string; label?: string };
+  | { kind: 'condition'; id: string; mutex: string; label?: string }
+  // Readers-Writers (Level 2-2). `policy` = kebijakan bawaan level; pemain atau
+  // Sandbox boleh menggantinya lewat opsi buildEngineConfig.
+  | { kind: 'rwlock'; id: string; policy: RwPolicy; label?: string }
+  | { kind: 'board'; id: string; label?: string };
 
 /**
  * Format definisi level (kontrak data level).
@@ -78,17 +83,22 @@ export interface LevelDefinition {
   buffers?: Record<string, number>;
   /** Batas pengaman tick eksekusi simulasi sebelum timeout (default 2000 jika tidak diset). */
   maxTicks?: number;
+  /**
+   * Ambang starvation (Level 2-2): thread yang menunggu terus-menerus minimal
+   * sekian tick dianggap kelaparan. Bila kosong, deteksi mati.
+   */
+  starvationTicks?: number;
   /** Kriteria keberhasilan dan penilaian bintang. */
   goal: {
     /** Target variabel bersama yang diharapkan, mis. { variable: 'stok', value: 10 }. */
     target: { variable: string; value: number };
     /** Pengecekan invarian dari snapshot akhir untuk menentukan status lulus/gagal. */
     invariant: (snap: Snapshot) => { ok: boolean; message: string };
-    /** Ambang batas performa untuk bintang ★★ dan ★★★. */
+    /** Ambang batas performa untuk bintang â˜…â˜… dan â˜…â˜…â˜…. */
     stars: {
-      /** Batas maksimum tick untuk mendapatkan bintang kecepatan (★★). */
+      /** Batas maksimum tick untuk mendapatkan bintang kecepatan (â˜…â˜…). */
       fast: number;
-      /** Batas maksimum total waitTicks untuk mendapatkan bintang efisiensi (★★★). */
+      /** Batas maksimum total waitTicks untuk mendapatkan bintang efisiensi (â˜…â˜…â˜…). */
       lowWait: number;
     };
   };
