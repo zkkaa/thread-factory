@@ -22,6 +22,19 @@ export interface PlacedSemaphoreTool {
 }
 
 /**
+ * Pasangan semaphore (Producer-Consumer): `SEM_WAIT waitSem` disisipkan
+ * sebelum instruksi pertama rentang, `SEM_SIGNAL signalSem` sesudah yang
+ * terakhir. Nilai awal kedua semaphore dari resources level, bukan dari alat.
+ */
+export interface PlacedSemaphorePairTool {
+  id: string;
+  kind: 'semaphorePair';
+  waitSem: string;
+  signalSem: string;
+  spans: ToolSpan[];
+}
+
+/**
  * Lampu Sinyal (condition variable), satu alat berpasangan:
  * - `waiter`: instruksi SPIN_UNTIL (indeks ASLI) milik thread penunggu yang
  *   DIGANTI menjadi LOCK, COND_WAIT, UNLOCK (tidur, bukan busy waiting);
@@ -41,10 +54,14 @@ export interface PlacedConditionTool {
 }
 
 export type PlacedTool =
-  PlacedMutexTool | PlacedSemaphoreTool | PlacedConditionTool;
+  | PlacedMutexTool
+  | PlacedSemaphoreTool
+  | PlacedSemaphorePairTool
+  | PlacedConditionTool;
 
 interface OrderedSpan {
   resource: string;
+  signalResource?: string | undefined;
   kind: 'mutex' | 'semaphore';
   start: number;
   end: number;
@@ -277,7 +294,10 @@ function buildProgram(
           result.push({ op: 'UNLOCK', mutex: s.resource });
           origins.push({ kind: 'inserted', op: 'UNLOCK', slot: s.end + 1 });
         } else {
-          result.push({ op: 'SEM_SIGNAL', sem: s.resource });
+          result.push({
+            op: 'SEM_SIGNAL',
+            sem: s.signalResource ?? s.resource,
+          });
           origins.push({ kind: 'inserted', op: 'SEM_SIGNAL', slot: s.end + 1 });
         }
       });
@@ -318,7 +338,19 @@ export function applyToolsDetailed(
       }
     }
 
-    const resource = tool.kind === 'mutex' ? tool.mutex : tool.sem;
+    if (tool.kind === 'semaphorePair' && tool.waitSem === tool.signalSem) {
+      throw new Error(
+        `Alat "${tool.id}": semaphore tunggu dan sinyal harus berbeda.`,
+      );
+    }
+    const resource =
+      tool.kind === 'mutex'
+        ? tool.mutex
+        : tool.kind === 'semaphore'
+          ? tool.sem
+          : tool.waitSem;
+    const signalResource =
+      tool.kind === 'semaphorePair' ? tool.signalSem : undefined;
 
     for (const span of tool.spans) {
       const thread = threads.find((t) => t.id === span.thread);
@@ -331,7 +363,8 @@ export function applyToolsDetailed(
       const list = byThread.get(span.thread) ?? [];
       list.push({
         resource,
-        kind: tool.kind,
+        signalResource,
+        kind: tool.kind === 'mutex' ? 'mutex' : 'semaphore',
         start: span.start,
         end: span.end,
         order,

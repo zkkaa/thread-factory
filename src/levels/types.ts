@@ -1,7 +1,7 @@
 import type { SchedulerConfig, Snapshot, ThreadDef } from '../engine/types';
 
 /** Jenis alat sinkronisasi yang dapat disediakan atau ditaruh pemain. */
-export type ToolType = 'mutex' | 'semaphore' | 'condition';
+export type ToolType = 'mutex' | 'semaphore' | 'semaphorePair' | 'condition';
 
 /** Ekspresi potret Pak Mandor (PRD bagian 18.3). */
 export type MandorMood = 'netral' | 'senang' | 'sedih' | 'berpikir';
