@@ -24,6 +24,15 @@ export function validateConfig(config: EngineConfig): void {
     );
   }
 
+  if (
+    config.starvationTicks !== undefined &&
+    !isPositiveInt(config.starvationTicks)
+  ) {
+    throw new Error(
+      `starvationTicks harus bilangan bulat >= 1, diterima: ${config.starvationTicks}`,
+    );
+  }
+
   const mutexNames = new Set<string>();
 
   for (const name of config.mutexes) {

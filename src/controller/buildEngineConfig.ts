@@ -73,6 +73,7 @@ export function buildEngineConfig(
     scheduler: level.scheduler,
     areas: level.areas,
     buffers: level.buffers,
+    starvationTicks: level.starvationTicks,
     maxTicks: level.maxTicks ?? DEFAULT_MAX_TICKS,
   };
 }

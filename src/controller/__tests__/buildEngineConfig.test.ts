@@ -161,3 +161,14 @@ describe('buildEngineConfig: Readers-Writers (T-052)', () => {
     expect(config.boards).toEqual([]);
   });
 });
+
+describe('buildEngineConfig: ambang starvation (T-053)', () => {
+  it('meneruskan starvationTicks dari data level', () => {
+    const level: LevelDefinition = { ...level1_1, starvationTicks: 12 };
+    expect(buildEngineConfig(level, []).starvationTicks).toBe(12);
+  });
+
+  it('tanpa starvationTicks di level, deteksi mati (undefined)', () => {
+    expect(buildEngineConfig(level1_1, []).starvationTicks).toBeUndefined();
+  });
+});

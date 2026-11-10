@@ -83,6 +83,11 @@ export interface LevelDefinition {
   buffers?: Record<string, number>;
   /** Batas pengaman tick eksekusi simulasi sebelum timeout (default 2000 jika tidak diset). */
   maxTicks?: number;
+  /**
+   * Ambang starvation (Level 2-2): thread yang menunggu terus-menerus minimal
+   * sekian tick dianggap kelaparan. Bila kosong, deteksi mati.
+   */
+  starvationTicks?: number;
   /** Kriteria keberhasilan dan penilaian bintang. */
   goal: {
     /** Target variabel bersama yang diharapkan, mis. { variable: 'stok', value: 10 }. */

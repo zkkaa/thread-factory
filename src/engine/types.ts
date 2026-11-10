@@ -112,6 +112,13 @@ export interface EngineConfig {
   /** Nama papan pengumuman (Level 2-2). Bila tidak ada, default []. */
   boards?: string[];
 
+  /**
+   * Ambang starvation (T-053): thread yang menunggu TERUS-MENERUS minimal
+   * sebanyak ini tick dianggap kelaparan. Bila tidak ada, deteksi mati
+   * (waitStreaks tetap dihitung). Bilangan bulat >= 1.
+   */
+  starvationTicks?: number;
+
   /** Batas pengaman: simulasi dihentikan paksa setelah tick ini. */
   maxTicks: number;
 }
@@ -249,6 +256,22 @@ export interface Snapshot {
 
   /** Jumlah penulisan papan yang bertabrakan, dari semua papan. */
   writeConflictCount: number;
+
+  // Starvation (T-053). Ketiganya opsional supaya fixture snapshot buatan
+  // tangan di tes lama tetap valid; Engine selalu mengisinya.
+
+  /**
+   * Tick menunggu BERTURUT-TURUT saat ini per thread (0 bila tidak sedang
+   * WAITING). Beda dengan ThreadSnapshot.waitTicks yang kumulatif: yang ini
+   * kembali ke 0 begitu thread dibangunkan.
+   */
+  waitStreaks?: Record<ThreadId, number>;
+
+  /** Rentetan menunggu terpanjang yang pernah dialami tiap thread. */
+  peakWaitStreaks?: Record<ThreadId, number>;
+
+  /** Ambang starvation dari konfigurasi; null bila deteksi tidak dipakai. */
+  starvationTicks?: number | null;
 }
 
 // ---------------------------------------------------------------------------

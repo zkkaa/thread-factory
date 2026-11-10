@@ -238,7 +238,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 **Level 2-2 — Papan Pengumuman (Readers-Writers)** `P1`
 - [x] **T-051** Mekanisme akses banyak-reader/satu-writer di engine.
 - [x] **T-052** Tiga kebijakan: reader priority, writer priority, fair (FIFO) sebagai pilihan di level.
-- [ ] **T-053** Deteksi starvation (waktu tunggu maksimum) dan visual bar kesabaran writer.
+- [x] **T-053** Deteksi starvation (waktu tunggu maksimum) dan visual bar kesabaran writer.
 - [ ] **T-054** Tes: reader priority → writer kelaparan pada seed tertentu; fair → tidak.
 - [ ] **T-099** *(baru)* Layout papan pengumuman (barisan reader dan writer), sakelar kebijakan di papan (komponen UI), tampilan tulisan setengah jadi saat tanpa pengaman.
 - [ ] **T-100** *(baru)* Konten Level 2-2.
