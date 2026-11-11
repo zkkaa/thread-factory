@@ -434,3 +434,22 @@ export const TABLE = {
   bannerFontSize: '22px',
   bannerText: '#fecaca',
 } as const;
+// ---------------------------------------------------------------------------
+// Arena papan pengumuman (Level 2-2, T-099)
+// ---------------------------------------------------------------------------
+
+/** Gaya papan pengumuman. Warna peringatan selalu disertai teks. */
+export const BULLETIN = {
+  panelFill: 0x132238,
+  panelFillAlpha: 0.7,
+  panelStroke: 0xf5c542,
+  panelProblemStroke: 0xef4444,
+  panelStrokeWidth: 3,
+  titleFontSize: '16px',
+  titleInset: 10,
+  bodyFontSize: '13px',
+  bodyInset: 48,
+  bannerGap: 8,
+  bannerFontSize: '20px',
+  warnText: '#fecaca',
+} as const;

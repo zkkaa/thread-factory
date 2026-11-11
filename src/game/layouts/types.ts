@@ -167,10 +167,31 @@ export interface TableLayout {
   forks: Point[];
 }
 
+/**
+ * Arena jenis papan pengumuman (Level 2-2, T-099): barisan pembaca di kiri,
+ * penulis di kanan, papan di tengah. Robot diam di titiknya; yang berubah
+ * adalah angka papan, status kunci, dan peringatan. Koordinat di dalam HUD_SAFE.
+ */
+export interface BoardLayout {
+  kind: 'board';
+  /** Sama dengan LevelDefinition.layoutId. */
+  id: string;
+  /** Id papan di resource level. */
+  boardId: string;
+  board: Rect;
+  readerZone: Rect;
+  writerZone: Rect;
+  readerIds: string[];
+  readerSpots: Point[];
+  writerIds: string[];
+  writerSpots: Point[];
+}
+
 export type ArenaLayout =
   | LoopLayout
   | HallLayout
   | DeskLayout
   | CombinedLayout
   | BeltLayout
-  | TableLayout;
+  | TableLayout
+  | BoardLayout;

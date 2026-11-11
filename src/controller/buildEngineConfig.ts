@@ -49,8 +49,12 @@ export function buildEngineConfig(
   }
 
   // Alat semaphore membawa nilai awal pilihan pemain (1 sampai 8).
-  for (const tool of placedTools) {
+    for (const tool of placedTools) {
     if (tool.kind === 'semaphore') semaphores[tool.sem] = tool.value;
+    // Kebijakan pilihan pemain; opsi Sandbox (rwPolicy) tetap yang menang.
+    if (tool.kind === 'rwlock' && tool.policy !== undefined) {
+      rwLocks[tool.lock] = options.rwPolicy ?? tool.policy;
+    }
   }
 
    return {
