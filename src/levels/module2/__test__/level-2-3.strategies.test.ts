@@ -43,14 +43,19 @@ describe('Level 2-3: strategi pencegahan deadlock (T-057)', () => {
     }
 
     const { events } = run(buildLevel23StrategyConfig('none'), 1);
-    expect(events.filter((e) => e.type === 'DEADLOCK_DETECTED')).toHaveLength(1);
+    expect(events.filter((e) => e.type === 'DEADLOCK_DETECTED')).toHaveLength(
+      1,
+    );
   });
 
   it.each(SAFE_STRATEGIES)(
     '%s: bebas deadlock dan semua teknisi selesai pada 200 seed',
     (strategy) => {
       for (let seed = 1; seed <= SEEDS; seed += 1) {
-        const { events, snap } = run(buildLevel23StrategyConfig(strategy), seed);
+        const { events, snap } = run(
+          buildLevel23StrategyConfig(strategy),
+          seed,
+        );
         const label = `${strategy} seed ${seed}`;
 
         expect(
@@ -76,7 +81,9 @@ describe('Level 2-3: strategi pencegahan deadlock (T-057)', () => {
     for (let i = 0; i < LEVEL_2_3_TECHNICIANS; i += 1) {
       const first = lockOrder(strategyProgram(i, 'asymmetric'))[0];
       const isEven = (i + 1) % 2 === 0;
-      expect(first, `teknisi ${i + 1}`).toBe(isEven ? leftFork(i) : rightFork(i));
+      expect(first, `teknisi ${i + 1}`).toBe(
+        isEven ? leftFork(i) : rightFork(i),
+      );
     }
   });
 
@@ -87,7 +94,10 @@ describe('Level 2-3: strategi pencegahan deadlock (T-057)', () => {
 
     for (let i = 0; i < LEVEL_2_3_TECHNICIANS; i += 1) {
       const program = strategyProgram(i, 'limit4');
-      expect(program[0]).toEqual({ op: 'SEM_WAIT', sem: LEVEL_2_3_SEAT_SEMAPHORE });
+      expect(program[0]).toEqual({
+        op: 'SEM_WAIT',
+        sem: LEVEL_2_3_SEAT_SEMAPHORE,
+      });
       expect(program[program.length - 1]).toEqual({
         op: 'SEM_SIGNAL',
         sem: LEVEL_2_3_SEAT_SEMAPHORE,

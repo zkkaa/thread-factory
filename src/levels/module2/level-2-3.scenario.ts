@@ -135,16 +135,15 @@ export function strategyProgram(
   }
 }
 
-export function buildStrategyThreads(strategy: TechnicianStrategy): ThreadDef[] {
-  return Array.from(
-    { length: LEVEL_2_3_TECHNICIANS },
-    (_, i): ThreadDef => ({
-      id: `T${i + 1}`,
-      label: `Teknisi ${i + 1}`,
-      program: strategyProgram(i, strategy),
-      repeat: LEVEL_2_3_MEALS,
-    }),
-  );
+export function buildStrategyThreads(
+  strategy: TechnicianStrategy,
+): ThreadDef[] {
+  return Array.from({ length: LEVEL_2_3_TECHNICIANS }, (_, i): ThreadDef => ({
+    id: `T${i + 1}`,
+    label: `Teknisi ${i + 1}`,
+    program: strategyProgram(i, strategy),
+    repeat: LEVEL_2_3_MEALS,
+  }));
 }
 
 /** EngineConfig Level 2-3 untuk satu strategi (limit4 menambah semaphore kursi). */

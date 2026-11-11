@@ -22,8 +22,25 @@ const POLICIES: RwPolicy[] = ['reader', 'writer', 'fair'];
 
 // Urutan eksekusi (satu entri = satu jatah, cores = 1).
 const SCRIPT = [
-  'R1', 'R2', 'W', 'R3', 'R3', 'R1', 'R1', 'R1', 'R4', 'R4',
-  'R2', 'R2', 'R2', 'R3', 'R3', 'R3', 'R4', 'R4', 'R4',
+  'R1',
+  'R2',
+  'W',
+  'R3',
+  'R3',
+  'R1',
+  'R1',
+  'R1',
+  'R4',
+  'R4',
+  'R2',
+  'R2',
+  'R2',
+  'R3',
+  'R3',
+  'R3',
+  'R4',
+  'R4',
+  'R4',
 ];
 
 function reader(id: string): ThreadDef {

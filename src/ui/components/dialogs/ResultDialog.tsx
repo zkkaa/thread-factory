@@ -4,6 +4,10 @@ import type {
   ControllerState,
   SimulationController,
 } from '../../../controller/SimulationController';
+import {
+  characterForLevel,
+  type CharacterId,
+} from '../../../levels/characters';
 import { deriveResultView, type ResultView } from '../../resultView';
 import { confettiPieces, resultEffects } from '../../resultEffects';
 import {
@@ -36,6 +40,7 @@ interface Action {
 
 interface ResultCardProps {
   view: ResultView;
+  character: CharacterId;
   reduceMotion: boolean;
   actions: Action[];
   assets: ResultAssetSources;
@@ -350,6 +355,7 @@ function Ribbon({ ok, shake, title, src }: RibbonProps) {
 
 function ResultCard({
   view,
+  character,
   reduceMotion,
   actions,
   assets,
@@ -403,11 +409,12 @@ function ResultCard({
         aria-labelledby="result-title"
         className="relative z-10 w-full max-w-md p-2"
       >
-        {/* Baris atas: Pak Mandor di kiri, gelembung krem berisi kalimat inti. */}
+        {/* Baris atas: karakter pemandu di kiri, gelembung krem berisi kalimat inti. */}
         <div className="relative flex items-end gap-1 px-1">
           <Burst className="left-0 top-4 -rotate-12" />
           <MandorPortrait
             bare
+            character={character}
             mood={view.ok ? 'senang' : 'sedih'}
             className="relative h-40 min-w-28 shrink-0"
           />
@@ -420,7 +427,7 @@ function ResultCard({
           </div>
         </div>
 
-        {/* Pita menumpuk sedikit di bawah Pak Mandor. */}
+        {/* Pita menumpuk sedikit di bawah karakter pemandu. */}
         <div className="relative -mt-5">
           <Burst className="-right-2 -top-3 -scale-x-100 rotate-12" />
           <Ribbon
@@ -611,6 +618,7 @@ function ResultCard({
  * Popup hasil (S6), gaya komik seperti MandorDialog. Semua angka dan
  * penilaian berasal dari state.result; komponen ini hanya menampilkan
  * (lihat resultView.ts, resultEffects.ts, dan resultAssets.ts).
+ * Karakter pemandu dipilih dari id level (levels/characters.ts).
  */
 export function ResultDialog({
   controller,
@@ -668,6 +676,7 @@ export function ResultDialog({
   return (
     <ResultCard
       view={view}
+      character={characterForLevel(level.id)}
       reduceMotion={reduceMotion}
       actions={actions}
       assets={assets}

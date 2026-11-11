@@ -1,3 +1,4 @@
+import { HOME_CHARACTER } from '../../levels/characters';
 import type { ModuleDefinition } from '../../levels/types';
 import type { ProgressData } from '../../progress/progressStore';
 import { MandorPortrait } from '../components/MandorPortrait';
@@ -38,7 +39,11 @@ export function GameCompleteScreen({
 
   return (
     <main className="flex h-screen items-center justify-center gap-16 bg-linear-to-br from-navy-900 to-navy-700 px-12 text-ink-100">
-      <MandorPortrait mood="senang" className="h-96 w-72 shrink-0" />
+      <MandorPortrait
+        character={HOME_CHARACTER}
+        mood="senang"
+        className="h-96 w-72 shrink-0"
+      />
 
       <section className="flex max-w-2xl flex-col gap-5">
         <header className="space-y-2">
