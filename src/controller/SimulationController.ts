@@ -1,6 +1,11 @@
 import { Engine } from '../engine/engine';
 import type { PlacedTool } from '../engine/tools';
-import type { SimEvent, SimulationEngine, Snapshot } from '../engine/types';
+import type {
+  SimEvent,
+  SimulationEngine,
+  Snapshot,
+  ThreadId,
+} from '../engine/types';
 import type { LevelDefinition } from '../levels/types';
 import { buildEngineConfig } from './buildEngineConfig';
 import { browserClock, type Clock } from './clock';
@@ -185,6 +190,30 @@ export class SimulationController {
   }
 
   /**
+   * Pemulihan deadlock (T-058, tombol "Rampas kunci"): hanya berlaku saat
+   * engine macet. Korban default dipilih engine; UI boleh memberi id teknisi.
+   * Simulasi tetap `paused`; pemain menekan Run untuk melanjutkan.
+   */
+  preemptDeadlock(victim?: ThreadId): void {
+    const { level, snapshot, error } = this.state;
+    if (level === null || error !== null) return;
+    if ((snapshot?.deadlock ?? null) === null) return;
+
+    let events: SimEvent[] = [];
+    let nextError: string | null = null;
+    try {
+      events = this.engine.preempt(victim).events;
+    } catch (e) {
+      nextError = e instanceof Error ? e.message : String(e);
+    }
+    this.setState({
+      snapshot: this.engine.getSnapshot(),
+      events,
+      error: nextError,
+    });
+  }
+
+  /**
    * Kembali ke awal. Engine dimuat ulang (bukan engine.reset) karena
    * konfigurasinya harus dibangun lagi dari level + alat pemain terbaru.
    * Alat pemain tetap terpasang, tetapi kunci alat terbuka lagi (state idle).
@@ -220,13 +249,15 @@ export class SimulationController {
   /**
    * Run/Step hanya sah dari idle atau paused, dan tidak boleh dilanjutkan
    * setelah error engine: simulasi yang gagal di tengah tick sudah tidak
-   * konsisten, jadi pemain harus Reset.
+   * konsisten, jadi pemain harus Reset. Saat engine macet menunggu pemulihan
+   * deadlock, Run dan Step juga tidak ada gunanya.
    */
   private canStart(): boolean {
-    const { level, runState, error } = this.state;
+    const { level, runState, error, snapshot } = this.state;
     return (
       level !== null &&
       error === null &&
+      (snapshot?.deadlock ?? null) === null &&
       (runState === 'idle' || runState === 'paused')
     );
   }
@@ -273,13 +304,18 @@ export class SimulationController {
   private advance(count: number): void {
     const events: SimEvent[] = [];
     let finished = false;
+    let stalled = false;
     let error: string | null = null;
 
     try {
-      for (let i = 0; i < count && !finished; i++) {
+      for (let i = 0; i < count && !finished && !stalled; i++) {
         const result = this.engine.step();
         events.push(...result.events);
         finished = result.finished;
+        // Engine macet menunggu pemulihan: hentikan sisa tick pada notifikasi ini.
+        stalled =
+          !finished &&
+          result.events.some((event) => event.type === 'DEADLOCK_DETECTED');
       }
     } catch (e) {
       error = e instanceof Error ? e.message : String(e);
@@ -289,6 +325,7 @@ export class SimulationController {
       this.state.runState === 'running' ? 'running' : 'paused';
     if (error !== null) runState = 'paused';
     else if (finished) runState = 'finished';
+    else if (stalled) runState = 'paused';
     if (runState !== 'running') this.stopClock();
 
     const snapshot = this.engine.getSnapshot();

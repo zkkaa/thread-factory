@@ -309,7 +309,7 @@ function wakeRwGranted(
  * COND_WAIT) dianggap selesai, jadi pc-nya dimajukan di sini.
  * Melempar error bila `thread` bukan pemilik.
  */
-function releaseMutex(
+export function releaseMutex(
   mutex: Mutex,
   mutexName: string,
   thread: ThreadRuntime,

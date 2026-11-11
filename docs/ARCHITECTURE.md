@@ -278,6 +278,30 @@ Aula mesin dimodelkan sebagai **area dengan kapasitas** yang dilindungi semaphor
 `PUT_ITEM` dan `TAKE_ITEM` (T-048) tidak memblokir dan atomik dalam satu tick. Ban penuh menghasilkan overflow, ban kosong underflow, keduanya dihitung. Pembatasnya semaphore `empty` dan `full`.
 `PUT_ITEM`, `TAKE_ITEM` (Level 2-1), instruksi akses pembaca/penulis (Level 2-2), dan `ACQUIRE_FORK` (Level 2-3) ditambahkan saat levelnya dikerjakan, dengan prosedur di bagian 11.
 
+### 4.11 Pemulihan deadlock (Level 2-3) *(baru, T-058)*
+
+Tanpa opsi apa pun, deadlock mengakhiri simulasi (bagian 4.8). Level yang
+memakai `recovery: 'manual'` berperilaku lain:
+
+- Saat tidak ada thread yang bisa jalan dan ada siklus tunggu, engine
+  memancarkan `DEADLOCK_DETECTED` **sekali**, tanpa `FINISHED`. Engine macet:
+  `Snapshot.deadlock` berisi thread dalam siklus, dan `step()` tidak menambah
+  tick sampai `preempt()` dipanggil. Controller menghentikan jam (`paused`).
+- `preempt(victim?)` merampas kunci korban. Korban default = thread pertama di
+  siklus (id terkecil) yang menunggu mutex; pemain boleh memilih thread lain di
+  siklus. Hasilnya: korban keluar dari antrean mutex yang ditunggunya, semua
+  mutex yang dipegangnya dilepas lewat handoff biasa (`LOCK_PREEMPTED`), lalu
+  korban di-**rollback** ke awal pengulangan saat ini (`pc = 0`, register
+  dikosongkan, `THREAD_ROLLED_BACK`) dan berstatus READY.
+- Rollback wajib: merampas kunci tanpa mengulang program membuat korban
+  menjalankan `UNLOCK` atas kunci yang bukan miliknya (error engine).
+- Batasan: hanya mutex yang dilepas. Semaphore yang dipegang korban tidak
+  dipulihkan (strategi `limit4` memang tidak bisa deadlock). Siklus yang hanya
+  melibatkan rwlock tidak bisa dipulihkan, jadi engine tetap berakhir seperti
+  biasa.
+- `Snapshot.preemptions` mencatat jumlah perampasan. `Engine.reset()` dan
+  `load()` membersihkan keadaan macet.
+
 ## 5. Simulation Controller *(diubah sesuai kesepakatan akhir, 26 Okt 2026)*
 Satu-satunya tempat yang memiliki **jam**, dan satu-satunya pemanggil `engine.step()`.
 

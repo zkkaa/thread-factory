@@ -143,3 +143,22 @@ describe('Mutex: snapshot', () => {
     expect(m.snapshot().queue).toEqual(['B']);
   });
 });
+describe('Mutex: cancelWait', () => {
+  it('mengeluarkan thread dari antrean tanpa mengubah urutan yang lain', () => {
+    const m = new Mutex('m');
+    m.lock('A');
+    for (const id of ['B', 'C', 'D']) m.lock(id);
+
+    expect(m.cancelWait('C')).toBe(true);
+    expect(m.snapshot()).toEqual({ id: 'm', owner: 'A', queue: ['B', 'D'] });
+    expect(m.unlock('A')).toBe('B');
+  });
+
+  it('mengembalikan false bila thread tidak sedang antre, dan tidak mengubah apa pun', () => {
+    const m = new Mutex('m');
+    m.lock('A');
+    expect(m.cancelWait('A')).toBe(false); // pemilik bukan penunggu
+    expect(m.cancelWait('Z')).toBe(false);
+    expect(m.snapshot()).toEqual({ id: 'm', owner: 'A', queue: [] });
+  });
+});

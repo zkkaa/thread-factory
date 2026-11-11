@@ -61,6 +61,18 @@ export class Mutex {
     return next;
   }
 
+  /**
+   * Mengeluarkan `thread` dari antrean tunggu (pemulihan deadlock, T-058).
+   * Urutan FIFO thread lain tidak berubah dan pemilik tidak tersentuh.
+   * @returns true bila thread memang sedang antre; false bila tidak.
+   */
+  cancelWait(thread: ThreadId): boolean {
+    const index = this.queue.indexOf(thread);
+    if (index === -1) return false;
+    this.queue.splice(index, 1);
+    return true;
+  }
+
   /** Apakah `thread` sedang memegang mutex ini. */
   isOwnedBy(thread: ThreadId): boolean {
     return this.owner === thread;

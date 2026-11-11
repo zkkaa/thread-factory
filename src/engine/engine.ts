@@ -9,6 +9,7 @@ import { RwLock } from './primitives/rwlock';
 import {
   createThread,
   executeInstruction,
+  releaseMutex,
   snapshotThread,
   transition,
   type SyncContext,
@@ -21,7 +22,7 @@ import type {
   SimulationEngine,
   Snapshot,
   StepResult,
-  ThreadId, // BARU
+  ThreadId,
 } from './types';
 import { validateConfig } from './validateConfig';
 
@@ -40,6 +41,9 @@ function isRunnable(thread: ThreadRuntime): boolean {
  *  3. thread RUNNING yang tidak terpilih turun ke READY (context switch)
  *  4. thread terpilih menjadi RUNNING dan mengeksekusi SATU instruksi
  *  5. simulasi selesai bila semua TERMINATED atau tick mencapai maxTicks
+ *
+ * Pemulihan deadlock (ARCHITECTURE 4.11): bila config.recovery === 'manual',
+ * deadlock tidak mengakhiri simulasi. Engine macet sampai preempt() dipanggil.
  */
 export class Engine implements SimulationEngine {
   private config: EngineConfig | null = null;
@@ -65,6 +69,9 @@ export class Engine implements SimulationEngine {
   // Starvation (T-053): rentetan menunggu saat ini dan puncaknya per thread.
   private waitStreaks = new Map<string, number>();
   private peakWaitStreaks = new Map<string, number>();
+  // Pemulihan deadlock (T-058): siklus saat engine macet menunggu preempt().
+  private deadlockCycle: ThreadId[] | null = null;
+  private preemptions = 0;
 
   get isFinished(): boolean {
     return this.finished;
@@ -81,6 +88,8 @@ export class Engine implements SimulationEngine {
     this.tick = 0;
     this.finished = false;
     this.executedInstructions = 0;
+    this.deadlockCycle = null;
+    this.preemptions = 0;
     this.sharedVars = { ...config.sharedVars };
     this.threads = config.threads.map(createThread);
 
@@ -182,11 +191,7 @@ export class Engine implements SimulationEngine {
     this.load(this.config, seed ?? this.seed);
   }
 
-  /**
-   * Maju tepat satu tick. Bila simulasi sudah selesai, tidak terjadi apa-apa
-   * (tick tidak bertambah dan events kosong).
-   */
-    /** Siklus tunggu bila tidak ada thread yang bisa jalan; null bila bukan deadlock. */
+  /** Siklus tunggu bila tidak ada thread yang bisa jalan; null bila bukan deadlock. */
   private findWaitCycle(): ThreadId[] | null {
     return findDeadlockCycle({
       threads: this.threads.map((thread) => {
@@ -198,6 +203,101 @@ export class Engine implements SimulationEngine {
     });
   }
 
+  /** Thread pertama di siklus yang menunggu mutex (calon korban), atau null. */
+  private firstMutexWaiter(cycle: readonly ThreadId[]): ThreadId | null {
+    for (const id of cycle) {
+      const thread = this.threadById.get(id);
+      if (
+        thread !== undefined &&
+        thread.state === 'WAITING' &&
+        thread.waitingOn !== null &&
+        thread.waitingOn.startsWith('mutex:')
+      ) {
+        return id;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Pemulihan deadlock (ARCHITECTURE 4.11): merampas semua mutex korban lalu
+   * me-rollback korban ke awal pengulangan saat ini. Hanya sah saat engine
+   * macet (opsi `recovery: 'manual'` dan deadlock terdeteksi).
+   * Bila `victim` kosong, korban = thread pertama di siklus yang menunggu mutex.
+   */
+  preempt(victim?: ThreadId): StepResult {
+    if (this.config === null || this.sync === null) {
+      throw new Error('preempt() dipanggil sebelum load()');
+    }
+    const cycle = this.deadlockCycle;
+    if (cycle === null) {
+      throw new Error(
+        'preempt() hanya berlaku saat deadlock menunggu pemulihan',
+      );
+    }
+
+    const chosen = victim ?? this.firstMutexWaiter(cycle);
+    if (chosen === null || !cycle.includes(chosen)) {
+      throw new Error(
+        `Korban "${chosen ?? '-'}" tidak ada di siklus tunggu (${cycle.join(', ')})`,
+      );
+    }
+    const thread = this.threadById.get(chosen);
+    const waitingOn = thread?.waitingOn ?? null;
+    if (
+      thread === undefined ||
+      thread.state !== 'WAITING' ||
+      waitingOn === null ||
+      !waitingOn.startsWith('mutex:')
+    ) {
+      throw new Error(
+        `Korban "${chosen}" tidak sedang menunggu mutex, jadi tidak bisa dipulihkan`,
+      );
+    }
+
+    const tick = this.tick;
+    const events: SimEvent[] = [];
+
+    // 1. Keluar dari antrean mutex yang ditunggu, lalu bangun sebagai READY.
+    this.mutexes.get(waitingOn.slice('mutex:'.length))?.cancelWait(chosen);
+    const change = transition(thread, 'READY', tick);
+    if (change) events.push(change);
+
+    // 2. Lepas semua mutex yang dipegang (handoff ke thread yang mengantre).
+    //    LOCK_RELEASED milik korban dibuang: LOCK_PREEMPTED sudah mewakilinya.
+    for (const mutex of this.mutexes.values()) {
+      if (!mutex.isOwnedBy(chosen)) continue;
+      events.push({
+        type: 'LOCK_PREEMPTED',
+        tick,
+        thread: chosen,
+        mutex: mutex.id,
+      });
+      events.push(
+        ...releaseMutex(mutex, mutex.id, thread, tick, this.sync).filter(
+          (event) =>
+            !(event.type === 'LOCK_RELEASED' && event.thread === chosen),
+        ),
+      );
+    }
+
+    // 3. Rollback ke awal pengulangan saat ini.
+    thread.pc = 0;
+    thread.workRemaining = 0;
+    thread.registers = {};
+    events.push({ type: 'THREAD_ROLLED_BACK', tick, thread: chosen });
+
+    this.waitStreaks.set(chosen, 0);
+    this.deadlockCycle = null;
+    this.preemptions += 1;
+    return { tick, events, finished: false };
+  }
+
+  /**
+   * Maju tepat satu tick. Bila simulasi sudah selesai, tidak terjadi apa-apa
+   * (tick tidak bertambah dan events kosong). Hal yang sama berlaku saat
+   * engine macet menunggu pemulihan deadlock.
+   */
   step(): StepResult {
     if (this.config === null || this.scheduler === null || this.sync === null) {
       throw new Error('step() dipanggil sebelum load()');
@@ -205,6 +305,10 @@ export class Engine implements SimulationEngine {
 
     if (this.finished) {
       return { tick: this.tick, events: [], finished: true };
+    }
+
+    if (this.deadlockCycle !== null) {
+      return { tick: this.tick, events: [], finished: false };
     }
 
     this.tick += 1;
@@ -240,16 +344,22 @@ export class Engine implements SimulationEngine {
     // 2. Pemilihan oleh scheduler
     const runnable = this.threads.filter(isRunnable).map((t) => t.def.id);
 
-      if (runnable.length === 0) {
-      this.finished = true;
-
-      const cycle = this.findWaitCycle(); // BARU
+    if (runnable.length === 0) {
+      const cycle = this.findWaitCycle();
       if (cycle !== null) {
-        events.push({ type: 'DEADLOCK_DETECTED', tick, cycle }); // BARU: sebelum FINISHED
+        events.push({ type: 'DEADLOCK_DETECTED', tick, cycle });
+        // Mode manual: macet dan tunggu preempt(), asalkan ada yang bisa dirampas.
+        if (
+          this.config.recovery === 'manual' &&
+          this.firstMutexWaiter(cycle) !== null
+        ) {
+          this.deadlockCycle = cycle;
+          return { tick, events, finished: false };
+        }
       }
 
+      this.finished = true;
       events.push({ type: 'FINISHED', tick });
-
       return { tick, events, finished: true };
     }
 
@@ -410,6 +520,8 @@ export class Engine implements SimulationEngine {
       waitStreaks: Object.fromEntries(this.waitStreaks),
       peakWaitStreaks: Object.fromEntries(this.peakWaitStreaks),
       starvationTicks: this.config.starvationTicks ?? null,
+      deadlock: this.deadlockCycle === null ? null : [...this.deadlockCycle],
+      preemptions: this.preemptions,
     };
   }
 }
