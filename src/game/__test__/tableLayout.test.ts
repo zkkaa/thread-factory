@@ -3,6 +3,7 @@ import { level2_3 } from '../../levels/module2/level-2-3';
 import { getLayout } from '../layouts';
 import { layout2_3 } from '../layouts/level-2-3.layout';
 import { validateLayout } from '../layouts/validate';
+import { getThreadStepProgress } from '../tableProgress';
 
 describe('layout meja Level 2-3 (T-101)', () => {
   it('sah terhadap level', () => {
@@ -11,6 +12,25 @@ describe('layout meja Level 2-3 (T-101)', () => {
 
   it('terdaftar di registri layout', () => {
     expect(getLayout(level2_3.layoutId)).toBe(layout2_3);
+  });
+
+  it('menghitung progres instruksi lintas putaran dan selesai', () => {
+    const definition = {
+      ...level2_3.threads[0]!,
+      repeat: 3,
+    };
+    expect(
+      getThreadStepProgress(
+        { pc: 2, iteration: 1, state: 'RUNNING' },
+        definition,
+      ),
+    ).toEqual({ completedSteps: 7, totalSteps: 15, fraction: 7 / 15 });
+    expect(
+      getThreadStepProgress(
+        { pc: 0, iteration: 3, state: 'TERMINATED' },
+        definition,
+      ),
+    ).toEqual({ completedSteps: 15, totalSteps: 15, fraction: 1 });
   });
 
   it('teknisi yang terlalu rapat ditolak', () => {

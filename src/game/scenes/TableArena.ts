@@ -1,9 +1,10 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { Snapshot } from '../../engine/types';
-import type { LevelDefinition } from '../../levels/types';
+import type { ThreadDef } from '../../engine/types';
 import { robotFrameFor } from '../assetManifest';
 import type { Point, TableLayout } from '../layouts/types';
 import { DEPTH, TABLE, TEXT_STYLE } from '../theme';
+import { getThreadStepProgress } from '../tableProgress';
 import { HallRobotView } from '../views/HallRobotView';
 
 interface ForkView {
@@ -12,15 +13,23 @@ interface ForkView {
   label: GameObjects.Text;
 }
 
+interface ProgressView {
+  track: GameObjects.Arc;
+  fill: GameObjects.Arc;
+  label: GameObjects.Text;
+}
+
 /**
  * Arena meja bundar (Level 2-3), dipakai LevelScene bila layout berjenis 'table'.
  * Teknisi diam di kursinya (memakai ulang HallRobotView); yang berubah adalah
  * status teknisi, warna dan teks tiap kunci, garis dari kunci ke pemegangnya,
- * dan spanduk DEADLOCK. Semua nilai berasal dari snapshot engine; tidak ada
- * aturan permainan di sini.
+ * cincin progres langkah, dan spanduk DEADLOCK. Semua nilai berasal dari
+ * snapshot engine; tidak ada aturan permainan di sini.
  */
 export class TableArena {
   private readonly robots: HallRobotView[];
+  private readonly progress = new Map<string, ProgressView>();
+  private readonly threadDefs: ReadonlyMap<string, ThreadDef>;
   private readonly forks: ForkView[] = [];
   private readonly objects: GameObjects.GameObject[] = [];
   private readonly links: GameObjects.Graphics;
@@ -29,9 +38,10 @@ export class TableArena {
   constructor(
     scene: Scene,
     private readonly layout: TableLayout,
-    level: LevelDefinition,
+    threads: readonly ThreadDef[],
     snapshot: Readonly<Snapshot>,
   ) {
+    this.threadDefs = new Map(threads.map((thread) => [thread.id, thread]));
     const { center, radius } = layout.table;
     this.objects.push(
       scene.add
@@ -82,11 +92,12 @@ export class TableArena {
 
     this.robots = snapshot.threads.map((thread, index) => {
       const seat = this.seatOf(thread.id) ?? layout.seats[index] ?? center;
+      const definition = this.threadDefinition(thread.id);
+      this.createProgressView(scene, thread.id, seat, definition, thread);
       return new HallRobotView(scene, thread, {
         start: seat,
         spriteFrame: robotFrameFor(index),
-        totalRounds:
-          level.threads.find((def) => def.id === thread.id)?.repeat ?? 1,
+        totalRounds: definition.repeat ?? 1,
       });
     });
 
@@ -95,9 +106,18 @@ export class TableArena {
 
   /** Memperbarui teknisi, kunci, garis pemegang, dan spanduk dari snapshot. */
   update(snapshot: Readonly<Snapshot>): void {
-    snapshot.threads.forEach((thread, index) =>
-      this.robots[index]?.update(thread, false),
-    );
+    snapshot.threads.forEach((thread, index) => {
+      this.robots[index]?.update(thread, false);
+      const view = this.progress.get(thread.id);
+      if (view === undefined) return;
+
+      const { completedSteps, totalSteps, fraction } = getThreadStepProgress(
+        thread,
+        this.threadDefinition(thread.id),
+      );
+      view.fill.setEndAngle(-90 + 360 * fraction);
+      view.label.setText(`Langkah ${completedSteps}/${totalSteps}`);
+    });
 
     const names = new Map(snapshot.threads.map((t) => [t.id, t.label]));
     this.links.clear();
@@ -125,6 +145,12 @@ export class TableArena {
 
   destroy(): void {
     for (const robot of this.robots) robot.destroy();
+    for (const view of this.progress.values()) {
+      view.track.destroy();
+      view.fill.destroy();
+      view.label.destroy();
+    }
+    this.progress.clear();
     for (const fork of this.forks) {
       fork.dot.destroy();
       fork.label.destroy();
@@ -138,5 +164,53 @@ export class TableArena {
   private seatOf(threadId: string): Point | undefined {
     const index = this.layout.seatIds.indexOf(threadId);
     return index < 0 ? undefined : this.layout.seats[index];
+  }
+
+  private threadDefinition(threadId: string): ThreadDef {
+    const definition = this.threadDefs.get(threadId);
+    if (definition === undefined) {
+      throw new Error(`Definisi teknisi "${threadId}" tidak ditemukan.`);
+    }
+    return definition;
+  }
+
+  private createProgressView(
+    scene: Scene,
+    threadId: string,
+    seat: Point,
+    definition: ThreadDef,
+    thread: Snapshot['threads'][number],
+  ): void {
+    const track = scene.add
+      .arc(seat.x, seat.y, TABLE.progressRadius, -90, 270)
+      .setFillStyle(TABLE.progressTrack, 0)
+      .setStrokeStyle(TABLE.progressStrokeWidth, TABLE.progressTrack)
+      .setDepth(DEPTH.robotGlow + 0.3);
+    const { fraction, completedSteps, totalSteps } = getThreadStepProgress(
+      thread,
+      definition,
+    );
+    const fill = scene.add
+      .arc(
+        seat.x,
+        seat.y,
+        TABLE.progressRadius,
+        -90,
+        -90 + 360 * fraction,
+      )
+      .setFillStyle(TABLE.progressFill, 0)
+      .setStrokeStyle(TABLE.progressStrokeWidth, TABLE.progressFill)
+      .setDepth(DEPTH.robotGlow + 0.4);
+    const label = scene.add
+      .text(
+        seat.x,
+        seat.y - TABLE.progressRadius - TABLE.progressLabelGap,
+        `Langkah ${completedSteps}/${totalSteps}`,
+        { ...TEXT_STYLE, fontSize: TABLE.progressFontSize },
+      )
+      .setOrigin(0.5, 1)
+      .setDepth(DEPTH.robotLabel);
+
+    this.progress.set(threadId, { track, fill, label });
   }
 }

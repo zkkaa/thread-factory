@@ -178,7 +178,7 @@ export class LevelScene extends Scene {
       return;
     }
     if (layout.kind === 'table') {
-      this.tableArena = new TableArena(this, layout, level, snapshot);
+      this.tableArena = new TableArena(this, layout, effective, snapshot);
       return;
     }
     if (layout.kind === 'combined') {

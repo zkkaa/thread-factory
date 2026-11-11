@@ -7,7 +7,7 @@ describe('rwTool', () => {
   const setup = findRwSetup(level2_2);
 
   it('rentang pembaca dan penulis diturunkan dari program level', () => {
-    expect(setup?.readers).toHaveLength(4);
+    expect(setup?.readers).toHaveLength(6);
     expect(setup?.readers[0]).toEqual({ thread: 'R1', start: 1, end: 1 });
     expect(setup?.writers).toHaveLength(2);
     expect(setup?.writers[0]).toEqual({ thread: 'W1', start: 1, end: 3 });

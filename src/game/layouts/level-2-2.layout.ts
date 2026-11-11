@@ -8,12 +8,15 @@ export const layout2_2: BoardLayout = {
   board: { x: 590, y: 150, width: 440, height: 330 },
   readerZone: { x: 360, y: 120, width: 200, height: 420 },
   writerZone: { x: 1060, y: 120, width: 190, height: 420 },
-  readerIds: ['R1', 'R2', 'R3', 'R4'],
+  readerIds: ['R1', 'R2', 'R3', 'R4', 'R5', 'R6'],
+  // Dua kolom, tiga baris: urut R1, R2 (baris atas), R3, R4, R5, R6.
   readerSpots: [
-    { x: 460, y: 200 },
-    { x: 460, y: 280 },
-    { x: 460, y: 360 },
-    { x: 460, y: 440 },
+    { x: 420, y: 200 },
+    { x: 500, y: 200 },
+    { x: 420, y: 320 },
+    { x: 500, y: 320 },
+    { x: 420, y: 440 },
+    { x: 500, y: 440 },
   ],
   writerIds: ['W1', 'W2'],
   writerSpots: [

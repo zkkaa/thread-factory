@@ -60,14 +60,4 @@ describe('Level 2-3: Meja Teknisi (T-102)', () => {
     );
     expect(stuck.length).toBeGreaterThan(0);
   });
-  describe('Level 2-3: Meja Teknisi (T-102)', () => {
-  // ...tes-tes yang sudah ada...
-
-  it('INFO seed deadlock', () => {
-    const seeds = Array.from({ length: 30 }, (_, i) => i + 1).filter((s) =>
-      Boolean(run([], s).deadlock),
-    );
-    console.log('seed deadlock:', seeds);
-         });
-    });
 });
