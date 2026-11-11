@@ -26,6 +26,7 @@ import { HallArena } from './HallArena';
 import { DeskArena } from './DeskArena';
 import { CombinedArena } from './CombinedArena';
 import { BeltArena } from './BeltArena';
+import { TableArena } from './TableArena';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
 export interface LevelSceneData {
@@ -55,6 +56,7 @@ export class LevelScene extends Scene {
   private deskArena: DeskArena | null = null;
   private combinedArena: CombinedArena | null = null;
   private beltArena: BeltArena | null = null;
+  private tableArena: TableArena | null = null;
   private board: BoardView | null = null;
   private slotMarkers: SlotMarkerView | null = null;
   private doorDrag: DoorDragSession | null = null;
@@ -119,6 +121,10 @@ export class LevelScene extends Scene {
       this.beltArena.update(snapshot, state.events, durationMs);
       return;
     }
+    if (this.tableArena !== null) {
+      this.tableArena.update(snapshot);
+      return;
+    }
     this.combinedArena?.update(snapshot, state.tools, state.events);
     this.playEvents(state.events, durationMs);
     this.refresh(snapshot);
@@ -157,6 +163,10 @@ export class LevelScene extends Scene {
     }
     if (layout.kind === 'belt') {
       this.beltArena = new BeltArena(this, layout, level, snapshot);
+      return;
+    }
+    if (layout.kind === 'table') {
+      this.tableArena = new TableArena(this, layout, level, snapshot);
       return;
     }
     if (layout.kind === 'combined') {
@@ -299,6 +309,8 @@ export class LevelScene extends Scene {
     this.deskArena = null;
     this.beltArena?.destroy();
     this.beltArena = null;
+    this.tableArena?.destroy();
+    this.tableArena = null;
     this.combinedArena?.destroy();
     this.combinedArena = null;
     this.board?.destroy();

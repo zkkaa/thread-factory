@@ -410,3 +410,27 @@ export const BELT = {
   minFxMs: 300,
   fxFontSize: '16px',
 } as const;
+// ---------------------------------------------------------------------------
+// Arena meja bundar (Level 2-3, T-101)
+// ---------------------------------------------------------------------------
+
+/** Gaya meja teknisi dan kunci inggris. Warna kunci selalu disertai teks. */
+export const TABLE = {
+  tableFill: 0x132238,
+  tableFillAlpha: 0.6,
+  tableStroke: 0x4b5b80,
+  tableStrokeWidth: 3,
+  titleFontSize: '14px',
+  forkRadius: 11,
+  forkFree: 0x22c55e,
+  forkHeld: 0xef4444,
+  forkStroke: 0xf9fafb,
+  forkStrokeWidth: 2,
+  forkLabelGap: 16,
+  forkFontSize: '10px',
+  linkWidth: 2,
+  linkAlpha: 0.7,
+  bannerY: 100,
+  bannerFontSize: '22px',
+  bannerText: '#fecaca',
+} as const;
