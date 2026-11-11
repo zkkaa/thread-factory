@@ -256,6 +256,14 @@ Dihitung dari event dan snapshot, bukan dari Phaser:
 - `busyWaitTicks` (Level 1-4)
 - **`coreUtilization` *(baru, T-085)*:** instruksi yang dieksekusi / (`cores` x tick). `Snapshot` ditambah `cores` dan `executedInstructions` agar metrik bisa dihitung tanpa mengakses konfigurasi.
 - **`overloadTicks` dan `areaUtilization` *(baru, T-041)*:** lihat bagian 4.9.
+- **`fairness` *(baru, T-060)*:** `engine/fairness.ts` (`computeFairness`,
+  murni) menghitung jumlah makan per thread (= `iteration`, satu makan =
+  satu pengulangan program selesai), total, minimum, maksimum, indeks Jain
+  (null bila belum ada yang makan), dan daftar thread yang belum makan
+  sementara yang lain sudah. Rollback akibat `preempt()` tidak mengurangi
+  hitungan. Catatan: bila semua thread selesai dengan `repeat` sama, hasilnya
+  selalu merata; metrik ini bermakna untuk simulasi yang macet atau terpotong
+  `maxTicks`, dan untuk perbandingan di mode Bandingkan.
 
 ### 4.8 Deteksi deadlock (`deadlock.ts`)
 
