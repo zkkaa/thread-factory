@@ -66,24 +66,21 @@ describe('Level 2-2: Papan Pengumuman (T-102 sebelah, Readers-Writers)', () => {
     expect(starved.length).toBeGreaterThan(0);
   });
 
-  it('INFO ukur seed dan ambang (hapus setelah dipakai)', () => {
-    const torn = SEEDS.filter((s) => run([], s).inconsistentReadCount > 0);
-    console.log('seed bacaan setengah jadi:', torn);
-    const seed = torn[0] ?? 1;
-    for (const policy of ['reader', 'writer', 'fair'] as const) {
+  it('INFO ukur ambang di semua seed (hapus setelah dipakai)', () => {
+  for (const policy of ['reader', 'writer', 'fair'] as const) {
+    let maxPeak = 0;
+    let minPeak = Infinity;
+    let unfinished = 0;
+    for (const seed of SEEDS) {
       const snap = run(tool(policy), seed);
-      const wait = snap.threads.reduce((sum, t) => sum + t.waitTicks, 0);
-      console.log(
-        policy,
-        'seed',
-        seed,
-        'tick',
-        snap.tick,
-        'totalWait',
-        wait,
-        'peak',
-        JSON.stringify(snap.peakWaitStreaks),
-      );
+      if (!snap.threads.every((t) => t.state === 'TERMINATED')) unfinished += 1;
+      const peaks = Object.values(snap.peakWaitStreaks ?? {}) as number[];
+      const peak = Math.max(0, ...peaks);
+      maxPeak = Math.max(maxPeak, peak);
+      minPeak = Math.min(minPeak, peak);
     }
+    console.log(policy, 'puncak min', minPeak, 'puncak maks', maxPeak, 'tidak selesai', unfinished);
+  }
+  console.log('maxTicks level', level2_2.maxTicks);
   });
 });
