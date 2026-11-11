@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
+import {
+  CHARACTERS,
+  HOME_CHARACTER,
+  type CharacterId,
+} from '../../../levels/characters';
 import type { IntroPage } from '../../../levels/types';
 import { pageInfo } from '../../dialogPages';
 import { MandorPortrait } from '../MandorPortrait';
 
 interface MandorDialogProps {
   pages: readonly IntroPage[];
+  /** Pemandu yang berbicara; bawaannya karakter Beranda. */
+  character?: CharacterId;
   /** Judul pill di atas gelembung, mis. "Level 1-1: Bug Papan Stok". */
   title?: string;
   /** Dipanggil saat tombol "Mulai" (halaman terakhir) ditekan. */
@@ -26,14 +33,15 @@ const PORTRAIT_CLASS =
 const BUBBLE_CLASS = 'absolute right-[14%] top-[24%] z-10 w-[52%] max-w-xl';
 
 /**
- * Dialog bergaya komik Pak Mandor (S4): potret besar menempel di kiri-bawah,
- * gelembung krem di kanan dengan ekor menunjuk ke karakter. Tombol
+ * Dialog bergaya komik (S4): potret karakter pemandu besar menempel di
+ * kiri-bawah, gelembung krem di kanan dengan ekor menunjuk ke karakter. Tombol
  * Lanjut/Mulai mendapat fokus awal; Esc sama dengan Lewati.
  * Belum ada animasi, jadi pengaturan "kurangi animasi" belum berpengaruh di
  * sini; dikerjakan bersama efek lain di U-076.
  */
 export function MandorDialog({
   pages,
+  character = HOME_CHARACTER,
   title,
   onFinish,
   onSkip,
@@ -56,11 +64,12 @@ export function MandorDialog({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Dialog Pak Mandor"
+      aria-label={`Dialog ${CHARACTERS[character].name}`}
       className="relative h-full w-full overflow-hidden"
     >
       <MandorPortrait
         bare
+        character={character}
         mood={page.mood ?? 'netral'}
         className={PORTRAIT_CLASS}
       />

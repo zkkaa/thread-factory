@@ -1,4 +1,9 @@
 import { useEffect } from 'react';
+import {
+  CHARACTERS,
+  HOME_CHARACTER,
+  type CharacterId,
+} from '../../../levels/characters';
 import { MandorPortrait } from '../MandorPortrait';
 
 interface HintDialogProps {
@@ -7,14 +12,17 @@ interface HintDialogProps {
   hasMore: boolean;
   onMore: () => void;
   onClose: () => void;
+  /** Pemandu level aktif; bawaannya karakter Beranda. */
+  character?: CharacterId;
 }
 
-/** Dialog "Tanya Pak Mandor": petunjuk dibuka satu per satu. Esc = Tutup. */
+/** Dialog petunjuk karakter pemandu: petunjuk dibuka satu per satu. Esc = Tutup. */
 export function HintDialog({
   hints,
   hasMore,
   onMore,
   onClose,
+  character = HOME_CHARACTER,
 }: HintDialogProps) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
@@ -32,10 +40,14 @@ export function HintDialog({
         aria-labelledby="hint-title"
         className="flex w-full max-w-2xl gap-4 rounded-2xl border-2 border-navy-500 bg-navy-900 p-5 text-ink-100 shadow-xl"
       >
-        <MandorPortrait mood="berpikir" className="h-40 w-32 shrink-0" />
+        <MandorPortrait
+          character={character}
+          mood="berpikir"
+          className="h-40 w-32 shrink-0"
+        />
         <div className="flex-1 space-y-3">
           <h2 id="hint-title" className="text-base font-bold text-sun-400">
-            Petunjuk Pak Mandor
+            Petunjuk {CHARACTERS[character].name}
           </h2>
           {hints.length === 0 ? (
             <p className="text-sm">Belum ada petunjuk untuk level ini.</p>

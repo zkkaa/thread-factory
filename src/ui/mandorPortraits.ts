@@ -1,22 +1,29 @@
+import type { CharacterId } from '../levels/characters';
+import { HOME_CHARACTER } from '../levels/characters';
 import type { MandorMood } from '../levels/types';
 
 /** Jalur gambar potret per ekspresi, relatif terhadap halaman; null = belum ada. */
 export type PortraitSources = Record<MandorMood, string | null>;
 
-/**
- * Potret Pak Mandor (U-074). Isi jalurnya, mis. 'assets/characters/mandor-senang.png',
- * setelah gambarnya ada di public/assets/characters/ dan tercatat di
- * docs/ASSETS.md serta docs/AI_USAGE.md. Ekspresi tanpa gambar memakai
- * 'netral'; bila itu pun kosong, tampil placeholder.
- */
-export const MANDOR_PORTRAITS: PortraitSources = {
-  netral: 'assets/characters/mandor-netral.png',
-  senang: 'assets/characters/mandor-senang.png',
-  sedih: 'assets/characters/mandor-sedih.png',
-  berpikir: 'assets/characters/mandor-berpikir.png',
-};
+/** Potret satu karakter: public/assets/characters/<id>/<id>-<ekspresi>.png. */
+export function portraitSourcesFor(character: CharacterId): PortraitSources {
+  const base = `assets/characters/${character}/${character}`;
+  return {
+    netral: `${base}-netral.png`,
+    senang: `${base}-senang.png`,
+    sedih: `${base}-sedih.png`,
+    berpikir: `${base}-berpikir.png`,
+  };
+}
 
-/** Avatar kepala (dipotong dari potret netral) untuk ikon tombol petunjuk. */
+/**
+ * Alias sementara untuk kode dan tes lama yang masih memakai nama ini.
+ * Menunjuk ke karakter Beranda; hapus setelah semua pemakai pindah.
+ */
+export const MANDOR_PORTRAITS: PortraitSources =
+  portraitSourcesFor(HOME_CHARACTER);
+
+/** Avatar kepala untuk ikon tombol petunjuk (sementara, sampai avatar per karakter diputuskan). */
 export const MANDOR_AVATAR = 'assets/characters/mandor-avatar.png';
 
 /** Jalur gambar untuk `mood`, dengan cadangan ke 'netral'; null bila tidak ada. */

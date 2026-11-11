@@ -27,8 +27,9 @@ describe('HomeScreen: gambar', () => {
     expect(html).toContain('Thread Factory: Pabrik Rebutan');
   });
 
-  it('menampilkan potret Pak Mandor asli, bukan placeholder', () => {
-    expect(html).toContain('alt="Pak Mandor, ekspresi senang"');
+  it('menampilkan potret Pak Aldi asli, bukan placeholder', () => {
+    expect(html).toContain('alt="Pak Aldi, ekspresi netral"');
+    expect(html).toContain('assets/characters/aldi/aldi-netral.png');
     expect(html).not.toContain('menyusul');
   });
 });

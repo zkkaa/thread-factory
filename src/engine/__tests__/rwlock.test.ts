@@ -257,9 +257,10 @@ describe('alat rwlock + engine', () => {
       const a = runToEnd(config(byTool, policy), 7);
       const b = runToEnd(config(byHand, policy), 7);
       expect(a.tick, policy).toBe(b.tick);
-      expect(a.threads.map((t) => t.waitTicks), policy).toEqual(
-        b.threads.map((t) => t.waitTicks),
-      );
+      expect(
+        a.threads.map((t) => t.waitTicks),
+        policy,
+      ).toEqual(b.threads.map((t) => t.waitTicks));
     }
   });
 });

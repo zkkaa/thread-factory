@@ -186,7 +186,7 @@ export class Engine implements SimulationEngine {
    * Maju tepat satu tick. Bila simulasi sudah selesai, tidak terjadi apa-apa
    * (tick tidak bertambah dan events kosong).
    */
-    /** Siklus tunggu bila tidak ada thread yang bisa jalan; null bila bukan deadlock. */
+  /** Siklus tunggu bila tidak ada thread yang bisa jalan; null bila bukan deadlock. */
   private findWaitCycle(): ThreadId[] | null {
     return findDeadlockCycle({
       threads: this.threads.map((thread) => {
@@ -240,7 +240,7 @@ export class Engine implements SimulationEngine {
     // 2. Pemilihan oleh scheduler
     const runnable = this.threads.filter(isRunnable).map((t) => t.def.id);
 
-      if (runnable.length === 0) {
+    if (runnable.length === 0) {
       this.finished = true;
 
       const cycle = this.findWaitCycle(); // BARU

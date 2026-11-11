@@ -1,4 +1,5 @@
 import { APP_VERSION } from '../../version';
+import { HOME_CHARACTER } from '../../levels/characters';
 import { MandorPortrait } from '../components/MandorPortrait';
 import type { Navigation } from '../navigation';
 import { UI_ASSETS } from '../uiAssets';
@@ -83,7 +84,8 @@ function MenuButton({
 }
 
 /**
- * Layar Beranda (S1): Latar pabrik, logo besar, menu di kiri, dan Pak Mandor di kanan.
+ * Layar Beranda (S1): Latar pabrik, logo besar, menu di kiri, dan karakter
+ * Beranda (Pak Aldi) di kanan.
  */
 export function HomeScreen({ navigation, hasProgress }: HomeScreenProps) {
   return (
@@ -136,10 +138,11 @@ export function HomeScreen({ navigation, hasProgress }: HomeScreenProps) {
         </nav>
       </section>
 
-      {/* Pak Mandor: Di pojok kanan bawah tanpa boks latar */}
+      {/* Karakter Beranda: di pojok kanan bawah tanpa boks latar */}
       <div className="pointer-events-none absolute bottom-0 right-0 md:right-16 lg:right-24 xl:right-40 z-0 md:z-10 flex items-end">
         <MandorPortrait
-          mood="senang"
+          character={HOME_CHARACTER}
+          mood="berpikir"
           className="h-[55vh] sm:h-[65vh] md:h-[75vh] lg:h-[85vh] max-h-160 w-auto object-contain object-bottom drop-shadow-2xl opacity-35 sm:opacity-50 md:opacity-100 transition-all"
         />
       </div>

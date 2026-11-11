@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { SimulationController } from '../../controller/SimulationController';
 import { PhaserGame } from '../../PhaserGame';
 import { toolBus } from '../../game/toolBus';
+import { CHARACTERS, characterForLevel } from '../../levels/characters';
 import { HintDialog } from '../components/dialogs/HintDialog';
 import { ResultDialog } from '../components/dialogs/ResultDialog';
 import { ControlHud } from '../components/hud/ControlHud';
@@ -58,6 +59,9 @@ export function PlayScreen({
   const countedResult = useRef<unknown>(null);
   const Menu = ICONS.menu;
   const hints = state.level?.hints ?? [];
+  // Pemandu level aktif: dipakai di tombol dan dialog petunjuk.
+  const character = characterForLevel(state.level?.id ?? '');
+  const guideName = CHARACTERS[character].name;
 
   // Hitung tiap hasil gagal satu kali (per objek result).
   useEffect(() => {
@@ -116,8 +120,8 @@ export function PlayScreen({
         <div className="flex items-start gap-2">
           <ControlHud controller={controller} state={state} />
           <IconButton
-            label="Tanya Pak Mandor"
-            icon={<MandorAvatar />}
+            label={`Tanya ${guideName}`}
+            icon={<MandorAvatar character={character} />}
             onClick={() => open('hint')}
           />
           <IconButton
@@ -157,6 +161,7 @@ export function PlayScreen({
           )}
           {overlay?.kind === 'hint' && (
             <HintDialog
+              character={character}
               hints={visibleHints(hints, hintState)}
               hasMore={hasMoreHints(hints, hintState)}
               onMore={() => setHintState((s) => revealNext(s, hints.length))}

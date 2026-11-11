@@ -1,3 +1,4 @@
+import { characterForLevel } from '../../levels/characters';
 import type { ModuleDefinition } from '../../levels/types';
 import type { ProgressData } from '../../progress/progressStore';
 import { type UnlockContext, isModuleUnlocked } from '../../progress/unlocks';
@@ -33,6 +34,9 @@ export function ModuleCompleteScreen({
   const nextModule = findNextModule(context.modules, moduleDef.id);
   const nextUnlocked =
     nextModule !== undefined && isModuleUnlocked(context, nextModule.id);
+  // Pemandu level terakhir modul yang menyambut pemain di layar tamat.
+  const lastLevelId = moduleDef.levelIds[moduleDef.levelIds.length - 1] ?? '';
+  const character = characterForLevel(lastLevelId);
 
   const forwardLabel =
     nextModule !== undefined
@@ -46,7 +50,11 @@ export function ModuleCompleteScreen({
 
   return (
     <main className="flex h-screen items-center justify-center gap-16 bg-linear-to-br from-navy-900 to-navy-700 px-12 text-ink-100">
-      <MandorPortrait mood="senang" className="h-96 w-72 shrink-0" />
+      <MandorPortrait
+        character={character}
+        mood="senang"
+        className="h-96 w-72 shrink-0"
+      />
 
       <section className="flex max-w-xl flex-col gap-5">
         <header className="space-y-2">

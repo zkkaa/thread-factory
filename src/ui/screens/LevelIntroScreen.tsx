@@ -1,3 +1,4 @@
+import { characterForLevel } from '../../levels/characters';
 import type { LevelDefinition } from '../../levels/types';
 import { MandorDialog } from '../components/dialogs/MandorDialog';
 import { ICONS } from '../components/icons/registry';
@@ -10,7 +11,7 @@ interface LevelIntroScreenProps {
   level: LevelDefinition;
 }
 
-/** Intro Level (S4): dialog Pak Mandor di atas latar arena, lalu masuk Arena. */
+/** Intro Level (S4): dialog pemandu level di atas latar arena, lalu masuk Arena. */
 export function LevelIntroScreen({ navigation, level }: LevelIntroScreenProps) {
   const Back = ICONS.back;
   const start = (): void => navigation.go({ id: 'play', levelId: level.id });
@@ -37,6 +38,7 @@ export function LevelIntroScreen({ navigation, level }: LevelIntroScreenProps) {
       </div>
       <MandorDialog
         pages={level.intro}
+        character={characterForLevel(level.id)}
         title={`Level ${level.id}: ${level.title}`}
         onFinish={start}
         onSkip={start}
