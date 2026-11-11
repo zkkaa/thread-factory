@@ -19,6 +19,7 @@ const STATUS_TONE: Record<StatusKind, string> = {
   running: 'border-sun-400 text-sun-400',
   paused: 'border-sun-500 text-sun-500',
   finished: 'border-ink-300 text-ink-300',
+  deadlock: 'border-ember-500 text-ember-500',
   error: 'border-ember-500 text-ember-500',
 };
 
@@ -124,10 +125,14 @@ interface ControlHudProps {
 
 /**
  * Kontrol simulasi di HUD kanan atas (PRD 17.2): toggle Play/Pause, Step,
- * Reset, chip kecepatan, chip seed, dan chip status dengan tick.
+ * Reset, chip kecepatan, chip seed, dan chip status dengan tick. Saat engine
+ * macet karena deadlock (T-058), muncul pesan dan tombol "Rampas kunci".
  */
 export function ControlHud({ controller, state }: ControlHudProps) {
   const view = deriveControls(state);
+  const cycle = state.snapshot?.deadlock ?? null;
+  const nameOf = (id: string): string =>
+    state.snapshot?.threads.find((thread) => thread.id === id)?.label ?? id;
 
   return (
     <section aria-label="Kontrol simulasi" className="space-y-2">
@@ -199,6 +204,34 @@ export function ControlHud({ controller, state }: ControlHudProps) {
           {view.statusText}
         </span>
       </div>
+
+      {view.canPreempt && cycle !== null && (
+        <div
+          role="alert"
+          className="space-y-2 rounded-xl border border-ember-500 bg-navy-900/90 p-3 text-sm text-ink-100 shadow-lg"
+        >
+          <p>
+            <strong>Deadlock!</strong> {cycle.map(nameOf).join(' → ')} saling
+            menunggu kunci. Rampas satu kunci agar yang lain bisa jalan, atau
+            Reset untuk mencoba cara lain.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Tooltip
+              label="Rampas kunci satu teknisi; ia mengulang gilirannya dari awal"
+              placement="bottom"
+            >
+              <button
+                type="button"
+                aria-label="Rampas kunci"
+                onClick={() => controller.preemptDeadlock()}
+                className={`${CHIP} bg-ember-500 text-navy-900 hover:opacity-90`}
+              >
+                Rampas kunci
+              </button>
+            </Tooltip>
+          </div>
+        </div>
+      )}
 
       {state.error !== null && (
         <ErrorPanel message={state.error} onReset={() => controller.reset()} />
