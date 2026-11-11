@@ -251,7 +251,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-059** Visual: garis merah siklus tunggu dan empat kotak kondisi Coffman yang menyala/padam sesuai strategi.
 - [x] **T-060** Metrik fairness (jumlah makan per teknisi).
 - [ ] **T-101** *(baru)* Layout meja bundar (`TableLayout`): 5 teknisi, 5 kunci inggris, cincin progres langkah tiap teknisi.
-- [ ] **T-102** *(baru)* Konten Level 2-3.
+- [x] **T-102** *(baru)* Konten Level 2-3.
 
 **Level 2-4 — Lini Produksi Penuh** `P2`
 - [ ] **T-061** Skenario campuran dengan "anggaran alat" terbatas.
