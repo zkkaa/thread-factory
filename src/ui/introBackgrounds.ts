@@ -6,7 +6,7 @@
  */
 
 /** Latar arena umum untuk level yang belum punya latar intro sendiri. */
-export const DEFAULT_INTRO_BACKGROUND = 'assets/world/bg-arena.png';
+export const DEFAULT_INTRO_BACKGROUND = 'assets/world/bg-intro-1-1.jpg';
 
 export const INTRO_BACKGROUNDS: Readonly<Record<string, string>> = {
   '1-1': 'assets/world/bg-intro-1-1.jpg',
