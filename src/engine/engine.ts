@@ -21,6 +21,7 @@ import type {
   Snapshot,
   StepResult,
 } from './types';
+import { findDeadlockCycle } from './deadlock';
 import { validateConfig } from './validateConfig';
 
 function isRunnable(thread: ThreadRuntime): boolean {
@@ -37,7 +38,9 @@ function isRunnable(thread: ThreadRuntime): boolean {
  *  2. scheduler memilih hingga `cores` thread yang boleh jalan
  *  3. thread RUNNING yang tidak terpilih turun ke READY (context switch)
  *  4. thread terpilih menjadi RUNNING dan mengeksekusi SATU instruksi
- *  5. simulasi selesai bila semua TERMINATED atau tick mencapai maxTicks
+ *  5. simulasi selesai bila semua TERMINATED, tick mencapai maxTicks, atau
+ *     tidak ada thread yang bisa jalan. Bila yang terakhir membentuk siklus
+ *     tunggu, DEADLOCK_DETECTED dipancarkan sebelum FINISHED.
  */
 export class Engine implements SimulationEngine {
   private config: EngineConfig | null = null;
@@ -227,6 +230,16 @@ export class Engine implements SimulationEngine {
     const runnable = this.threads.filter(isRunnable).map((t) => t.def.id);
 
     if (runnable.length === 0) {
+      const allTerminated = this.threads.every(
+        (thread) => thread.state === 'TERMINATED',
+      );
+      if (!allTerminated) {
+        const cycle = this.deadlockCycle();
+        if (cycle !== null) {
+          events.push({ type: 'DEADLOCK_DETECTED', tick, cycle });
+        }
+      }
+
       this.finished = true;
       events.push({ type: 'FINISHED', tick });
 
@@ -300,6 +313,32 @@ export class Engine implements SimulationEngine {
     }
 
     return { tick, events, finished: this.finished };
+  }
+
+  /**
+   * Siklus pada wait-for graph saat ini, atau null bila thread yang macet
+   * tidak saling menunggu (misalnya tidur di condition yang tidak disinyal).
+   */
+  private deadlockCycle(): ReturnType<typeof findDeadlockCycle> {
+    return findDeadlockCycle({
+      threads: this.threads.map((thread) => ({
+        id: thread.def.id,
+        state: thread.state,
+        waitingOn: thread.waitingOn,
+      })),
+      mutexes: Array.from(this.mutexes.values(), (mutex) => {
+        const snap = mutex.snapshot();
+        return { id: snap.id, owner: snap.owner };
+      }),
+      rwLocks: Array.from(this.rwLocks.values(), (lock) => {
+        const snap = lock.snapshot();
+        return {
+          id: snap.id,
+          readers: snap.readers,
+          writer: snap.writer,
+        };
+      }),
+    });
   }
 
   /**

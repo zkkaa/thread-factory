@@ -159,6 +159,10 @@ export class LevelScene extends Scene {
       this.beltArena = new BeltArena(this, layout, level, snapshot);
       return;
     }
+    if (layout.kind === 'table') {
+      // TableArena will render the circular table for Level 2-3
+      return;
+    }
     if (layout.kind === 'combined') {
       this.combinedArena = new CombinedArena(
         this,

@@ -100,13 +100,11 @@ export function validateConfig(config: EngineConfig): void {
           `WORK pada thread "${thread.id}": ticks harus bilangan bulat >= 1, diterima: ${instruction.ticks}`,
         );
       }
-
       if (instruction.op === 'COMPUTE' && !Number.isFinite(instruction.add)) {
         throw new Error(
           `COMPUTE pada thread "${thread.id}": add harus bilangan hingga`,
         );
       }
-
       if (
         instruction.op === 'READ' &&
         !hasKey(config.sharedVars, instruction.from)
@@ -115,7 +113,6 @@ export function validateConfig(config: EngineConfig): void {
           `READ pada thread "${thread.id}": variabel bersama "${instruction.from}" tidak ada`,
         );
       }
-
       if (
         instruction.op === 'WRITE' &&
         !hasKey(config.sharedVars, instruction.to)
@@ -124,7 +121,6 @@ export function validateConfig(config: EngineConfig): void {
           `WRITE pada thread "${thread.id}": variabel bersama "${instruction.to}" tidak ada`,
         );
       }
-
       if (
         (instruction.op === 'LOCK' || instruction.op === 'UNLOCK') &&
         !mutexNames.has(instruction.mutex)
@@ -133,7 +129,6 @@ export function validateConfig(config: EngineConfig): void {
           `${instruction.op} pada thread "${thread.id}": mutex "${instruction.mutex}" tidak dideklarasikan`,
         );
       }
-
       if (
         (instruction.op === 'SEM_WAIT' || instruction.op === 'SEM_SIGNAL') &&
         !hasKey(config.semaphores, instruction.sem)
@@ -142,7 +137,6 @@ export function validateConfig(config: EngineConfig): void {
           `${instruction.op} pada thread "${thread.id}": semaphore "${instruction.sem}" tidak dideklarasikan`,
         );
       }
-
       if (
         (instruction.op === 'COND_WAIT' ||
           instruction.op === 'COND_SIGNAL' ||
@@ -153,7 +147,6 @@ export function validateConfig(config: EngineConfig): void {
           `${instruction.op} pada thread "${thread.id}": condition "${instruction.cond}" tidak dideklarasikan`,
         );
       }
-
       if (
         instruction.op === 'COND_WAIT' &&
         !mutexNames.has(instruction.mutex)
@@ -162,7 +155,6 @@ export function validateConfig(config: EngineConfig): void {
           `COND_WAIT pada thread "${thread.id}": mutex "${instruction.mutex}" tidak dideklarasikan`,
         );
       }
-
       if (
         instruction.op === 'SPIN_UNTIL' &&
         !hasKey(config.sharedVars, instruction.variable)
@@ -235,7 +227,9 @@ export function validateConfig(config: EngineConfig): void {
 
     if (
       last !== undefined &&
-      (last.op === 'LOCK' || last.op === 'SEM_WAIT' || last.op === 'COND_WAIT')
+      (last.op === 'LOCK' ||
+        last.op === 'SEM_WAIT' ||
+        last.op === 'COND_WAIT')
     ) {
       throw new Error(
         `Thread "${thread.id}": instruksi terakhir tidak boleh ${last.op}`,

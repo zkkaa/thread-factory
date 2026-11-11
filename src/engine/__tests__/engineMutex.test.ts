@@ -220,7 +220,7 @@ describe('Engine + mutex: kesalahan dan batas', () => {
     );
   });
 
-  it('dua thread yang saling menunggu: simulasi berhenti (belum ada deteksi deadlock sampai T-055)', () => {
+  it('dua thread yang saling menunggu: DEADLOCK_DETECTED lalu simulasi berhenti', () => {
     const lockOrder = (first: string, second: string): Instruction[] => [
       { op: 'LOCK', mutex: first },
       { op: 'LOCK', mutex: second },
@@ -239,11 +239,21 @@ describe('Engine + mutex: kesalahan dan batas', () => {
         mutexes: ['m1', 'm2'],
       },
     );
-    const { engine } = run(config, 1);
+    const { engine, events } = run(config, 1);
     const snap = engine.getSnapshot();
     expect(snap.finished).toBe(true);
     expect(snap.threads.map((t) => t.state)).toEqual(['WAITING', 'WAITING']);
     expect(snap.tick).toBeLessThan(10); // berhenti segera, bukan menunggu maxTicks
+
+    const deadlock = events.filter((e) => e.type === 'DEADLOCK_DETECTED');
+    const finished = events.filter((e) => e.type === 'FINISHED');
+    expect(deadlock).toEqual([
+      { type: 'DEADLOCK_DETECTED', tick: snap.tick, cycle: ['A', 'B'] },
+    ]);
+    expect(finished).toEqual([{ type: 'FINISHED', tick: snap.tick }]);
+    expect(events.indexOf(deadlock[0] as SimEvent)).toBeLessThan(
+      events.indexOf(finished[0] as SimEvent),
+    );
   });
 
   it('reset mengembalikan mutex ke keadaan awal', () => {

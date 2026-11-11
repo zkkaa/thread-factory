@@ -1,4 +1,4 @@
-import type { Condition, ConditionWaiter } from './primitives/condition';
+﻿import type { Condition, ConditionWaiter } from './primitives/condition';
 import type { Mutex } from './primitives/mutex';
 import type { Semaphore } from './primitives/semaphore';
 import type { BoundedBuffer } from './primitives/buffer';

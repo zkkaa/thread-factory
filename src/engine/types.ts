@@ -1,4 +1,4 @@
-import type { RwLockSnapshot, RwMode, RwPolicy } from './primitives/rwlock';
+﻿import type { RwLockSnapshot, RwMode, RwPolicy } from './primitives/rwlock';
 export type ThreadId = string;
 
 /**

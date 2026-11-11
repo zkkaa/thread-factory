@@ -147,6 +147,36 @@ export interface BeltLayout {
   consumerIds: string[];
   consumerSpots: Point[];
 }
-// BeltLayout dan BoardLayout ditambahkan saat levelnya dikerjakan.
+
+/**
+ * Arena jenis meja bundar (Level 2-3, T-058): 5 teknisi dan 5 kunci inggris.
+ * Teknisi diam di titiknya mengelilingi meja bundar; kunci ditampilkan sebagai
+ * objek di antara teknisi. Garis merah siklus tunggu dan empat kotak kondisi
+ * Coffman ditampilkan saat deadlock terdeteksi. Tombol "Rampas kunci" muncul
+ * saat deadlock untuk memulihkan simulasi. Semua koordinat dalam piksel kanvas.
+ */
+export interface TableLayout {
+  kind: 'table';
+  /** Sama dengan LevelDefinition.layoutId. */
+  id: string;
+  /** Pusat meja bundar. */
+  center: Point;
+  /** Jari-jari lingkaran tempat teknisi duduk. */
+  radius: number;
+  /** Id thread teknisi (urut T1..T5). */
+  technicianIds: string[];
+  /** Id mutex kunci inggris (urut fork0..fork4). */
+  forkIds: string[];
+  /** Area untuk empat kotak kondisi Coffman (kanan bawah). */
+  coffmanZone: Rect;
+  /** Posisi tombol "Rampas kunci" (tengah bawah). */
+  preemptButton: Point;
+}
+
 export type ArenaLayout =
-  LoopLayout | HallLayout | DeskLayout | CombinedLayout | BeltLayout;
+  | LoopLayout
+  | HallLayout
+  | DeskLayout
+  | CombinedLayout
+  | BeltLayout
+  | TableLayout;
