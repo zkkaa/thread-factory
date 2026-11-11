@@ -41,14 +41,17 @@ describe('MandorPortrait', () => {
     expect(html).not.toContain('<img');
   });
 
-  it('dengan gambar: <img> memakai jalur dan alt berisi ekspresi', () => {
-    const sources = { ...NONE, senang: 'assets/characters/mandor-senang.png' };
+  it('dengan gambar: <img> memakai jalur dan alt berisi nama dan ekspresi', () => {
+    const sources = {
+      ...NONE,
+      senang: 'assets/characters/aldi/aldi-senang.png',
+    };
     const html = renderToStaticMarkup(
       <MandorPortrait mood="senang" sources={sources} />,
     );
     expect(html).toContain('<img');
-    expect(html).toContain('src="assets/characters/mandor-senang.png"');
-    expect(html).toContain('alt="Pak Mandor, ekspresi senang"');
+    expect(html).toContain('src="assets/characters/aldi/aldi-senang.png"');
+    expect(html).toContain('alt="Pak Aldi, ekspresi senang"');
     expect(html).not.toContain('gambar menyusul');
   });
 
@@ -59,6 +62,14 @@ describe('MandorPortrait', () => {
     );
     expect(html).toContain('src="n.png"');
     expect(html).toContain('ekspresi sedih');
+  });
+
+  it('memakai potret dan nama karakter yang dipilih', () => {
+    const html = renderToStaticMarkup(
+      <MandorPortrait character="widad" mood="sedih" />,
+    );
+    expect(html).toContain('src="assets/characters/widad/widad-sedih.png"');
+    expect(html).toContain('alt="Bu Widad, ekspresi sedih"');
   });
 });
 

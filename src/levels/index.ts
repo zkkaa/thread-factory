@@ -7,6 +7,7 @@ import { level2_1 } from './module2/level-2-1';
 import { level2_2 } from './module2/level-2-2';
 import { level2_3 } from './module2/level-2-3';
 import type { LevelDefinition } from './types';
+export * from './characters';
 
 export * from './types';
 export * from './modules';
