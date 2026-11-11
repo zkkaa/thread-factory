@@ -1,4 +1,5 @@
 import type { Instruction, ThreadDef, ThreadId } from './types.ts';
+import type { RwPolicy } from './primitives/rwlock';
 
 export interface ToolSpan {
   thread: ThreadId;
@@ -71,6 +72,7 @@ export interface PlacedRwLockTool {
   lock: string;
   readers: ToolSpan[];
   writers: ToolSpan[];
+  policy?: RwPolicy;
   spans: ToolSpan[];
 }
 

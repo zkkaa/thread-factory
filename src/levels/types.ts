@@ -89,6 +89,12 @@ export interface LevelDefinition {
    * sekian tick dianggap kelaparan. Bila kosong, deteksi mati.
    */
   starvationTicks?: number;
+    /**
+   * Pemulihan deadlock (Level 2-3). 'manual': simulasi macet saat deadlock dan
+   * pemain boleh merampas kunci (ARCHITECTURE 4.11). Kosong = deadlock
+   * mengakhiri simulasi.
+   */
+  recovery?: 'manual';
   /** Kriteria keberhasilan dan penilaian bintang. */
   goal: {
     /** Target variabel bersama yang diharapkan, mis. { variable: 'stok', value: 10 }. */

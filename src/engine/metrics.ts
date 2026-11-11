@@ -1,3 +1,4 @@
+import { computeFairness } from './fairness';
 import type { Snapshot, ThreadId } from './types';
 
 /**
@@ -43,9 +44,15 @@ export interface Metrics {
   /** Bacaan papan saat sedang ditulis (data setengah jadi), Level 2-2. */
   inconsistentReads: number;
   /** Penulisan papan yang bertabrakan dengan penulis lain, Level 2-2. */
+   /** Penulisan papan yang bertabrakan dengan penulis lain, Level 2-2. */
   writeConflicts: number;
+  /**
+   * Pemerataan giliran antar thread (Level 2-3: jumlah makan per teknisi).
+   * Dihitung `computeFairness`; indeks Jain bernilai null bila belum ada
+   * thread yang menyelesaikan satu pengulangan pun.
+   */
+  fairness: ReturnType<typeof computeFairness>;
 }
-
 /**
  * Kapasitas baterai bawaan: jumlah tick busy waiting yang menghabiskan baterai
  * robot dari penuh sampai kosong. Level boleh memakai kapasitas lain (T-046).
@@ -136,5 +143,6 @@ export function computeMetrics(
     busyWaitTicksByThread,
     inconsistentReads: snapshot.inconsistentReadCount,
     writeConflicts: snapshot.writeConflictCount,
+    fairness: computeFairness(snapshot),
   };
 }

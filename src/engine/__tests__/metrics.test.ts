@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Engine } from '../engine';
 import { computeMetrics } from '../metrics';
+import { computeFairness } from '../fairness';
 import type {
   EngineConfig,
   SchedulerConfig,
@@ -203,5 +204,19 @@ describe('computeMetrics: kemurnian fungsi', () => {
     const before = JSON.stringify(snap);
     computeMetrics(snap, { variable: 'stok', value: 10 });
     expect(JSON.stringify(snap)).toBe(before);
+  });
+});
+describe('computeMetrics: fairness (T-060)', () => {
+  it('sama dengan hasil computeFairness pada snapshot yang sama', () => {
+    const engine = makeEngine({ kind: 'random', cores: 1 }, 3);
+    runToEnd(engine);
+    const snap = engine.getSnapshot();
+    expect(computeMetrics(snap).fairness).toEqual(computeFairness(snap));
+  });
+
+  it('sebelum simulasi berjalan tetap terisi (belum ada yang makan)', () => {
+    const engine = makeEngine({ kind: 'random', cores: 1 });
+    const snap = engine.getSnapshot();
+    expect(computeMetrics(snap).fairness).toEqual(computeFairness(snap));
   });
 });

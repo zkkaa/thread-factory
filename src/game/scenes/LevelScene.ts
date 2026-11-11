@@ -26,6 +26,8 @@ import { HallArena } from './HallArena';
 import { DeskArena } from './DeskArena';
 import { CombinedArena } from './CombinedArena';
 import { BeltArena } from './BeltArena';
+import { TableArena } from './TableArena';
+import { BoardArena } from './BoardArena';
 
 /** Data yang harus diberikan saat scene dimulai: scene.start('LevelScene', data). */
 export interface LevelSceneData {
@@ -37,9 +39,11 @@ export interface LevelSceneData {
  * dilaporkan controller; benar/salah, menang/kalah, dan metrik dihitung engine
  * (aturan arsitektur 3). Tata letak dibaca dari game/layouts/, bukan
  * di-hardcode di sini. Layout 'loop' (jalan, checkpoint, slot, papan) digambar
- * di sini; layout 'hall' (aula Level 1-3) diserahkan ke HallArena, layout
- * 'desk' (meja barang Level 1-4) ke DeskArena, dan layout 'belt' (ban berjalan
- * Level 2-1) ke BeltArena.
+ * di sini; layout lain diserahkan ke arena masing-masing: 'hall' (aula Level
+ * 1-3) ke HallArena, 'desk' (meja barang Level 1-4) ke DeskArena, 'combined'
+ * (Level 1-5) ke CombinedArena, 'belt' (ban berjalan Level 2-1) ke BeltArena,
+ * 'board' (papan pengumuman Level 2-2) ke BoardArena, dan 'table' (meja bundar
+ * Level 2-3) ke TableArena.
  *
  * Pada tick 0 (level dimuat, Reset, atau alat berubah) semua view dibangun
  * ulang. Pada tick berikutnya, event INSTRUCTION menggerakkan robot ke jangkar
@@ -55,6 +59,8 @@ export class LevelScene extends Scene {
   private deskArena: DeskArena | null = null;
   private combinedArena: CombinedArena | null = null;
   private beltArena: BeltArena | null = null;
+  private boardArena: BoardArena | null = null;
+  private tableArena: TableArena | null = null;
   private board: BoardView | null = null;
   private slotMarkers: SlotMarkerView | null = null;
   private doorDrag: DoorDragSession | null = null;
@@ -119,6 +125,14 @@ export class LevelScene extends Scene {
       this.beltArena.update(snapshot, state.events, durationMs);
       return;
     }
+    if (this.boardArena !== null) {
+      this.boardArena.update(snapshot);
+      return;
+    }
+    if (this.tableArena !== null) {
+      this.tableArena.update(snapshot);
+      return;
+    }
     this.combinedArena?.update(snapshot, state.tools, state.events);
     this.playEvents(state.events, durationMs);
     this.refresh(snapshot);
@@ -157,6 +171,14 @@ export class LevelScene extends Scene {
     }
     if (layout.kind === 'belt') {
       this.beltArena = new BeltArena(this, layout, level, snapshot);
+      return;
+    }
+    if (layout.kind === 'board') {
+      this.boardArena = new BoardArena(this, layout, level, snapshot);
+      return;
+    }
+    if (layout.kind === 'table') {
+      this.tableArena = new TableArena(this, layout, effective, snapshot);
       return;
     }
     if (layout.kind === 'combined') {
@@ -299,6 +321,10 @@ export class LevelScene extends Scene {
     this.deskArena = null;
     this.beltArena?.destroy();
     this.beltArena = null;
+    this.boardArena?.destroy();
+    this.boardArena = null;
+    this.tableArena?.destroy();
+    this.tableArena = null;
     this.combinedArena?.destroy();
     this.combinedArena = null;
     this.board?.destroy();

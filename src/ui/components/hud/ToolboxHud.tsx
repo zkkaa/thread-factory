@@ -23,6 +23,8 @@ import { useDoorPlacement } from '../../hooks/useDoorPlacement';
 import { mutexToolId, replaceTool } from '../../toolSpans';
 import { GateDragChip } from './GateDragChip';
 import { useGatePlacement } from '../../hooks/useGatePlacement';
+import { RwToolbox } from './RwToolbox';
+import { findRwSetup } from '../../rwTool';
 
 interface ToolboxHudProps {
   controller: SimulationController;
@@ -60,14 +62,15 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
     level.availableTools.includes('condition') &&
     findConditionSetup(level) !== null;
   const hasBelt = findBeltSetup(level) !== null;
+  const hasRw = findRwSetup(level) !== null;
 
-  if (!hasMutex && !hasSemaphore && !hasCondition && !hasBelt) {
+  if (!hasMutex && !hasSemaphore && !hasCondition && !hasBelt && !hasRw) {
     return null;
   }
-
   return (
     <>
       {hasBelt && <BeltToolbox controller={controller} state={state} />}
+      {hasRw && <RwToolbox controller={controller} state={state} />}
       {hasMutex && (
         <MutexToolbox
           controller={controller}

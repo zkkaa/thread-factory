@@ -148,5 +148,50 @@ export interface BeltLayout {
   consumerSpots: Point[];
 }
 // BeltLayout dan BoardLayout ditambahkan saat levelnya dikerjakan.
+/**
+ * Arena jenis meja bundar (Level 2-3, T-101): teknisi duduk melingkar dan
+ * satu kunci inggris di antara tiap dua teknisi. Tidak ada jalan atau
+ * checkpoint; posisi tetap. Koordinat dalam piksel kanvas, di dalam HUD_SAFE.
+ */
+export interface TableLayout {
+  kind: 'table';
+  /** Sama dengan LevelDefinition.layoutId. */
+  id: string;
+  /** Lingkaran meja (hanya hiasan). */
+  table: { center: Point; radius: number };
+  /** Id thread teknisi, sejajar dengan `seats`. */
+  seatIds: string[];
+  seats: Point[];
+  /** Id mutex kunci, sejajar dengan `forks`; kunci ke-i di antara teknisi i dan i+1. */
+  forkIds: string[];
+  forks: Point[];
+}
+
+/**
+ * Arena jenis papan pengumuman (Level 2-2, T-099): barisan pembaca di kiri,
+ * penulis di kanan, papan di tengah. Robot diam di titiknya; yang berubah
+ * adalah angka papan, status kunci, dan peringatan. Koordinat di dalam HUD_SAFE.
+ */
+export interface BoardLayout {
+  kind: 'board';
+  /** Sama dengan LevelDefinition.layoutId. */
+  id: string;
+  /** Id papan di resource level. */
+  boardId: string;
+  board: Rect;
+  readerZone: Rect;
+  writerZone: Rect;
+  readerIds: string[];
+  readerSpots: Point[];
+  writerIds: string[];
+  writerSpots: Point[];
+}
+
 export type ArenaLayout =
-  LoopLayout | HallLayout | DeskLayout | CombinedLayout | BeltLayout;
+  | LoopLayout
+  | HallLayout
+  | DeskLayout
+  | CombinedLayout
+  | BeltLayout
+  | TableLayout
+  | BoardLayout;

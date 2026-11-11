@@ -410,3 +410,52 @@ export const BELT = {
   minFxMs: 300,
   fxFontSize: '16px',
 } as const;
+// ---------------------------------------------------------------------------
+// Arena meja bundar (Level 2-3, T-101)
+// ---------------------------------------------------------------------------
+
+/** Gaya meja teknisi dan kunci inggris. Warna kunci selalu disertai teks. */
+export const TABLE = {
+  tableFill: 0x132238,
+  tableFillAlpha: 0.6,
+  tableStroke: 0x4b5b80,
+  tableStrokeWidth: 3,
+  titleFontSize: '14px',
+  forkRadius: 11,
+  forkFree: 0x22c55e,
+  forkHeld: 0xef4444,
+  forkStroke: 0xf9fafb,
+  forkStrokeWidth: 2,
+  forkLabelGap: 16,
+  forkFontSize: '10px',
+  linkWidth: 2,
+  linkAlpha: 0.7,
+  progressRadius: 28,
+  progressTrack: 0x64748b,
+  progressFill: 0xfacc15,
+  progressStrokeWidth: 3,
+  progressLabelGap: 5,
+  progressFontSize: '10px',
+  bannerY: 100,
+  bannerFontSize: '22px',
+  bannerText: '#fecaca',
+} as const;
+// ---------------------------------------------------------------------------
+// Arena papan pengumuman (Level 2-2, T-099)
+// ---------------------------------------------------------------------------
+
+/** Gaya papan pengumuman. Warna peringatan selalu disertai teks. */
+export const BULLETIN = {
+  panelFill: 0x132238,
+  panelFillAlpha: 0.7,
+  panelStroke: 0xf5c542,
+  panelProblemStroke: 0xef4444,
+  panelStrokeWidth: 3,
+  titleFontSize: '16px',
+  titleInset: 10,
+  bodyFontSize: '13px',
+  bodyInset: 48,
+  bannerGap: 8,
+  bannerFontSize: '20px',
+  warnText: '#fecaca',
+} as const;

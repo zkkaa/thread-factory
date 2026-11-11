@@ -6,14 +6,10 @@ import type { LevelDefinition } from '../levels/types';
 /** Batas pengaman bila level tidak menentukan `maxTicks`. */
 export const DEFAULT_MAX_TICKS = 2000;
 
-/** Pengaturan tambahan di luar data level (mis. dari sakelar kebijakan atau Sandbox). */
+/** Opsi tambahan (mis. dari Sandbox). */
 export interface BuildOptions {
-  /** Mengganti kebijakan SEMUA kunci baca-tulis di level (reader, writer, fair). */
+  /** Mengganti kebijakan semua rwlock di level (Level 2-2). */
   rwPolicy?: RwPolicy;
-}
-
-function assertNever(value: never): never {
-  throw new Error(`Jenis resource tidak dikenal: ${JSON.stringify(value)}`);
 }
 
 /**
@@ -32,8 +28,6 @@ export function buildEngineConfig(
   const rwLocks: Record<string, RwPolicy> = {};
   const boards: string[] = [];
 
-  // Tiap jenis ditangani eksplisit; jenis baru tanpa penanganan gagal di typecheck
-  // (dulu "selain mutex dan semaphore" otomatis dianggap condition).
   for (const resource of level.resources) {
     switch (resource.kind) {
       case 'mutex':
@@ -51,18 +45,19 @@ export function buildEngineConfig(
       case 'board':
         boards.push(resource.id);
         break;
-      default:
-        assertNever(resource);
     }
   }
 
-  for (const tool of placedTools) {
-    if (tool.kind === 'semaphore') {
-      semaphores[tool.sem] = tool.value;
+  // Alat semaphore membawa nilai awal pilihan pemain (1 sampai 8).
+    for (const tool of placedTools) {
+    if (tool.kind === 'semaphore') semaphores[tool.sem] = tool.value;
+    // Kebijakan pilihan pemain; opsi Sandbox (rwPolicy) tetap yang menang.
+    if (tool.kind === 'rwlock' && tool.policy !== undefined) {
+      rwLocks[tool.lock] = options.rwPolicy ?? tool.policy;
     }
   }
 
-  return {
+   return {
     threads: applyTools(level.threads, [...placedTools]),
     sharedVars: { ...level.sharedVars },
     mutexes,
@@ -71,9 +66,12 @@ export function buildEngineConfig(
     rwLocks,
     boards,
     scheduler: level.scheduler,
-    areas: level.areas,
-    buffers: level.buffers,
-    starvationTicks: level.starvationTicks,
     maxTicks: level.maxTicks ?? DEFAULT_MAX_TICKS,
+    ...(level.areas !== undefined ? { areas: { ...level.areas } } : {}),
+    ...(level.buffers !== undefined ? { buffers: { ...level.buffers } } : {}),
+    ...(level.starvationTicks !== undefined
+      ? { starvationTicks: level.starvationTicks }
+      : {}),
+    ...(level.recovery !== undefined ? { recovery: level.recovery } : {}),
   };
 }

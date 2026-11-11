@@ -84,6 +84,20 @@ export function describeEvent(
         text: `${nameOf(event.thread)} melepas kunci pintu "${event.mutex}"`,
         minor: false,
       };
+    case 'LOCK_PREEMPTED':
+      return {
+        tick,
+        kind: 'unlock',
+        text: `Kunci "${event.mutex}" dirampas dari ${nameOf(event.thread)}`,
+        minor: false,
+      };
+    case 'THREAD_ROLLED_BACK':
+      return {
+        tick,
+        kind: 'state',
+        text: `${nameOf(event.thread)} mengulang gilirannya dari awal (rollback)`,
+        minor: false,
+      };
     case 'BLOCKED':
       return {
         tick,

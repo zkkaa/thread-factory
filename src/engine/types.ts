@@ -118,6 +118,11 @@ export interface EngineConfig {
    * (waitStreaks tetap dihitung). Bilangan bulat >= 1.
    */
   starvationTicks?: number;
+  /**
+   * Pemulihan deadlock (T-058). Tanpa opsi ini, deadlock mengakhiri simulasi.
+   * 'manual': engine macet menunggu preempt() dari pemain (ARCHITECTURE 4.11).
+   */
+  recovery?: 'manual';
 
   /** Batas pengaman: simulasi dihentikan paksa setelah tick ini. */
   maxTicks: number;
@@ -272,6 +277,11 @@ export interface Snapshot {
 
   /** Ambang starvation dari konfigurasi; null bila deteksi tidak dipakai. */
   starvationTicks?: number | null;
+  /** Thread dalam siklus tunggu saat engine macet menunggu pemulihan; null bila tidak macet. */
+  deadlock?: ThreadId[] | null;
+
+  /** Berapa kali preempt() dipakai sejak tick 0. */
+  preemptions?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -405,6 +415,17 @@ export type SimEvent =
   | {
       type: 'FINISHED';
       tick: number;
+    }
+    | {
+      type: 'LOCK_PREEMPTED';
+      tick: number;
+      thread: ThreadId;
+      mutex: string;
+    }
+  | {
+      type: 'THREAD_ROLLED_BACK';
+      tick: number;
+      thread: ThreadId;
     };
 
 /** Hasil dari satu pemanggilan engine.step(). */
@@ -429,7 +450,13 @@ export interface SimulationEngine {
   step(): StepResult;
 
   /** Mulai ulang dengan konfigurasi yang sama; seed opsional (default: seed terakhir). */
-  reset(seed?: number): void;
+  reset(seed?: number): void
+    /**
+   * Pemulihan deadlock: merampas kunci korban lalu me-rollback-nya.
+   * Hanya sah saat engine macet (Snapshot.deadlock terisi). Korban default:
+   * thread pertama di siklus yang menunggu mutex.
+   */
+  preempt(victim?: ThreadId): StepResult;
 
   getSnapshot(): Readonly<Snapshot>;
 
