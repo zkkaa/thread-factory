@@ -73,6 +73,11 @@ export interface LevelDefinition {
   resources: ResourceDef[];
   /** Jenis alat yang dapat ditaruh oleh pemain di toolbox level ini. */
   availableTools: ToolType[];
+  /**
+   * Anggaran alat dalam koin. Setiap alat yang dipasang menghabiskan satu koin;
+   * bila tidak ditentukan, jumlah alat tidak dibatasi.
+   */
+  toolBudget?: number;
   /** Pengaturan scheduler (acak ber-seed atau scripted). */
   scheduler: SchedulerConfig;
   /** Seed default tutorial yang pasti menghasilkan perilaku tertentu (mis. race condition). */
