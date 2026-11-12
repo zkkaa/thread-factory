@@ -241,7 +241,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-053** Deteksi starvation (waktu tunggu maksimum) dan visual bar kesabaran writer.
 - [x] **T-054** Tes: reader priority → writer kelaparan pada seed tertentu; fair → tidak.
 - [x] **T-099** *(baru)* Layout papan pengumuman (barisan reader dan writer), sakelar kebijakan di papan (komponen UI), tampilan tulisan setengah jadi saat tanpa pengaman.
-- [ ] **T-100** *(baru)* Konten Level 2-2.
+- [x] **T-100** *(baru)* Konten Level 2-2.
 
 **Level 2-3 — Meja Teknisi (Dining Philosophers)** `P1`
 - [x] **T-055** `engine/deadlock.ts`: deteksi siklus tunggu + event `DEADLOCK_DETECTED`.
@@ -254,9 +254,9 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [ ] **T-102** *(baru)* Konten Level 2-3.
 
 **Level 2-4 — Lini Produksi Penuh** `P2`
-- [ ] **T-061** Skenario campuran dengan "anggaran alat" terbatas.
-- [ ] **T-103** *(baru)* Layout gabungan tiga area dan tampilan koin anggaran alat di toolbox.
-- [ ] **T-104** *(baru)* Konten Level 2-4.
+- [x] **T-061** Skenario campuran dengan "anggaran alat" terbatas.
+- [x] **T-103** *(baru)* Layout gabungan tiga area dan tampilan koin anggaran alat di toolbox.
+- [x] **T-104** *(baru)* Konten Level 2-4.
 
 ---
 
