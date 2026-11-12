@@ -254,7 +254,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-102** *(baru)* Konten Level 2-3.
 
 **Level 2-4 — Lini Produksi Penuh** `P2`
-- [ ] **T-061** Skenario campuran dengan "anggaran alat" terbatas.
+- [x] **T-061** Skenario campuran dengan "anggaran alat" terbatas.
 - [ ] **T-103** *(baru)* Layout gabungan tiga area dan tampilan koin anggaran alat di toolbox.
 - [ ] **T-104** *(baru)* Konten Level 2-4.
 

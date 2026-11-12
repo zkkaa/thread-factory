@@ -74,6 +74,11 @@ export interface LevelDefinition {
   resources: ResourceDef[];
   /** Jenis alat yang dapat ditaruh oleh pemain di toolbox level ini. */
   availableTools: ToolType[];
+  /**
+   * Anggaran alat dalam koin. Setiap alat yang dipasang menghabiskan satu koin;
+   * bila tidak ditentukan, jumlah alat tidak dibatasi.
+   */
+  toolBudget?: number;
   /** Pengaturan scheduler (acak ber-seed atau scripted). */
   scheduler: SchedulerConfig;
   /** Seed default tutorial yang pasti menghasilkan perilaku tertentu (mis. race condition). */
@@ -89,7 +94,7 @@ export interface LevelDefinition {
    * sekian tick dianggap kelaparan. Bila kosong, deteksi mati.
    */
   starvationTicks?: number;
-    /**
+  /**
    * Pemulihan deadlock (Level 2-3). 'manual': simulasi macet saat deadlock dan
    * pemain boleh merampas kunci (ARCHITECTURE 4.11). Kosong = deadlock
    * mengakhiri simulasi.

@@ -120,6 +120,33 @@ describe('placeTool dan removeTool (T-025)', () => {
     expect(stepUntilFinished(controller)).not.toBe(10);
   });
 
+  it('anggaran satu koin membatasi alat yang dipasang dan kembali saat alat dilepas', () => {
+    const level = { ...makeLevel(), toolBudget: 1 };
+    const controller = makeController(level);
+    controller.placeTool(makeDoor());
+    const before = controller.getState();
+
+    expect(() => controller.placeTool(makeDoor('pintu-kedua'))).toThrow(
+      /Anggaran alat habis/,
+    );
+    expect(controller.getState()).toBe(before);
+
+    controller.removeTool('pintu-stok');
+    expect(() => controller.placeTool(makeDoor('pintu-kedua'))).not.toThrow();
+  });
+
+  it('menolak anggaran alat yang bukan bilangan bulat nonnegatif', () => {
+    const controller = new SimulationController(undefined, fakeClock);
+
+    expect(() =>
+      controller.loadLevel({ ...makeLevel(), toolBudget: -1 }),
+    ).toThrow(/bilangan bulat nonnegatif/);
+    expect(() =>
+      controller.loadLevel({ ...makeLevel(), toolBudget: 1.5 }),
+    ).toThrow(/bilangan bulat nonnegatif/);
+    expect(controller.getState().level).toBeNull();
+  });
+
   it('mengubah objek alat setelah dipasang tidak mengubah state', () => {
     const controller = makeController();
     const door = makeDoor();

@@ -123,6 +123,12 @@ export class SimulationController {
 
   /** Memuat level dari awal (alat pemain dikosongkan). Seed default: tutorialSeed level. */
   loadLevel(level: LevelDefinition, seed?: number): void {
+    if (
+      level.toolBudget !== undefined &&
+      (!Number.isSafeInteger(level.toolBudget) || level.toolBudget < 0)
+    ) {
+      throw new Error('Anggaran alat harus bilangan bulat nonnegatif.');
+    }
     const nextSeed = seed ?? level.tutorialSeed ?? DEFAULT_SEED;
     // load() dipanggil dulu: bila gagal (mis. seed tidak valid), state lama tetap utuh.
     this.engine.load(buildEngineConfig(level, []), nextSeed);
@@ -154,6 +160,14 @@ export class SimulationController {
     }
     if (this.placedTools.some((placed) => placed.id === tool.id)) {
       throw new Error(`Alat dengan id "${tool.id}" sudah terpasang.`);
+    }
+    if (
+      level.toolBudget !== undefined &&
+      this.placedTools.length >= level.toolBudget
+    ) {
+      throw new Error(
+        `Anggaran alat habis (${level.toolBudget} koin; setiap alat menghabiskan 1 koin).`,
+      );
     }
     this.commitTools(level, [...this.placedTools, copyTool(tool)]);
   }
