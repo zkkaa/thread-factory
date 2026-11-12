@@ -5,6 +5,7 @@ import { level1_4 } from './module1/level-1-4';
 import { level1_5 } from './module1/level-1-5';
 import { level2_1 } from './module2/level-2-1';
 import { level2_3 } from './module2/level-2-3';
+import { level2_4 } from './module2/level-2-4';
 import type { LevelDefinition } from './types';
 
 export * from './types';
@@ -16,6 +17,7 @@ export { level1_4 } from './module1/level-1-4';
 export { level1_5 } from './module1/level-1-5';
 export { level2_1 } from './module2/level-2-1';
 export { level2_3 } from './module2/level-2-3';
+export { level2_4 } from './module2/level-2-4';
 
 /** Daftar seluruh level yang tersedia dalam game. */
 export const ALL_LEVELS: LevelDefinition[] = [
@@ -26,6 +28,7 @@ export const ALL_LEVELS: LevelDefinition[] = [
   level1_5,
   level2_1,
   level2_3,
+  level2_4,
 ];
 
 /** Cari level berdasarkan id (mis. '1-1'). */
