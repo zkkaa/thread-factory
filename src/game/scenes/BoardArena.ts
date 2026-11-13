@@ -37,7 +37,14 @@ export class BoardArena {
     const { board } = layout;
     const cx = board.x + board.width / 2;
     this.panel = scene.add
-      .rectangle(cx, board.y + board.height / 2, board.width, board.height, BULLETIN.panelFill, BULLETIN.panelFillAlpha)
+      .rectangle(
+        cx,
+        board.y + board.height / 2,
+        board.width,
+        board.height,
+        BULLETIN.panelFill,
+        BULLETIN.panelFillAlpha,
+      )
       .setStrokeStyle(BULLETIN.panelStrokeWidth, BULLETIN.panelStroke)
       .setDepth(DEPTH.track);
     this.objects.push(
@@ -160,7 +167,14 @@ export class BoardArena {
   private zone(scene: Scene, rect: Rect, title: string): void {
     this.objects.push(
       scene.add
-        .rectangle(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height, HALL.zoneFill, HALL.zoneFillAlpha)
+        .rectangle(
+          rect.x + rect.width / 2,
+          rect.y + rect.height / 2,
+          rect.width,
+          rect.height,
+          HALL.zoneFill,
+          HALL.zoneFillAlpha,
+        )
         .setStrokeStyle(HALL.zoneStrokeWidth, HALL.zoneStroke)
         .setDepth(DEPTH.track),
       scene.add

@@ -41,7 +41,9 @@ export function computeFairness(input: FairnessInput): Fairness {
 
   const squares = counts.reduce((sum, n) => sum + n * n, 0);
   const jainIndex =
-    totalMeals === 0 ? null : (totalMeals * totalMeals) / (counts.length * squares);
+    totalMeals === 0
+      ? null
+      : (totalMeals * totalMeals) / (counts.length * squares);
 
   const starved =
     maxMeals === 0

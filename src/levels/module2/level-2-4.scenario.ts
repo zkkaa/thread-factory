@@ -39,7 +39,9 @@ export function buildLevel24ScenarioConfig(
 
   // Enforce tool budget if set
   if (toolBudget !== undefined && placedTools.length > toolBudget) {
-    throw new Error(`Melebihi anggaran alat: maksimal ${toolBudget}, diajukan ${placedTools.length}`);
+    throw new Error(
+      `Melebihi anggaran alat: maksimal ${toolBudget}, diajukan ${placedTools.length}`,
+    );
   }
 
   for (const tool of placedTools) {

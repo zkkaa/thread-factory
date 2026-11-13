@@ -22,6 +22,8 @@ describe('layout papan Level 2-2 (T-099)', () => {
       { ...layout2_2, writerIds: ['W1', 'X'] },
       level2_2,
     );
-    expect(errors.some((e) => e.includes('readerIds dan writerIds'))).toBe(true);
+    expect(errors.some((e) => e.includes('readerIds dan writerIds'))).toBe(
+      true,
+    );
   });
 });

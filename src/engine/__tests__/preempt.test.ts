@@ -66,7 +66,9 @@ describe('recovery manual: engine macet saat deadlock', () => {
     const engine = loaded(true);
     const events = stepUntilStalled(engine);
 
-    expect(events.filter((e) => e.type === 'DEADLOCK_DETECTED')).toHaveLength(1);
+    expect(events.filter((e) => e.type === 'DEADLOCK_DETECTED')).toHaveLength(
+      1,
+    );
     expect(events.some((e) => e.type === 'FINISHED')).toBe(false);
     expect(engine.isFinished).toBe(false);
     expect(engine.getSnapshot().deadlock).toEqual(['A', 'B', 'C']);
@@ -157,7 +159,9 @@ describe('preempt: merampas kunci dan rollback', () => {
 
     expect(engine.isFinished).toBe(true);
     expect(snap.threads.every((t) => t.state === 'TERMINATED')).toBe(true);
-    expect(snap.mutexes.every((m) => m.owner === null && m.queue.length === 0)).toBe(true);
+    expect(
+      snap.mutexes.every((m) => m.owner === null && m.queue.length === 0),
+    ).toBe(true);
     expect(snap.preemptions).toBeGreaterThanOrEqual(1);
     // Tiap perampasan membuat minimal satu thread lain bisa makan: batasnya jumlah makan.
     expect(snap.preemptions).toBeLessThanOrEqual(3);

@@ -81,11 +81,16 @@ export class TableArena {
     });
 
     this.banner = scene.add
-      .text(center.x, TABLE.bannerY, 'DEADLOCK! Semua teknisi saling menunggu', {
-        ...TEXT_STYLE,
-        fontSize: TABLE.bannerFontSize,
-        color: TABLE.bannerText,
-      })
+      .text(
+        center.x,
+        TABLE.bannerY,
+        'DEADLOCK! Semua teknisi saling menunggu',
+        {
+          ...TEXT_STYLE,
+          fontSize: TABLE.bannerFontSize,
+          color: TABLE.bannerText,
+        },
+      )
       .setOrigin(0.5)
       .setDepth(DEPTH.robotFx)
       .setVisible(false);
@@ -191,13 +196,7 @@ export class TableArena {
       definition,
     );
     const fill = scene.add
-      .arc(
-        seat.x,
-        seat.y,
-        TABLE.progressRadius,
-        -90,
-        -90 + 360 * fraction,
-      )
+      .arc(seat.x, seat.y, TABLE.progressRadius, -90, -90 + 360 * fraction)
       .setFillStyle(TABLE.progressFill, 0)
       .setStrokeStyle(TABLE.progressStrokeWidth, TABLE.progressFill)
       .setDepth(DEPTH.robotGlow + 0.4);

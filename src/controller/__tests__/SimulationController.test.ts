@@ -85,7 +85,7 @@ class FakeEngine implements SimulationEngine {
       writeConflictCount: 0,
     };
   }
-    preempt(): StepResult {
+  preempt(): StepResult {
     // Engine palsu tidak pernah deadlock; tes ini tidak menguji pemulihan
     // (itu ada di SimulationController.recovery.test.ts).
     throw new Error('FakeEngine.preempt tidak dipakai di tes ini');

@@ -5,7 +5,7 @@ import type { CombinedLayout } from './types';
  * Karena ini adalah level gabungan (CombinedLayout), kita tidak menggunakan
  * jalur robot (road) yang mengharuskan checkpoint dan slot. Layout ini
  * menempatkan tiga zona (perakit, penggudang, pengepak) di dalam HUD_SAFE.
- * 
+ *
  * Semua koordinat berada di dalam HUD_SAFE (x 350..1260, y 80..580).
  */
 export const layout2_4: CombinedLayout = {
@@ -34,7 +34,11 @@ export const layout2_4: CombinedLayout = {
     zone: { x: 680, y: 390, width: 180, height: 120 },
     gate: { start: 1, end: 3 },
     door: { x: 700, y: 400 },
-    machines: [{ x: 730, y: 420 }, { x: 770, y: 420 }, { x: 810, y: 420 }],
+    machines: [
+      { x: 730, y: 420 },
+      { x: 770, y: 420 },
+      { x: 810, y: 420 },
+    ],
   },
   packer: {
     threadId: 'C',

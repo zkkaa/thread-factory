@@ -416,7 +416,7 @@ export type SimEvent =
       type: 'FINISHED';
       tick: number;
     }
-    | {
+  | {
       type: 'LOCK_PREEMPTED';
       tick: number;
       thread: ThreadId;
@@ -450,8 +450,8 @@ export interface SimulationEngine {
   step(): StepResult;
 
   /** Mulai ulang dengan konfigurasi yang sama; seed opsional (default: seed terakhir). */
-  reset(seed?: number): void
-    /**
+  reset(seed?: number): void;
+  /**
    * Pemulihan deadlock: merampas kunci korban lalu me-rollback-nya.
    * Hanya sah saat engine macet (Snapshot.deadlock terisi). Korban default:
    * thread pertama di siklus yang menunggu mutex.

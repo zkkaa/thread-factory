@@ -140,9 +140,7 @@ describe('Level 2-2: Papan Pengumuman (Readers-Writers)', () => {
     const fair = worstWriterPeak('fair');
     const reader = worstWriterPeak('reader');
     expect(limit, `fair ${fair}, reader ${reader}`).toBeGreaterThan(fair);
-    expect(limit, `fair ${fair}, reader ${reader}`).toBeLessThanOrEqual(
-      reader,
-    );
+    expect(limit, `fair ${fair}, reader ${reader}`).toBeLessThanOrEqual(reader);
   });
 
   // baru: pemain pertama kali mencoba memakai seed tutorial, jadi kelaparan

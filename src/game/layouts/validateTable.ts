@@ -56,7 +56,8 @@ export function validateTableLayout(
     { x: center.x - radius, y: center.y - radius },
     { x: center.x + radius, y: center.y + radius },
   ];
-  if (corners.some((p) => !inSafe(p))) errors.push('meja di luar area aman HUD');
+  if (corners.some((p) => !inSafe(p)))
+    errors.push('meja di luar area aman HUD');
   if (layout.seats.some((p) => !inSafe(p))) {
     errors.push('teknisi di luar area aman HUD');
   }
@@ -72,4 +73,4 @@ export function validateTableLayout(
     errors.push(`kunci terlalu rapat (minimal ${gap} px)`);
   }
   return errors;
-}   
+}

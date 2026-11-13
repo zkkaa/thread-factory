@@ -41,7 +41,9 @@ export function validateBoardLayout(
   if (layout.id !== level.layoutId) {
     errors.push(`id layout "${layout.id}" != layoutId "${level.layoutId}"`);
   }
-  if (!level.resources.some((r) => r.kind === 'board' && r.id === layout.boardId)) {
+  if (
+    !level.resources.some((r) => r.kind === 'board' && r.id === layout.boardId)
+  ) {
     errors.push(`level tidak punya papan "${layout.boardId}"`);
   }
   const all = [...layout.readerIds, ...layout.writerIds];

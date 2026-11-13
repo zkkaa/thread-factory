@@ -90,7 +90,9 @@ describe('SimulationController: pemulihan deadlock (T-058)', () => {
     expect(state.runState).toBe('paused');
     expect(state.error).toBeNull();
     expect(state.events.some((e) => e.type === 'LOCK_PREEMPTED')).toBe(true);
-    expect(state.events.some((e) => e.type === 'THREAD_ROLLED_BACK')).toBe(true);
+    expect(state.events.some((e) => e.type === 'THREAD_ROLLED_BACK')).toBe(
+      true,
+    );
   });
 
   it('preemptDeadlock() tanpa deadlock tidak melakukan apa pun', () => {

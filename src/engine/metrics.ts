@@ -44,7 +44,7 @@ export interface Metrics {
   /** Bacaan papan saat sedang ditulis (data setengah jadi), Level 2-2. */
   inconsistentReads: number;
   /** Penulisan papan yang bertabrakan dengan penulis lain, Level 2-2. */
-   /** Penulisan papan yang bertabrakan dengan penulis lain, Level 2-2. */
+  /** Penulisan papan yang bertabrakan dengan penulis lain, Level 2-2. */
   writeConflicts: number;
   /**
    * Pemerataan giliran antar thread (Level 2-3: jumlah makan per teknisi).

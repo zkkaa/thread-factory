@@ -1,84 +1,90 @@
-import type { LevelDefinition } from '../types';
 import type { Snapshot } from '../../engine/types';
+import type { LevelDefinition, ResourceDef } from '../types';
 import { LEVEL_2_4_CONTENT } from './level-2-4.content';
+import { level2_1 } from './level-2-1';
+import { level2_2 } from './level-2-2';
+import { level2_3 } from './level-2-3';
 
 /**
- * Level 2-4: Lini Produksi Penuh (Kombinasi Ban + Papan + Meja Teknisi).
- * Ketiga masalah klasik berjalan bersamaan dengan anggaran alat terbatas.
- * Pemain harus memilih kombinasi pengaman yang tepat dalam batas koin.
+ * Level 2-4: Lini Produksi Penuh. Menggabungkan tiga komponen (ban, papan,
+ * meja teknisi) dari level 2-1, 2-2, dan 2-3. Data diambil dari level
+ * komponen agar tetap sama dengan `level-2-4.scenario.ts`.
  */
+const COMPONENTS: readonly LevelDefinition[] = [level2_1, level2_2, level2_3];
+
+/** Penanda pengisi: level ini dinilai dari invariant, bukan variabel bersama. */
+const MARKER = 'selesai';
+
+/** Anggaran alat (koin). Harus sama dengan teks di level-2-4.content.ts. */
+export const LEVEL_2_4_TOOL_BUDGET = 4;
+
+function mergeResources(): ResourceDef[] {
+  const byId = new Map<string, ResourceDef>();
+  for (const level of COMPONENTS) {
+    for (const resource of level.resources) {
+      if (!byId.has(resource.id)) byId.set(resource.id, resource);
+    }
+  }
+  return [...byId.values()];
+}
+
+function mergeSharedVars(): Record<string, number> {
+  const merged: Record<string, number> = { [MARKER]: 0 };
+  for (const level of COMPONENTS) Object.assign(merged, level.sharedVars);
+  return merged;
+}
+
+/**
+ * Lulus hanya bila ketiga komponen lulus pada invariant-nya sendiri.
+ * Pesan yang dikembalikan adalah pesan komponen pertama yang gagal.
+ */
+function invariant(snap: Snapshot): { ok: boolean; message: string } {
+  for (const level of COMPONENTS) {
+    const verdict = level.goal.invariant(snap);
+    if (!verdict.ok) {
+      return { ok: false, message: `Level ${level.id}: ${verdict.message}` };
+    }
+  }
+  return {
+    ok: true,
+    message: 'Ban, papan, dan meja teknisi semuanya aman dan tuntas.',
+  };
+}
+
 export const level2_4: LevelDefinition = {
   id: '2-4',
   module: 2,
   title: 'Lini Produksi Penuh',
   ...LEVEL_2_4_CONTENT,
   layoutId: '2-4',
-  threads: [
-    {
-      id: 'P',
-      label: 'Perakit',
-      program: [
-        { op: 'WORK', ticks: 2 },
-        { op: 'ENTER_AREA', area: 'ban' },
-        { op: 'WORK', ticks: 2 },
-        { op: 'LEAVE_AREA', area: 'ban' },
-      ],
-      repeat: 2,
-    },
-    {
-      id: 'W',
-      label: 'Penggudang',
-      program: [
-        { op: 'WORK', ticks: 2 },
-        { op: 'ENTER_AREA', area: 'ban' },
-        { op: 'WORK', ticks: 2 },
-        { op: 'LEAVE_AREA', area: 'ban' },
-      ],
-      repeat: 2,
-    },
-    {
-      id: 'C',
-      label: 'Pengepak',
-      program: [
-        { op: 'WORK', ticks: 2 },
-        { op: 'ENTER_AREA', area: 'ban' },
-        { op: 'WORK', ticks: 2 },
-        { op: 'LEAVE_AREA', area: 'ban' },
-      ],
-      repeat: 2,
-    },
-  ],
-  sharedVars: { total: 0 },
-  resources: [
-    { kind: 'mutex', id: 'meja', label: 'Kunci' },
-    { kind: 'semaphore', id: 'ban', label: 'Semaphore Ban', initialValue: 3 },
-    { kind: 'condition', id: 'papan', label: 'Lampu Sinyal', mutex: 'meja' },
-  ],
-  availableTools: ['mutex', 'semaphore', 'condition', 'rwlock'],
-  toolBudget: 4,
-  scheduler: { kind: 'random', cores: 5 },
-  tutorialSeed: 42,
-  maxTicks: 800,
-  areas: {
-    ban: 3,
+  threads: COMPONENTS.flatMap((level) =>
+    level.threads.map((thread) => ({
+      ...thread,
+      program: thread.program.map((instruction) => ({ ...instruction })),
+    })),
+  ),
+  sharedVars: mergeSharedVars(),
+  resources: mergeResources(),
+  availableTools: [...new Set(COMPONENTS.flatMap((l) => l.availableTools))],
+  toolBudget: LEVEL_2_4_TOOL_BUDGET,
+  scheduler: {
+    kind: 'random',
+    cores: COMPONENTS.reduce((sum, l) => sum + l.scheduler.cores, 0),
   },
+  // Tanpa alat, komponen meja teknisi pasti deadlock, jadi seed apa pun
+  // gagal pada tutorial. Seed 1 mengikuti level 2-2 dan 2-3.
+  tutorialSeed: 1,
+  maxTicks: Math.max(...COMPONENTS.map((l) => l.maxTicks ?? 0)),
+  starvationTicks: level2_2.starvationTicks,
+  recovery: 'manual',
   goal: {
-    target: { variable: 'total', value: 15 },
-    invariant: (snap: Snapshot) => {
-      const allTerminated = snap.threads.every(
-        (t: { state: string }) => t.state === 'TERMINATED',
-      );
-      if (!allTerminated) {
-        return {
-          ok: false,
-          message: 'Simulasi belum selesai (mungkin deadlock atau melewati batas tick).',
-        };
-      }
-      return {
-        ok: true,
-        message: 'Semua area selesai dengan baik.',
-      };
+    target: { variable: MARKER, value: 0 },
+    invariant,
+    // PLACEHOLDER: jumlah ambang komponen. Ukur dari simulasi seed tutorial
+    // dengan kombinasi alat yang benar, lalu ganti.
+    stars: {
+      fast: COMPONENTS.reduce((sum, l) => sum + l.goal.stars.fast, 0),
+      lowWait: COMPONENTS.reduce((sum, l) => sum + l.goal.stars.lowWait, 0),
     },
-    stars: { fast: 200, lowWait: 100 },
   },
 };

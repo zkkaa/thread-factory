@@ -20,7 +20,6 @@ export { level2_1 } from './module2/level-2-1';
 export { level2_2 } from './module2/level-2-2';
 export { level2_3 } from './module2/level-2-3';
 
-
 /** Daftar seluruh level yang tersedia dalam game. */
 export const ALL_LEVELS: LevelDefinition[] = [
   level1_1,
