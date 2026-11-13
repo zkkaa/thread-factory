@@ -5,12 +5,19 @@ import { robotFrameFor } from '../assetManifest';
 import type { BoardLayout, Point, Rect } from '../layouts/types';
 import { BULLETIN, COLORS, DEPTH, HALL, TEXT_STYLE } from '../theme';
 import { HallRobotView } from '../views/HallRobotView';
+import { patienceView, type PatienceLevel } from '../patience';
 
 const POLICY_LABEL = {
   reader: 'Utamakan Pembaca',
   writer: 'Utamakan Penulis',
   fair: 'Adil (FIFO)',
 } as const;
+
+const PATIENCE_COLOR: Record<PatienceLevel, number> = {
+  ok: BULLETIN.patienceOk,
+  warn: BULLETIN.patienceWarn,
+  bad: BULLETIN.patienceBad,
+};
 
 /**
  * Arena papan pengumuman (Level 2-2), dipakai LevelScene bila layout berjenis
@@ -24,6 +31,12 @@ export class BoardArena {
   private readonly panel: GameObjects.Rectangle;
   private readonly body: GameObjects.Text;
   private readonly banner: GameObjects.Text;
+  private readonly patience: {
+    fill: GameObjects.Rectangle;
+    text: GameObjects.Text;
+    track: GameObjects.Rectangle;
+    width: number;
+  }[] = [];
 
   constructor(
     scene: Scene,
@@ -74,6 +87,44 @@ export class BoardArena {
       .setOrigin(0.5, 1)
       .setDepth(DEPTH.robotFx);
     this.objects.push(this.body, this.banner);
+
+    const bars = layout.writerIds.length;
+    const barWidth =
+      (board.width - BULLETIN.patienceBarGap * (bars - 1)) / Math.max(1, bars);
+    const barY = board.y + board.height + BULLETIN.patienceGap;
+    layout.writerIds.forEach((_, i) => {
+      const x = board.x + i * (barWidth + BULLETIN.patienceBarGap);
+      const track = scene.add
+        .rectangle(
+          x,
+          barY,
+          barWidth,
+          BULLETIN.patienceHeight,
+          BULLETIN.patienceTrack,
+        )
+        .setOrigin(0, 0)
+        .setStrokeStyle(1, BULLETIN.panelStroke)
+        .setDepth(DEPTH.track);
+      const fill = scene.add
+        .rectangle(
+          x,
+          barY,
+          barWidth,
+          BULLETIN.patienceHeight,
+          BULLETIN.patienceOk,
+        )
+        .setOrigin(0, 0)
+        .setDepth(DEPTH.segment);
+      const text = scene.add
+        .text(x + barWidth / 2, barY + BULLETIN.patienceHeight / 2, '', {
+          ...TEXT_STYLE,
+          fontSize: BULLETIN.patienceFontSize,
+        })
+        .setOrigin(0.5)
+        .setDepth(DEPTH.slot);
+      this.patience.push({ fill, text, track, width: barWidth });
+      this.objects.push(track, fill, text);
+    });
 
     const place = (ids: readonly string[], spots: readonly Point[]): void =>
       ids.forEach((id, i) => {
@@ -140,6 +191,23 @@ export class BoardArena {
         : `Penulis terlama menunggu: ${writerStreak} / ${limit} tick`,
     );
     this.body.setText(lines.join('\n'));
+
+    this.layout.writerIds.forEach((id, i) => {
+      const bar = this.patience[i];
+      if (bar === undefined) return;
+      const visible = limit !== null;
+      bar.track.setVisible(visible);
+      bar.fill.setVisible(visible);
+      bar.text.setVisible(visible);
+      if (limit === null) return;
+      const view = patienceView(nameOf(id), streaks[id] ?? 0, limit);
+      bar.fill.setSize(
+        Math.max(1, bar.width * view.fraction),
+        BULLETIN.patienceHeight,
+      );
+      bar.fill.setFillStyle(PATIENCE_COLOR[view.level]);
+      bar.text.setText(view.label);
+    });
 
     const problem = torn || conflict || starving;
     this.panel.setStrokeStyle(

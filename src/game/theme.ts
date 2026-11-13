@@ -468,4 +468,12 @@ export const BULLETIN = {
   bannerGap: 8,
   bannerFontSize: '20px',
   warnText: '#fecaca',
+  patienceGap: 12,
+  patienceHeight: 20,
+  patienceBarGap: 10,
+  patienceFontSize: '12px',
+  patienceTrack: 0x1e293b,
+  patienceOk: 0xf5c542,
+  patienceWarn: 0xf97316,
+  patienceBad: 0xef4444,
 } as const;
