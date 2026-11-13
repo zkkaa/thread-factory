@@ -96,11 +96,9 @@ export const level2_4: LevelDefinition = {
   goal: {
     target: { variable: MARKER, value: 0 },
     invariant,
-    // PLACEHOLDER: jumlah ambang komponen. Ukur dari simulasi seed tutorial
-    // dengan kombinasi alat yang benar, lalu ganti.
-    stars: {
-      fast: COMPONENTS.reduce((sum, l) => sum + l.goal.stars.fast, 0),
-      lowWait: COMPONENTS.reduce((sum, l) => sum + l.goal.stars.lowWait, 0),
-    },
+    // Diukur pada seed tutorial 1 (13 Nov 2026), kombinasi lengkap:
+    // fair kursi 3 = tick 84, tunggu 282 (3 bintang); fair/writer kursi 4 =
+    // tick 90/94, tunggu 328/327 (2 bintang). Ukur ulang bila level berubah.
+    stars: { fast: 100, lowWait: 300 },
   },
 };

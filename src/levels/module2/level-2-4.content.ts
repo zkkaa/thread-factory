@@ -29,29 +29,25 @@ export const LEVEL_2_4_CONTENT: Required<
     {
       mood: 'berpikir',
       text:
-        'Anggaran kita terbatas. Kamu hanya punya 4 koin untuk membeli ' +
-        'pengaman. Pikirkan mana yang paling kritis untuk dilindungi, lalu ' +
-        'pasang dengan bijak. Jalankan simulasi dan lihat bagaimana pilihanmu ' +
-        'memengaruhi ketiga area.',
+        'Anggaran kita pas: 4 koin. Ban butuh dua pengaman, papan satu, dan ' +
+        'meja satu. Semuanya perlu, jadi tantanganmu adalah setelannya: ' +
+        'kebijakan papan dan jumlah Kartu Akses di meja. Jalankan dan lihat ' +
+        'apakah ketiga area aman.',
     },
   ],
   hints: [
-    'Jalankan dulu tanpa pengaman untuk melihat di mana masalah terberat. ' +
-      'Apakah di ban, papan, atau meja teknisi?',
-    'Ban berjalan butuh tiga semaphore: empty (menghitung slot kosong), full ' +
-      '(menghitung barang), dan mutex (melindungi operasi baca-tulis pada ' +
-      'indeks). Jika ban sering penuh atau kosong, berarti sinkronisasi ' +
-      'producer-consumer belum tepat.',
-    'Papan pengumuman membutuhkan rwlock. Pembaca boleh bersamaan, tetapi ' +
-      'penulis harus eksklusif. Pilih kebijakan yang sesuai: reader-priority ' +
-      'cepat tapi bisa kelaparan penulis, writer-priority adil tapi lambat, ' +
-      'atau fair (FIFO).',
-    'Meja teknisi bisa deadlock kalau semua teknisi ambil kunci kiri ' +
-      'bersamaan. Coba strategi urutan resource (nomor terkecil dulu), ' +
-      'batas 4 teknisi, atau asimetris genap/ganjil.',
-    'Dengan hanya 4 koin, kamu harus prioritas. Apakah kamu fokus melindungi ' +
-      'area yang paling sering bermasalah, atau mencoba menyeimbangkan ketiga ' +
-      'area?',
+    'Jalankan dulu tanpa pengaman. Perhatikan area mana yang bermasalah dan ' +
+      'apa bentuk masalahnya: barang meluap atau kosong, tulisan setengah ' +
+      'jadi, atau teknisi saling menunggu.',
+    'Ban berjalan butuh dua penjaga: satu agar perakit menunggu slot kosong, ' +
+      'satu agar pengepak menunggu barang tersedia.',
+    'Papan butuh pengaman baca-tulis. Pilih kebijakannya dengan hati-hati: ' +
+      'bila pembaca selalu didahulukan, apakah penulis pernah kebagian giliran?',
+    'Meja teknisi macet kalau semua teknisi memegang satu kunci dan menunggu ' +
+      'tetangganya. Kartu Akses membatasi berapa teknisi yang boleh mulai.',
+    'Semua pengaman memakai koin dan jumlahnya pas. Setelah semuanya aman, ' +
+      'coba ubah kebijakan papan dan nilai Kartu Akses, lalu bandingkan ' +
+      'waktu tunggunya.',
   ],
   concepts: [
     'Kombinasi masalah klasik konkurensi',
