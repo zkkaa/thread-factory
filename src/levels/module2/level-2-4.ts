@@ -34,6 +34,12 @@ function mergeSharedVars(): Record<string, number> {
   return merged;
 }
 
+function mergeBuffers(): NonNullable<LevelDefinition['buffers']> {
+  const merged: NonNullable<LevelDefinition['buffers']> = {};
+  for (const level of COMPONENTS) Object.assign(merged, level.buffers);
+  return merged;
+}
+
 /**
  * Lulus hanya bila ketiga komponen lulus pada invariant-nya sendiri.
  * Pesan yang dikembalikan adalah pesan komponen pertama yang gagal.
@@ -65,6 +71,7 @@ export const level2_4: LevelDefinition = {
   ),
   sharedVars: mergeSharedVars(),
   resources: mergeResources(),
+  buffers: mergeBuffers(),
   availableTools: [...new Set(COMPONENTS.flatMap((l) => l.availableTools))],
   toolBudget: LEVEL_2_4_TOOL_BUDGET,
   scheduler: {

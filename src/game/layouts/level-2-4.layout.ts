@@ -1,49 +1,75 @@
-import type { CombinedLayout } from './types';
+import type { TripleLayout } from './types';
 
 /**
- * Arena Level 2-4 (Lini Produksi Penuh).
- * Karena ini adalah level gabungan (CombinedLayout), kita tidak menggunakan
- * jalur robot (road) yang mengharuskan checkpoint dan slot. Layout ini
- * menempatkan tiga zona (perakit, penggudang, pengepak) di dalam HUD_SAFE.
- *
- * Semua koordinat berada di dalam HUD_SAFE (x 350..1260, y 80..580).
+ * Arena Level 2-4: tiga arena komponen dalam HUD_SAFE (x 350..1260,
+ * y 80..580). Ban di kiri atas, papan di kanan atas, meja teknisi di bawah.
+ * Id thread dan resource sama dengan level 2-1, 2-2, dan 2-3. Meja: pusat
+ * (805, 455), teknisi pada jari-jari 95, kunci pada jari-jari 55, sudut
+ * sama dengan layout 2-3. Koordinat adalah titik awal; setel ulang setelah
+ * melihat hasil di browser.
  */
-export const layout2_4: CombinedLayout = {
-  kind: 'combined',
+export const layout2_4: TripleLayout = {
+  kind: 'triple',
   id: '2-4',
-  tools: { mutexId: 'meja', semaphoreId: 'ban', conditionId: 'papan' },
-  road: { left: 400, top: 180, width: 256, height: 192 },
-  checkpoints: [0.1, 0.3, 0.5, 0.7],
-  slots: [0.05, 0.2, 0.4, 0.6, 0.8],
-  laneOffsets: [0, 0, 0],
-  board: { x: 496, y: 244, width: 64, height: 64 },
-  boardLinks: [
-    { checkpoint: 1, direction: 'read' },
-    { checkpoint: 3, direction: 'write' },
-  ],
-  assembler: {
-    threadId: 'P',
-    zone: { x: 360, y: 390, width: 140, height: 90 },
-  },
-  warehouse: {
-    threadId: 'W',
-    zone: { x: 520, y: 390, width: 140, height: 90 },
-  },
-  area: {
-    id: 'ban',
-    zone: { x: 680, y: 390, width: 180, height: 120 },
-    gate: { start: 1, end: 3 },
-    door: { x: 700, y: 400 },
-    machines: [
-      { x: 730, y: 420 },
-      { x: 770, y: 420 },
-      { x: 810, y: 420 },
+  belt: {
+    kind: 'belt',
+    id: '2-4-ban',
+    bufferId: 'ban',
+    belt: { x: 455, y: 130, width: 200, height: 100 },
+    producerZone: { x: 360, y: 95, width: 90, height: 170 },
+    consumerZone: { x: 660, y: 95, width: 90, height: 170 },
+    producerIds: ['P1', 'P2'],
+    producerSpots: [
+      { x: 405, y: 150 },
+      { x: 405, y: 220 },
+    ],
+    consumerIds: ['C1', 'C2'],
+    consumerSpots: [
+      { x: 705, y: 150 },
+      { x: 705, y: 220 },
     ],
   },
-  packer: {
-    threadId: 'C',
-    zone: { x: 880, y: 390, width: 140, height: 90 },
-    lamp: { x: 920, y: 410 },
-    battery: { x: 920, y: 450 },
+  board: {
+    kind: 'board',
+    id: '2-4-papan',
+    boardId: 'papan',
+    board: { x: 905, y: 95, width: 200, height: 230 },
+    readerZone: { x: 770, y: 95, width: 130, height: 230 },
+    writerZone: { x: 1110, y: 95, width: 140, height: 230 },
+    readerIds: ['R1', 'R2', 'R3', 'R4', 'R5', 'R6'],
+    readerSpots: [
+      { x: 805, y: 150 },
+      { x: 865, y: 150 },
+      { x: 805, y: 210 },
+      { x: 865, y: 210 },
+      { x: 805, y: 270 },
+      { x: 865, y: 270 },
+    ],
+    writerIds: ['W1', 'W2'],
+    writerSpots: [
+      { x: 1180, y: 170 },
+      { x: 1180, y: 260 },
+    ],
+  },
+  table: {
+    kind: 'table',
+    id: '2-4-meja',
+    table: { center: { x: 805, y: 455 }, radius: 70 },
+    seatIds: ['T1', 'T2', 'T3', 'T4', 'T5'],
+    seats: [
+      { x: 805, y: 360 },
+      { x: 895, y: 426 },
+      { x: 861, y: 532 },
+      { x: 749, y: 532 },
+      { x: 715, y: 426 },
+    ],
+    forkIds: ['kunci-1', 'kunci-2', 'kunci-3', 'kunci-4', 'kunci-5'],
+    forks: [
+      { x: 837, y: 410 },
+      { x: 857, y: 472 },
+      { x: 805, y: 510 },
+      { x: 753, y: 472 },
+      { x: 773, y: 410 },
+    ],
   },
 };

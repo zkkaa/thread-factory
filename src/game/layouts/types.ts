@@ -187,6 +187,15 @@ export interface BoardLayout {
   writerSpots: Point[];
 }
 
+/** Level 2-4: tiga arena komponen dalam satu kanvas, tiap layout berdiri sendiri. */
+export interface TripleLayout {
+  kind: 'triple';
+  id: string;
+  belt: BeltLayout;
+  board: BoardLayout;
+  table: TableLayout;
+}
+
 export type ArenaLayout =
   | LoopLayout
   | HallLayout
@@ -194,4 +203,5 @@ export type ArenaLayout =
   | CombinedLayout
   | BeltLayout
   | TableLayout
-  | BoardLayout;
+  | BoardLayout
+  | TripleLayout;

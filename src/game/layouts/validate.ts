@@ -101,6 +101,15 @@ export function validateLayout(
   if (layout.kind === 'belt') return validateBeltLayout(layout, level);
   if (layout.kind === 'table') return validateTableLayout(layout, level);
   if (layout.kind === 'board') return validateBoardLayout(layout, level);
+  if (layout.kind === 'triple') {
+    const prefixed = (label: string, errors: string[]): string[] =>
+      errors.map((error) => `${label}: ${error}`);
+    return [
+      ...prefixed('ban', validateBeltLayout(layout.belt, level)),
+      ...prefixed('papan', validateBoardLayout(layout.board, level)),
+      ...prefixed('meja', validateTableLayout(layout.table, level)),
+    ];
+  }
   const errors = validateTrackLayout(layout, level);
   if (layout.kind === 'combined') {
     errors.push(...validateCombinedLayout(layout, level));
