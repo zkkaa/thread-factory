@@ -2,7 +2,8 @@ import type { RwPolicy } from '../engine/primitives/rwlock';
 import type { SchedulerConfig, Snapshot, ThreadDef } from '../engine/types';
 
 /** Jenis alat sinkronisasi yang dapat disediakan atau ditaruh pemain. */
-export type ToolType = 'mutex' | 'semaphore' | 'semaphorePair' | 'condition' | 'rwlock'; 
+export type ToolType =
+  'mutex' | 'semaphore' | 'semaphorePair' | 'condition' | 'rwlock';
 
 /** Ekspresi potret Pak Mandor (PRD bagian 18.3). */
 export type MandorMood = 'netral' | 'senang' | 'sedih' | 'berpikir';
