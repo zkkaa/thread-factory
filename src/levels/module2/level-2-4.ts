@@ -4,6 +4,10 @@ import { LEVEL_2_4_CONTENT } from './level-2-4.content';
 import { level2_1 } from './level-2-1';
 import { level2_2 } from './level-2-2';
 import { level2_3 } from './level-2-3';
+import {
+  LEVEL_2_3_SEAT_SEMAPHORE,
+  LEVEL_2_3_THREADS,
+} from './level-2-3.scenario';
 
 /**
  * Level 2-4: Lini Produksi Penuh. Menggabungkan tiga komponen (ban, papan,
@@ -74,6 +78,10 @@ export const level2_4: LevelDefinition = {
   buffers: mergeBuffers(),
   availableTools: [...new Set(COMPONENTS.flatMap((l) => l.availableTools))],
   toolBudget: LEVEL_2_4_TOOL_BUDGET,
+  semaphoreScope: {
+    sem: LEVEL_2_3_SEAT_SEMAPHORE,
+    threadIds: LEVEL_2_3_THREADS.map((thread) => thread.id),
+  },
   scheduler: {
     kind: 'random',
     cores: COMPONENTS.reduce((sum, l) => sum + l.scheduler.cores, 0),

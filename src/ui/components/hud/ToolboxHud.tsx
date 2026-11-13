@@ -2,6 +2,7 @@ import { findConditionSetup } from '../../conditionTool';
 import { ConditionToolbox } from './ConditionToolbox';
 import { BeltToolbox } from './BeltToolbox';
 import { findBeltSetup } from '../../beltTool';
+import { BudgetChip } from './BudgetChip';
 import { useState } from 'react';
 import type {
   ControllerState,
@@ -25,6 +26,7 @@ import { GateDragChip } from './GateDragChip';
 import { useGatePlacement } from '../../hooks/useGatePlacement';
 import { RwToolbox } from './RwToolbox';
 import { findRwSetup } from '../../rwTool';
+import { ResourceDef } from '../../../levels';
 
 interface ToolboxHudProps {
   controller: SimulationController;
@@ -46,13 +48,24 @@ const BUTTON =
 export function ToolboxHud({ controller, state }: ToolboxHudProps) {
   const { level } = state;
   const mutex = level?.resources.find((resource) => resource.kind === 'mutex');
+  const semId = level?.semaphoreScope?.sem;
   const sem = level?.resources.find(
-    (resource) => resource.kind === 'semaphore',
+    (resource): resource is Extract<ResourceDef, { kind: 'semaphore' }> =>
+      resource.kind === 'semaphore' &&
+      (semId === undefined || resource.id === semId),
   );
   const first = level?.threads[0];
   if (level === null || first === undefined) {
     return null;
   }
+  const semScope = level.semaphoreScope;
+  const semThreads =
+    semScope === undefined
+      ? level.threads
+      : level.threads.filter((thread) =>
+          semScope.threadIds.includes(thread.id),
+        );
+  const semFirst = semThreads[0] ?? first;
 
   const hasMutex =
     mutex !== undefined && level.availableTools.includes('mutex');
@@ -69,6 +82,9 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
   }
   return (
     <>
+      {level.toolBudget !== undefined && (
+        <BudgetChip budget={level.toolBudget} used={state.tools.length} />
+      )}
       {hasBelt && <BeltToolbox controller={controller} state={state} />}
       {hasRw && <RwToolbox controller={controller} state={state} />}
       {hasMutex && (
@@ -86,8 +102,8 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
           state={state}
           semId={sem.id}
           initialValue={sem.initialValue}
-          threadIds={level.threads.map((thread) => thread.id)}
-          ops={first.program.map((instruction) => instruction.op)}
+          threadIds={semThreads.map((thread) => thread.id)}
+          ops={semFirst.program.map((instruction) => instruction.op)}
         />
       )}
       {hasCondition && (

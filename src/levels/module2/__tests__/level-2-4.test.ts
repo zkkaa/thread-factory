@@ -30,4 +30,14 @@ describe('Level 2-4: Lini Produksi Penuh (T-104)', () => {
     expect(config.threads.length).toBe(level2_4.threads.length);
     expect(config.scheduler.cores).toBe(level2_4.scheduler.cores);
   });
+
+  it('semaphoreScope menunjuk semaphore dan thread yang ada', () => {
+    const scope = level2_4.semaphoreScope;
+    expect(scope).toBeDefined();
+    const sem = level2_4.resources.find((r) => r.id === scope?.sem);
+    expect(sem?.kind).toBe('semaphore');
+    const ids = new Set(level2_4.threads.map((t) => t.id));
+    for (const id of scope?.threadIds ?? []) expect(ids.has(id)).toBe(true);
+    expect(scope?.threadIds).toHaveLength(5);
+  });
 });

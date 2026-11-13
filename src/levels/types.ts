@@ -79,6 +79,11 @@ export interface LevelDefinition {
    * bila tidak ditentukan, jumlah alat tidak dibatasi.
    */
   toolBudget?: number;
+  /**
+   * Level gabungan (2-4): batasi toolbox semaphore ke satu semaphore dan
+   * sekelompok thread. Kosong = semaphore pertama dan semua thread.
+   */
+  semaphoreScope?: { sem: string; threadIds: string[] };
   /** Pengaturan scheduler (acak ber-seed atau scripted). */
   scheduler: SchedulerConfig;
   /** Seed default tutorial yang pasti menghasilkan perilaku tertentu (mis. race condition). */
