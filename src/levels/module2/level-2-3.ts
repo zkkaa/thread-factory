@@ -106,7 +106,8 @@ export const level2_3: LevelDefinition = {
   goal: {
     target: { variable: MARKER, value: 0 },
     invariant,
-    // PLACEHOLDER: ukur dari simulasi pada seed tutorial (seperti T-043), lalu ganti.
-    stars: { fast: 200, lowWait: 400 },
+    // Diukur pada seed tutorial 1 (13 Nov 2026), kursi 1..4: tick 106/58/42/64,
+    // total tunggu 340/134/69/160. Kursi 3 optimal. Ukur ulang bila skenario berubah.
+    stars: { fast: 80, lowWait: 100 },
   },
 };
