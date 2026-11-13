@@ -439,6 +439,16 @@ export const TABLE = {
   bannerY: 100,
   bannerFontSize: '22px',
   bannerText: '#fecaca',
+  cycleStroke: 0xef4444,
+  cycleWidth: 5,
+  coffmanWidth: 220,
+  coffmanHeight: 44,
+  coffmanGap: 10,
+  coffmanFontSize: '14px',
+  coffmanOn: 0x7f1d1d,
+  coffmanOff: 0x1e293b,
+  coffmanStroke: 0xfacc15,
+  coffmanStrokeWidth: 2,
 } as const;
 // ---------------------------------------------------------------------------
 // Arena papan pengumuman (Level 2-2, T-099)

@@ -27,4 +27,5 @@ export const layout2_3: TableLayout = {
     { x: 710, y: 361 },
     { x: 746, y: 249 },
   ],
+  coffmanPanel: { x: 360, y: 140 },
 };

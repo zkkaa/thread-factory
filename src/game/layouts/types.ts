@@ -165,6 +165,8 @@ export interface TableLayout {
   /** Id mutex kunci, sejajar dengan `forks`; kunci ke-i di antara teknisi i dan i+1. */
   forkIds: string[];
   forks: Point[];
+  /** Pojok kiri atas panel empat kondisi Coffman. Kosong = panel tidak digambar. */
+  coffmanPanel?: Point;
 }
 
 /**

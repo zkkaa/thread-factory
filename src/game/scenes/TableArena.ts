@@ -6,6 +6,7 @@ import type { Point, TableLayout } from '../layouts/types';
 import { DEPTH, TABLE, TEXT_STYLE } from '../theme';
 import { getThreadStepProgress } from '../tableProgress';
 import { HallRobotView } from '../views/HallRobotView';
+import { computeCoffman, type CoffmanKey } from '../../engine/coffman';
 
 interface ForkView {
   id: string;
@@ -18,6 +19,20 @@ interface ProgressView {
   fill: GameObjects.Arc;
   label: GameObjects.Text;
 }
+
+const COFFMAN_KEYS: readonly CoffmanKey[] = [
+  'mutualExclusion',
+  'holdAndWait',
+  'noPreemption',
+  'circularWait',
+];
+
+const COFFMAN_LABEL: Record<CoffmanKey, string> = {
+  mutualExclusion: 'Mutual Exclusion',
+  holdAndWait: 'Hold and Wait',
+  noPreemption: 'No Preemption',
+  circularWait: 'Circular Wait',
+};
 
 /**
  * Arena meja bundar (Level 2-3), dipakai LevelScene bila layout berjenis 'table'.
@@ -34,6 +49,11 @@ export class TableArena {
   private readonly objects: GameObjects.GameObject[] = [];
   private readonly links: GameObjects.Graphics;
   private readonly banner: GameObjects.Text;
+  private readonly coffman: {
+    key: CoffmanKey;
+    box: GameObjects.Rectangle;
+    text: GameObjects.Text;
+  }[] = [];
 
   constructor(
     scene: Scene,
@@ -95,6 +115,36 @@ export class TableArena {
       .setDepth(DEPTH.robotFx)
       .setVisible(false);
 
+    const panel = layout.coffmanPanel;
+    if (panel !== undefined) {
+      COFFMAN_KEYS.forEach((key, i) => {
+        const y = panel.y + i * (TABLE.coffmanHeight + TABLE.coffmanGap);
+        const box = scene.add
+          .rectangle(
+            panel.x + TABLE.coffmanWidth / 2,
+            y + TABLE.coffmanHeight / 2,
+            TABLE.coffmanWidth,
+            TABLE.coffmanHeight,
+            TABLE.coffmanOff,
+          )
+          .setStrokeStyle(TABLE.coffmanStrokeWidth, TABLE.coffmanStroke)
+          .setDepth(DEPTH.track);
+        const text = scene.add
+          .text(
+            panel.x + TABLE.coffmanWidth / 2,
+            y + TABLE.coffmanHeight / 2,
+            '',
+            {
+              ...TEXT_STYLE,
+              fontSize: TABLE.coffmanFontSize,
+            },
+          )
+          .setOrigin(0.5)
+          .setDepth(DEPTH.slot);
+        this.coffman.push({ key, box, text });
+      });
+    }
+
     this.robots = snapshot.threads.map((thread, index) => {
       const seat = this.seatOf(thread.id) ?? layout.seats[index] ?? center;
       const definition = this.threadDefinition(thread.id);
@@ -145,6 +195,24 @@ export class TableArena {
       }
     });
 
+    const cycle = snapshot.deadlock ?? [];
+    this.links.lineStyle(TABLE.cycleWidth, TABLE.cycleStroke, 1);
+    cycle.forEach((id, i) => {
+      const next = cycle[(i + 1) % cycle.length];
+      const from = this.seatOf(id);
+      const to = next === undefined ? undefined : this.seatOf(next);
+      if (from !== undefined && to !== undefined) {
+        this.links.lineBetween(from.x, from.y, to.x, to.y);
+      }
+    });
+
+    const coffman = computeCoffman(snapshot);
+    for (const item of this.coffman) {
+      const on = coffman[item.key];
+      item.box.setFillStyle(on ? TABLE.coffmanOn : TABLE.coffmanOff);
+      item.text.setText(`${COFFMAN_LABEL[item.key]}: ${on ? 'ADA' : 'tidak'}`);
+    }
+
     this.banner.setVisible(Boolean(snapshot.deadlock));
   }
 
@@ -164,6 +232,10 @@ export class TableArena {
     this.objects.length = 0;
     this.links.destroy();
     this.banner.destroy();
+    for (const item of this.coffman) {
+      item.box.destroy();
+      item.text.destroy();
+    }
   }
 
   private seatOf(threadId: string): Point | undefined {
