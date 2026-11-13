@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { ALL_LEVELS } from '../index';
 import { MODULES, findModuleById, findModuleOfLevel } from '../modules';
 
@@ -6,7 +6,7 @@ import { MODULES, findModuleById, findModuleOfLevel } from '../modules';
  * Level yang sudah direncanakan di modul tetapi datanya belum dibuat.
  * Saat sebuah level didaftarkan di ALL_LEVELS, hapus id-nya dari daftar ini.
  */
-const BELUM_DIBUAT = ['2-2'];
+const BELUM_DIBUAT = ['2-4'];
 
 describe('Daftar modul', () => {
   it('id modul unik dan tiap modul punya level dan konsep', () => {
