@@ -28,8 +28,8 @@ describe('HomeScreen: gambar', () => {
   });
 
   it('menampilkan potret Pak Aldi asli, bukan placeholder', () => {
-    expect(html).toContain('alt="Pak Aldi, ekspresi netral"');
-    expect(html).toContain('assets/characters/aldi/aldi-netral.png');
+    expect(html).toContain('alt="Pak Aldi, ekspresi senang"');
+    expect(html).toContain('assets/characters/aldi/aldi-senang.png');
     expect(html).not.toContain('menyusul');
   });
 });

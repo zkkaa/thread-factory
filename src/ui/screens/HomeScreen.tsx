@@ -142,7 +142,7 @@ export function HomeScreen({ navigation, hasProgress }: HomeScreenProps) {
       <div className="pointer-events-none absolute bottom-0 right-0 md:right-16 lg:right-24 xl:right-40 z-0 md:z-10 flex items-end">
         <MandorPortrait
           character={HOME_CHARACTER}
-          mood="berpikir"
+          mood="senang"
           className="h-[55vh] sm:h-[65vh] md:h-[75vh] lg:h-[85vh] max-h-160 w-auto object-contain object-bottom drop-shadow-2xl opacity-35 sm:opacity-50 md:opacity-100 transition-all"
         />
       </div>
