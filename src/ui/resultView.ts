@@ -103,6 +103,7 @@ export function deriveResultView(
   const efficient = result.ok && result.metrics.tick <= fast;
   const frugal = efficient && totalWait <= lowWait;
   const titles = level.resultTitle ?? DEFAULT_TITLES;
+  const verdictMode = level.resultMode === 'verdict';
 
   const tickCard = { label: 'Total tick', value: String(result.metrics.tick) };
   const waitCard = { label: 'Waktu tunggu', value: String(totalWait) };
@@ -112,7 +113,9 @@ export function deriveResultView(
   };
 
   let cards: { label: string; value: string }[];
-  if (area !== null) {
+  if (verdictMode) {
+    cards = [tickCard, waitCard];
+  } else if (area !== null) {
     cards = [
       { label: 'Tick bentrok', value: String(overload) },
       tickCard,
@@ -142,7 +145,14 @@ export function deriveResultView(
   }
 
   let keyFigure: ResultView['keyFigure'];
-  if (area !== null) {
+  if (verdictMode) {
+    keyFigure = {
+      label: 'Hasil',
+      actual: result.ok ? 'aman' : 'bermasalah',
+      target: 'aman',
+      match: result.ok,
+    };
+  } else if (area !== null) {
     keyFigure = {
       label: 'Bentrok',
       actual: result.ok || overload > 0 ? String(overload) : 'belum selesai',
@@ -173,7 +183,9 @@ export function deriveResultView(
   }
 
   let quote: string;
-  if (area !== null) {
+  if (verdictMode) {
+    quote = result.message;
+  } else if (area !== null) {
     quote = areaQuote(result.ok, area.name, overload);
   } else if (battery) {
     quote = batteryQuote(result.ok, completed, busyWait, percent, timingFail);
@@ -189,6 +201,8 @@ export function deriveResultView(
   } else if (battery) {
     correctLabel = 'Benar: barang lengkap dan baterai hemat';
   }
+
+  if (verdictMode) correctLabel = 'Benar: semua robot selesai tanpa masalah';
 
   let title = titles.fail;
   if (result.ok) title = titles.pass;

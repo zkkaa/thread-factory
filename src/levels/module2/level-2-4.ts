@@ -67,6 +67,7 @@ export const level2_4: LevelDefinition = {
   title: 'Lini Produksi Penuh',
   ...LEVEL_2_4_CONTENT,
   layoutId: '2-4',
+  resultMode: 'verdict',
   threads: COMPONENTS.flatMap((level) =>
     level.threads.map((thread) => ({
       ...thread,

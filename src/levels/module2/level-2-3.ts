@@ -86,6 +86,7 @@ export const level2_3: LevelDefinition = {
     fail: 'Waduh, Semua Teknisi Macet!',
   },
   layoutId: '2-3',
+  resultMode: 'verdict',
   threads: LEVEL_2_3_THREADS,
   sharedVars: { [MARKER]: 0 },
   resources: [

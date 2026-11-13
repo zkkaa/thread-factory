@@ -105,6 +105,11 @@ export interface LevelDefinition {
    * mengakhiri simulasi.
    */
   recovery?: 'manual';
+  /**
+   * 'verdict': level dinilai dari pesan invariant, bukan dari variabel
+   * bersama (Level 2-2, 2-3, 2-4). Popup hasil memakai pesan itu.
+   */
+  resultMode?: 'verdict';
   /** Kriteria keberhasilan dan penilaian bintang. */
   goal: {
     /** Target variabel bersama yang diharapkan, mis. { variable: 'stok', value: 10 }. */

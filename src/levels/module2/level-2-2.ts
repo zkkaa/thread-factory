@@ -131,6 +131,7 @@ export const level2_2: LevelDefinition = {
   title: 'Papan Pengumuman',
   ...LEVEL_2_2_CONTENT,
   layoutId: '2-2',
+  resultMode: 'verdict',
   threads: LEVEL_2_2_THREADS,
   sharedVars: { [MARKER]: 0 },
   resources: [
