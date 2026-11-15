@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { SimulationController } from '../../controller/SimulationController';
 import { PhaserGame } from '../../PhaserGame';
 import { toolBus } from '../../game/toolBus';
@@ -35,6 +35,10 @@ interface PlayScreenProps {
   /** Pindah ke level berikutnya; dipanggil dari popup hasil. */
   onNext?: () => void;
   reduceMotion?: boolean;
+  /** Panel tambahan di kolom kiri atas (laci Parameter Sandbox). */
+  sidePanel?: ReactNode;
+  /** Label mode di judul level, mis. "Sandbox". */
+  modeLabel?: string;
 }
 
 type Overlay = { kind: 'menu' | 'hint'; wasRunning: boolean };
@@ -52,6 +56,8 @@ export function PlayScreen({
   onSettings,
   onNext,
   reduceMotion = false,
+  sidePanel,
+  modeLabel,
 }: PlayScreenProps) {
   const state = useSimulation(controller);
   const [overlay, setOverlay] = useState<Overlay | null>(null);
@@ -109,11 +115,13 @@ export function PlayScreen({
             {state.level !== null && (
               <h1 className="text-base font-bold">
                 Level {state.level.id}: {state.level.title}
+                {modeLabel !== undefined && ` (${modeLabel})`}
               </h1>
             )}
           </div>
           {state.level !== null && <MissionChip level={state.level} />}
           <CoreIndicatorHud state={state} />
+          {sidePanel}
         </div>
       }
       topRight={
@@ -172,4 +180,4 @@ export function PlayScreen({
       }
     />
   );
-}
+} 

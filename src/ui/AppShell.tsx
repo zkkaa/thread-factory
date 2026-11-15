@@ -22,6 +22,7 @@ import { ModuleCompleteScreen } from './screens/ModuleCompleteScreen';
 import { ModuleIntroScreen } from './screens/ModuleIntroScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { PlayScreen } from './screens/PlayScreen';
+import { SandboxScreen } from './screens/SandboxScreen';
 import { LevelIntroScreen } from './screens/LevelIntroScreen';
 import { useSound } from './audio/soundContext';
 import { useAppAudio, useSoundEffects } from './hooks/useAppAudio';
@@ -90,6 +91,9 @@ export function AppShell({
   const apply = (next: ScreenState, forceLoad: boolean) => {
     if (next === screenState) return;
     if (next.current.id === 'play') enterPlay(next.current.levelId, forceLoad);
+    // Sandbox memuat levelnya sendiri (dengan parameter); controller tidak lagi
+    // memegang level Kampanye, jadi penanda dikosongkan.
+    if (next.current.id === 'sandbox') loadedLevelId.current = null;
     setScreenState(next);
   };
 
@@ -193,6 +197,21 @@ export function AppShell({
     const introLevel = findLevelById(screen.levelId);
     if (introLevel !== undefined) {
       return <LevelIntroScreen navigation={navigation} level={introLevel} />;
+    }
+  }
+  if (screen.id === 'sandbox') {
+    const sandboxLevel = findLevelById(screen.levelId);
+    if (sandboxLevel !== undefined) {
+      return (
+        <SandboxScreen
+          key={sandboxLevel.id}
+          controller={controller}
+          level={sandboxLevel}
+          onExit={() => navigation.go({ id: 'mode', tab: 'sandbox' })}
+          onSettings={() => navigation.go({ id: 'settings' })}
+          reduceMotion={settings.reduceMotion}
+        />
+      );
     }
   }
   if (screen.id === 'play') {
