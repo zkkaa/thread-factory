@@ -50,6 +50,15 @@ export interface ControllerState {
 
 export type ControllerListener = (state: ControllerState) => void;
 
+/** Opsi saat memuat level. */
+export interface LoadOptions {
+  /**
+   * false = bintang tidak dinilai pada level ini (Sandbox). Default true.
+   * Berlaku sampai loadLevel berikutnya; reset() mempertahankannya.
+   */
+  readonly rated?: boolean;
+}
+
 const INITIAL_STATE: ControllerState = {
   level: null,
   runState: 'idle',
@@ -100,6 +109,9 @@ export class SimulationController {
   // Alat pemain, dipakai membangun EngineConfig. Diubah hanya lewat placeTool/removeTool
   // (dan dikosongkan loadLevel); salinannya selalu dicerminkan ke state.tools.
   private placedTools: PlacedTool[] = [];
+  // Apakah bintang dinilai. Sengaja tidak ada di ControllerState: UI cukup
+  // membaca result.stars (null = tidak dinilai).
+  private rated = true;
   private readonly listeners = new Set<ControllerListener>();
   private frameHandle: number | null = null;
   private lastFrameTime: number | null = null;
@@ -121,8 +133,16 @@ export class SimulationController {
     };
   }
 
-  /** Memuat level dari awal (alat pemain dikosongkan). Seed default: tutorialSeed level. */
-  loadLevel(level: LevelDefinition, seed?: number): void {
+  /**
+   * Memuat level dari awal (alat pemain dikosongkan). Seed default: tutorialSeed level.
+   * `options.rated = false` mematikan penilaian bintang (Sandbox); tanpa opsi,
+   * bintang dinilai seperti biasa.
+   */
+  loadLevel(
+    level: LevelDefinition,
+    seed?: number,
+    options: LoadOptions = {},
+  ): void {
     if (
       level.toolBudget !== undefined &&
       (!Number.isSafeInteger(level.toolBudget) || level.toolBudget < 0)
@@ -134,6 +154,7 @@ export class SimulationController {
     this.engine.load(buildEngineConfig(level, []), nextSeed);
     this.stopClock();
     this.placedTools = [];
+    this.rated = options.rated !== false;
     this.setState({
       level,
       runState: 'idle',
@@ -347,7 +368,7 @@ export class SimulationController {
     const { level } = this.state;
     if (runState === 'finished' && level !== null) {
       try {
-        result = evaluateLevel(level, snapshot);
+        result = evaluateLevel(level, snapshot, { rated: this.rated });
       } catch (e) {
         // Data level yang salah tidak boleh mematikan jam/rAF; laporkan sebagai error.
         error = `Gagal menilai hasil: ${e instanceof Error ? e.message : String(e)}`;

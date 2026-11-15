@@ -15,9 +15,20 @@ export interface LevelResult {
   /**
    * Bintang berdasarkan ambang di data level. null = tidak dinilai, karena
    * simulasi dijalankan dengan seed selain `tutorialSeed` level (waktu tunggu
-   * bergantung seed, jadi bintang hanya adil pada seed yang sama untuk semua pemain).
+   * bergantung seed, jadi bintang hanya adil pada seed yang sama untuk semua pemain),
+   * atau karena penilai meminta tanpa bintang (opsi `rated: false`, mis. Sandbox).
    */
   readonly stars: Stars | null;
+}
+
+/** Opsi penilaian. */
+export interface EvaluateOptions {
+  /**
+   * false = hasil lulus/gagal tetap dihitung, tetapi bintang tidak dinilai
+   * (Sandbox: parameter level diubah pemain, jadi ambang bintang tidak adil).
+   * Default true.
+   */
+  readonly rated?: boolean;
 }
 
 const NOT_COMPLETED_MESSAGE =
@@ -34,6 +45,7 @@ const NOT_COMPLETED_MESSAGE =
 export function evaluateLevel(
   level: LevelDefinition,
   snapshot: Readonly<Snapshot>,
+  options: EvaluateOptions = {},
 ): LevelResult {
   const metrics = computeMetrics(snapshot, level.goal.target);
 
@@ -42,9 +54,9 @@ export function evaluateLevel(
     ? level.goal.invariant(snapshot)
     : { ok: false, message: NOT_COMPLETED_MESSAGE };
 
-  const rated =
+  const seedRated =
     level.tutorialSeed === undefined || snapshot.seed === level.tutorialSeed;
-  if (!rated) {
+  if (options.rated === false || !seedRated) {
     return { ok: verdict.ok, message: verdict.message, metrics, stars: null };
   }
 
