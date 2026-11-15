@@ -7,6 +7,11 @@ interface PhaserGameProps {
   controller: SimulationController;
   /** Pengaturan "kurangi animasi"; diteruskan ke Phaser lewat registry. */
   reduceMotion?: boolean;
+  /**
+   * Id elemen wadah. Harus unik bila ada lebih dari satu arena di layar
+   * (mode Bandingkan). Default cocok untuk satu arena.
+   */
+  parentId?: string;
 }
 
 /**
@@ -18,6 +23,7 @@ interface PhaserGameProps {
 export function PhaserGame({
   controller,
   reduceMotion = false,
+  parentId = 'game-container',
 }: PhaserGameProps) {
   const game = useRef<Phaser.Game | null>(null);
   // Nilai awal dibaca lewat ref agar perubahan reduceMotion tidak membuat ulang game.
@@ -26,7 +32,7 @@ export function PhaserGame({
   useLayoutEffect(() => {
     if (game.current === null) {
       game.current = StartGame(
-        'game-container',
+        parentId,
         controller,
         initialReduceMotion.current,
       );
@@ -35,12 +41,12 @@ export function PhaserGame({
       game.current?.destroy(true);
       game.current = null;
     };
-  }, [controller]);
+  }, [controller, parentId]);
 
   // Perubahan pengaturan berlaku pada pembaruan robot berikutnya.
   useEffect(() => {
     game.current?.registry.set(REDUCE_MOTION_KEY, reduceMotion);
   }, [reduceMotion]);
 
-  return <div id="game-container" className="h-full w-full" />;
+  return <div id={parentId} className="h-full w-full" />;
 }
