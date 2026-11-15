@@ -1,4 +1,5 @@
 import { Engine } from '../engine/engine';
+import type { RwPolicy } from '../engine/primitives/rwlock';
 import type { PlacedTool } from '../engine/tools';
 import type {
   SimEvent,
@@ -7,7 +8,7 @@ import type {
   ThreadId,
 } from '../engine/types';
 import type { LevelDefinition } from '../levels/types';
-import { buildEngineConfig } from './buildEngineConfig';
+import { buildEngineConfig, type BuildOptions } from './buildEngineConfig';
 import { browserClock, type Clock } from './clock';
 import { evaluateLevel, type LevelResult } from './evaluateLevel';
 
@@ -57,6 +58,12 @@ export interface LoadOptions {
    * Berlaku sampai loadLevel berikutnya; reset() mempertahankannya.
    */
   readonly rated?: boolean;
+  /**
+   * Kebijakan kunci baca-tulis pilihan Sandbox; menimpa kebijakan di data level
+   * dan di alat pemain. Berlaku sampai loadLevel berikutnya; reset() dan
+   * pemasangan alat mempertahankannya.
+   */
+  readonly rwPolicy?: RwPolicy;
 }
 
 const INITIAL_STATE: ControllerState = {
@@ -112,6 +119,8 @@ export class SimulationController {
   // Apakah bintang dinilai. Sengaja tidak ada di ControllerState: UI cukup
   // membaca result.stars (null = tidak dinilai).
   private rated = true;
+  // Kebijakan kunci dari Sandbox; undefined = ikut data level dan alat pemain.
+  private rwPolicy: RwPolicy | undefined = undefined;
   private readonly listeners = new Set<ControllerListener>();
   private frameHandle: number | null = null;
   private lastFrameTime: number | null = null;
@@ -136,7 +145,7 @@ export class SimulationController {
   /**
    * Memuat level dari awal (alat pemain dikosongkan). Seed default: tutorialSeed level.
    * `options.rated = false` mematikan penilaian bintang (Sandbox); tanpa opsi,
-   * bintang dinilai seperti biasa.
+   * bintang dinilai seperti biasa. `options.rwPolicy` memaksa kebijakan kunci.
    */
   loadLevel(
     level: LevelDefinition,
@@ -151,10 +160,14 @@ export class SimulationController {
     }
     const nextSeed = seed ?? level.tutorialSeed ?? DEFAULT_SEED;
     // load() dipanggil dulu: bila gagal (mis. seed tidak valid), state lama tetap utuh.
-    this.engine.load(buildEngineConfig(level, []), nextSeed);
+    this.engine.load(
+      buildEngineConfig(level, [], this.optionsFor(options.rwPolicy)),
+      nextSeed,
+    );
     this.stopClock();
     this.placedTools = [];
     this.rated = options.rated !== false;
+    this.rwPolicy = options.rwPolicy;
     this.setState({
       level,
       runState: 'idle',
@@ -258,7 +271,10 @@ export class SimulationController {
     const { level } = this.state;
     if (level === null) return;
     const nextSeed = seed ?? this.state.seed;
-    this.engine.load(buildEngineConfig(level, this.placedTools), nextSeed);
+    this.engine.load(
+      buildEngineConfig(level, this.placedTools, this.optionsFor(this.rwPolicy)),
+      nextSeed,
+    );
     this.stopClock();
     this.setState({
       runState: 'idle',
@@ -279,6 +295,11 @@ export class SimulationController {
   dispose(): void {
     this.stopClock();
     this.listeners.clear();
+  }
+
+  /** Opsi buildEngineConfig dari kebijakan Sandbox (tanpa properti undefined). */
+  private optionsFor(rwPolicy: RwPolicy | undefined): BuildOptions {
+    return rwPolicy === undefined ? {} : { rwPolicy };
   }
 
   /**
@@ -319,7 +340,10 @@ export class SimulationController {
    * program), load() melempar error dan state lama tetap utuh.
    */
   private commitTools(level: LevelDefinition, next: PlacedTool[]): void {
-    this.engine.load(buildEngineConfig(level, next), this.state.seed);
+    this.engine.load(
+      buildEngineConfig(level, next, this.optionsFor(this.rwPolicy)),
+      this.state.seed,
+    );
     this.placedTools = next;
     this.setState({
       tools: next.map(copyTool),

@@ -264,7 +264,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 
 - [x] **T-062** `P1` *(diubah)* Level select dan progres kampanye: **digantikan oleh U-011, U-012, U-017, U-019**. Tugas ini selesai bila keempatnya selesai dan alur level select diuji dari Beranda.
 - [x] **T-063** `P1` *(diubah)* Sistem bintang generik: sebagian besar sudah ada di `evaluateLevel`; sisanya menampilkan bintang di Peta Level dan layar tamat (U-019, U-022). Tes ambang tiap level.
-- [ ] **T-064** `P1` Mode **Sandbox** (logika): `LevelDefinition.sandbox` (parameter yang boleh diubah: jumlah thread, kapasitas buffer, jumlah token, kebijakan, seed) dan pembangunan konfigurasi dengan parameter pengganti; tes batas nilai.
+- [x] **T-064** `P1` Mode **Sandbox** (logika): `LevelDefinition.sandbox` (parameter yang boleh diubah: jumlah thread, kapasitas buffer, jumlah token, kebijakan, seed) dan pembangunan konfigurasi dengan parameter pengganti; tes batas nilai.
 - [ ] **T-105** `P1` *(baru)* `SandboxScreen` (S11): arena level dengan laci Parameter; tanpa bintang; popup hasil ringkas.
 - [ ] **T-065** `P1` Mode **Bandingkan** (logika): `CompareSession` (dua `SimulationController` berseed sama, perintah diteruskan ke keduanya). Tes: tick keduanya serempak, hasil identik pada konfigurasi identik.
 - [ ] **T-106** `P1` *(baru)* `CompareScreen` (S12): layar terbagi dua panel, arena mini, konfigurasi A dan B, ringkasan "lebih baik" per metrik.
