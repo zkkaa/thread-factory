@@ -43,5 +43,19 @@ for (const level of ALL_LEVELS) {
     it('layoutId terisi', () => {
       expect(level.layoutId.trim().length).toBeGreaterThan(0);
     });
+
+    // T-063: ambang bintang harus masuk akal dan tidak salah ketik.
+    it('ambang bintang bilangan bulat positif dan batas tick di bawah maxTicks', () => {
+      const { fast, lowWait } = level.goal.stars;
+      expect(Number.isInteger(fast)).toBe(true);
+      expect(fast).toBeGreaterThanOrEqual(1);
+      expect(Number.isInteger(lowWait)).toBe(true);
+      expect(lowWait).toBeGreaterThanOrEqual(0);
+      expect(fast).toBeLessThan(level.maxTicks ?? 2000);
+    });
+
+    it('punya tutorialSeed supaya bintang bisa dinilai secara adil', () => {
+      expect(level.tutorialSeed).toBeDefined();
+    });
   });
 }

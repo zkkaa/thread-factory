@@ -233,7 +233,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-050** Data level 2-1 (parameter jumlah producer, consumer, kapasitas) + tes tiga semaphore (`empty`, `full`, mutex).
 - [x    ] **T-096** *(baru)* Layout ban (`BeltLayout`): jalur producer di kiri dan consumer di kanan (program berbeda, jalur terpisah), efek barang jatuh (overflow) dan tangan meraih kosong (underflow).
 - [ ] **T-097** *(baru)* Konten Level 2-1.
-- [ ] **T-098** *(baru)* Alat untuk tiga semaphore (`empty`, `full`) dan mutex pelindung ban di toolbox (memakai T-088); tes `applyTools`.
+- [  ] **T-098** *(baru)* Alat untuk tiga semaphore (`empty`, `full`) dan mutex pelindung ban di toolbox (memakai T-088); tes `applyTools`.
 
 **Level 2-2 — Papan Pengumuman (Readers-Writers)** `P1`
 - [x] **T-051** Mekanisme akses banyak-reader/satu-writer di engine.
@@ -262,12 +262,12 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 
 ## Fase 8 — Mode Sandbox, Bandingkan, dan Skor (9 sampai 20 Nov) *(diubah sesuai kesepakatan akhir, 26 Okt 2026)*
 
-- [ ] **T-062** `P1` *(diubah)* Level select dan progres kampanye: **digantikan oleh U-011, U-012, U-017, U-019**. Tugas ini selesai bila keempatnya selesai dan alur level select diuji dari Beranda.
-- [ ] **T-063** `P1` *(diubah)* Sistem bintang generik: sebagian besar sudah ada di `evaluateLevel`; sisanya menampilkan bintang di Peta Level dan layar tamat (U-019, U-022). Tes ambang tiap level.
-- [ ] **T-064** `P1` Mode **Sandbox** (logika): `LevelDefinition.sandbox` (parameter yang boleh diubah: jumlah thread, kapasitas buffer, jumlah token, kebijakan, seed) dan pembangunan konfigurasi dengan parameter pengganti; tes batas nilai.
-- [ ] **T-105** `P1` *(baru)* `SandboxScreen` (S11): arena level dengan laci Parameter; tanpa bintang; popup hasil ringkas.
-- [ ] **T-065** `P1` Mode **Bandingkan** (logika): `CompareSession` (dua `SimulationController` berseed sama, perintah diteruskan ke keduanya). Tes: tick keduanya serempak, hasil identik pada konfigurasi identik.
-- [ ] **T-106** `P1` *(baru)* `CompareScreen` (S12): layar terbagi dua panel, arena mini, konfigurasi A dan B, ringkasan "lebih baik" per metrik.
+- [x] **T-062** `P1` *(diubah)* Level select dan progres kampanye: **digantikan oleh U-011, U-012, U-017, U-019**. Tugas ini selesai bila keempatnya selesai dan alur level select diuji dari Beranda.
+- [x] **T-063** `P1` *(diubah)* Sistem bintang generik: sebagian besar sudah ada di `evaluateLevel`; sisanya menampilkan bintang di Peta Level dan layar tamat (U-019, U-022). Tes ambang tiap level.
+- [x] **T-064** `P1` Mode **Sandbox** (logika): `LevelDefinition.sandbox` (parameter yang boleh diubah: jumlah thread, kapasitas buffer, jumlah token, kebijakan, seed) dan pembangunan konfigurasi dengan parameter pengganti; tes batas nilai.
+- [x] **T-105** `P1` *(baru)* `SandboxScreen` (S11): arena level dengan laci Parameter; tanpa bintang; popup hasil ringkas.
+- [x] **T-065** `P1` Mode **Bandingkan** (logika): `CompareSession` (dua `SimulationController` berseed sama, perintah diteruskan ke keduanya). Tes: tick keduanya serempak, hasil identik pada konfigurasi identik.
+- [x] **T-106** `P1` *(baru)* `CompareScreen` (S12): layar terbagi dua panel, arena mini, konfigurasi A dan B, ringkasan "lebih baik" per metrik.
 - [ ] **T-066** `P1` Tabel dan grafik perbandingan metrik (throughput, waktu tunggu, lost update, deadlock, fairness); grafik batang SVG buatan sendiri (tanpa library).
 - [ ] **T-067** `P1` Teks Pak Mandor untuk **semua** level: intro 2 sampai 3 halaman, petunjuk bertahap, penjelasan lulus dan gagal (konsep harus benar; ditinjau oleh anggota selain penulis).
 - [ ] **T-068** `P2` Papan skor lokal / tantangan berbasis seed.
