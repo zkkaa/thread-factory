@@ -270,7 +270,7 @@ Setiap level memiliki paket tetap: engine atau data (T), layout arena (jalur D),
 - [x] **T-106** `P1` *(baru)* `CompareScreen` (S12): layar terbagi dua panel, arena mini, konfigurasi A dan B, ringkasan "lebih baik" per metrik.
 - [x] **T-066** `P1` Tabel dan grafik perbandingan metrik (throughput, waktu tunggu, lost update, deadlock, fairness); grafik batang SVG buatan sendiri (tanpa library).
 - [x] **T-067** `P1` Teks Pak Mandor untuk **semua** level: intro 2 sampai 3 halaman, petunjuk bertahap, penjelasan lulus dan gagal (konsep harus benar; ditinjau oleh anggota selain penulis).
-- [ ] **T-068** `P2` Papan skor lokal / tantangan berbasis seed.
+- [x] **T-068** `P2` Papan skor lokal / tantangan berbasis seed.
 
 ---
 
