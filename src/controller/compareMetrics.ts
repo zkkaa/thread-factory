@@ -48,11 +48,23 @@ function longestWait(snap: Readonly<Snapshot>): number {
   return streaks.length === 0 ? 0 : Math.max(...streaks);
 }
 
+/**
+ * Indeks keadilan Jain: (jumlah x)^2 / (n x jumlah kuadrat x). Bernilai 1 bila
+ * semua sama rata, mendekati 1/n bila satu pihak memborong. Mengembalikan 0
+ * bila belum ada yang mendapat giliran sama sekali. Fungsi murni.
+ */
+export function jainIndex(values: readonly number[]): number {
+  const sum = values.reduce((total, value) => total + value, 0);
+  const sumSquares = values.reduce((total, value) => total + value * value, 0);
+  if (values.length === 0 || sumSquares === 0) return 0;
+  return round2((sum * sum) / (values.length * sumSquares));
+}
+
 interface MetricDef {
   key: string;
   label: string;
   lowerIsBetter: boolean;
-  read: (snap: Readonly<Snapshot>) => number;
+  read: (snap: Readonly<Snapshot>, state: ControllerState) => number;
 }
 
 const DEFS: readonly MetricDef[] = [
@@ -93,6 +105,19 @@ const DEFS: readonly MetricDef[] = [
     lowerIsBetter: true,
     read: (snap) => snap.busyWaitTicks,
   },
+  {
+    // Hanya terisi setelah level selesai (butuh nilai target dari level).
+    key: 'lostUpdates',
+    label: 'Pembaruan hilang',
+    lowerIsBetter: true,
+    read: (_snap, state) => state.result?.metrics.lostUpdates ?? 0,
+  },
+  {
+    key: 'fairness',
+    label: 'Pemerataan giliran (indeks Jain, 0 sampai 1)',
+    lowerIsBetter: false,
+    read: (snap) => jainIndex(snap.threads.map((thread) => thread.iteration)),
+  },
 ];
 
 function judge(a: number, b: number, lowerIsBetter: boolean): Better {
@@ -114,8 +139,8 @@ export function compareStates(
   const snapB = b.snapshot;
 
   const rows = DEFS.map((def): CompareRow => {
-    const valueA = def.read(snapA);
-    const valueB = def.read(snapB);
+    const valueA = def.read(snapA, a);
+    const valueB = def.read(snapB, b);
     return {
       key: def.key,
       label: def.label,
