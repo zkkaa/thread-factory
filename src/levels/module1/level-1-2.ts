@@ -25,8 +25,9 @@ export const level1_2: LevelDefinition = {
         'Bedanya, pintu kali ini boleh dipasang di mana saja, bahkan sebelum ' +
         'merakit. Pintu yang terlalu besar membuat robot lain menunggu di depan ' +
         'pintu, dan satu core jadi menganggur. Datanya tetap benar, tetapi ' +
-        'pabrik jadi lambat. Bintang kedua untuk selesai cepat, bintang ketiga ' +
-        'untuk waktu tunggu yang sedikit.',
+        'pabrik jadi lambat. Pada seed 10, bintang kedua untuk selesai dalam ' +
+        '45 tick, dan bintang ketiga bila total waktu tunggu paling banyak ' +
+        '25 tick.',
     },
     {
       mood: 'netral',

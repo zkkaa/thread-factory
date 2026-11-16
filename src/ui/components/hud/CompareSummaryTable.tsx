@@ -5,12 +5,13 @@ import {
   summaryHeadline,
   verdictText,
 } from '../../comparePanel';
+import { CompareBarChart } from './CompareBarChart';
 
 interface CompareSummaryTableProps {
   summary: CompareSummary | null;
 }
 
-/** Tabel perbandingan metrik A dan B. Pemenang ditulis dengan teks, bukan hanya warna. */
+/** Tabel dan grafik batang perbandingan A dan B. Pemenang ditulis dengan teks, bukan hanya warna. */
 export function CompareSummaryTable({ summary }: CompareSummaryTableProps) {
   if (summary === null) {
     return (
@@ -78,6 +79,7 @@ export function CompareSummaryTable({ summary }: CompareSummaryTableProps) {
           ))}
         </tbody>
       </table>
+      <CompareBarChart summary={summary} />
     </section>
   );
 }

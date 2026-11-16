@@ -63,23 +63,24 @@ export const level1_5: LevelDefinition = {
         'Tiga robot berbagi area yang hanya muat satu robot. Papan Stok juga ' +
         'diperbarui oleh lebih dari satu robot, jadi hasil akhirnya harus ' +
         'tepat 5 setelah Pengepak mengambil satu barang. Bintang pertama ' +
-        'memerlukan hasil benar tanpa bentrok atau busy waiting.',
+        'memerlukan hasil benar tanpa bentrok atau busy waiting. Pada seed 10, ' +
+        'bintang kedua untuk selesai dalam 70 tick, dan bintang ketiga bila ' +
+        'total waktu tunggu paling banyak 80 tick.',
     },
     {
       mood: 'senang',
       text:
-        'Pilih kombinasi Pintu Mutex untuk baca-hitung-tulis, Kartu Akses ' +
-        'bernilai 1 untuk area, dan Lampu Sinyal bersama mutex. Pasang pintu ' +
-        'Mutex dari slot 1 sampai 4, gerbang Kartu Akses dari slot 4 sampai 7, ' +
-        'dan sinyal setelah WRITE Perakit (slot 4). Pada seed 10, bintang ' +
-        'berikutnya perlu selesai paling lama 70 tick dan bintang ketiga perlu ' +
-        'total waktu tunggu paling banyak 80 tick.',
+        'Kali ini masalahnya ada tiga, dan tiap masalah punya alatnya sendiri. ' +
+        'Amati dulu apa yang salah, lalu pilih dari toolbox: Pintu Mutex, ' +
+        'Kartu Akses, atau Lampu Sinyal. Tidak ada alat yang bisa menggantikan ' +
+        'yang lain, jadi pikirkan mana yang cocok untuk masalah yang mana. ' +
+        'Selamat bekerja!',
     },
   ],
   hints: [
     'Amati tiga masalah berbeda: angka di Papan Stok, kapasitas area bersama, dan Pengepak yang menunggu barang.',
     'Mutex melindungi baca-hitung-tulis. Semaphore membatasi jumlah robot di aula, sedangkan condition variable membuat Pengepak tidur tanpa busy waiting.',
-    'Pasang mutex di slot 1–4, semaphore bernilai 1 di slot 4–7, lalu condition variable pada Pengepak dengan sinyal Perakit di slot 4.',
+    'Pasang mutex di slot 1 sampai 4, semaphore bernilai 1 di slot 4 sampai 7, lalu condition variable pada Pengepak dengan sinyal Perakit di slot 4.',
   ],
   concepts: [
     'Race condition dan critical section',
@@ -96,7 +97,7 @@ export const level1_5: LevelDefinition = {
       'berbeda dan dipakai bersama, bukan saling menggantikan.',
     fail:
       'Periksa tiap masalah secara terpisah: pembaruan stok perlu mutex pada ' +
-      'READ–COMPUTE–WRITE, aula perlu semaphore bernilai 1, dan ' +
+      'READ, COMPUTE, dan WRITE; aula perlu semaphore bernilai 1; dan ' +
       'Pengepak perlu condition variable yang memberi sinyal setelah barang ' +
       'tersedia. Condition variable digunakan bersama mutex dan syarat barang ' +
       'tetap harus diperiksa setelah bangun.',

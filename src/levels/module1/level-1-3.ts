@@ -45,14 +45,16 @@ export const level1_3: LevelDefinition = {
       text:
         'Kalau lebih dari 3 robot masuk ke aula secara bersamaan, listrik pabrik ' +
         'akan korsleting dan mesin mengalami BENTROK (overload). Jangan biarkan ' +
-        'hal itu terjadi!',
+        'hal itu terjadi! Pada seed 10, bintang kedua untuk selesai dalam 80 ' +
+        'tick, dan bintang ketiga bila total waktu tunggu paling banyak 170 tick.',
     },
     {
       mood: 'senang',
       text:
-        'Gunakan Kartu Akses (Counting Semaphore) untuk membatasi jumlah robot ' +
-        'di dalam aula. Pasang gerbang kartu di pintu aula dan atur kapasitasnya ' +
-        'agar tepat 3. Selamat bekerja!',
+        'Alatmu adalah Kartu Akses (counting semaphore): jumlah kartu menentukan ' +
+        'berapa robot boleh berada di dalam aula. Pasang gerbang kartu dari ' +
+        'pintu masuk sampai pintu keluar aula, lalu coba beberapa jumlah kartu ' +
+        'dan bandingkan hasilnya. Selamat bekerja!',
     },
   ],
   hints: [
@@ -71,7 +73,9 @@ export const level1_3: LevelDefinition = {
       'Tidak ada bentrok: Kartu Akses membatasi jumlah robot di aula sesuai ' +
       'kapasitasnya. Kapasitas 3 sama dengan jumlah mesin, jadi semua mesin ' +
       'terpakai tanpa pernah korslet. Kapasitas yang lebih kecil tetap aman, ' +
-      'tetapi mesin menganggur dan pabrik jadi lebih lambat.',
+      'tetapi mesin menganggur dan pabrik jadi lebih lambat. Bedanya dengan ' +
+      'mutex: mutex hanya memuat satu pemilik, sedangkan semaphore menghitung ' +
+      'jumlah kartu sehingga beberapa robot boleh masuk sekaligus.',
     fail:
       'Terjadi bentrok: lebih dari 3 robot berada di aula mesin pada saat yang ' +
       'sama. Pasang gerbang Kartu Akses yang menutupi masuk dan keluar aula ' +

@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import type { SimulationController } from '../controller/SimulationController';
 import {
+  ALL_LEVELS,
   MODULES,
   findLevelById,
   findModuleById,
@@ -8,10 +9,14 @@ import {
 } from '../levels';
 import type { ProgressStore } from '../progress/progressStore';
 import { isLevelCleared } from '../progress/progressStore';
+import { ScoreboardStore } from '../progress/scoreboardStore';
 import type { SettingsStore } from '../progress/settingsStore';
+import { createMemoryStorage, getBrowserStorage } from '../progress/storage';
 import type { UnlockContext } from '../progress/unlocks';
 import { useProgress } from './hooks/useProgress';
 import { useProgressRecorder } from './hooks/useProgressRecorder';
+import { useScoreboard } from './hooks/useScoreboard';
+import { useScoreRecorder } from './hooks/useScoreRecorder';
 import { useSettings } from './hooks/useSettings';
 import type { Navigation } from './navigation';
 import { GuideScreen } from './screens/GuideScreen';
@@ -43,17 +48,21 @@ interface AppShellProps {
   controller: SimulationController;
   progressStore: ProgressStore;
   settingsStore: SettingsStore;
+  /** Opsional: bila kosong, AppShell membuat papan skor sendiri (localStorage atau memori). */
+  scoreboardStore?: ScoreboardStore;
 }
 
 /**
  * Router layar. Menyimpan ScreenState, menyusun konteks buka-kunci dari
  * progres dan pengaturan, memuat level ke controller saat masuk Arena, dan
- * memasang pencatat bintang (aktif di semua layar).
+ * memasang pencatat bintang (aktif di semua layar) dan pencatat papan skor
+ * (aktif hanya di Arena kampanye).
  */
 export function AppShell({
   controller,
   progressStore,
   settingsStore,
+  scoreboardStore,
 }: AppShellProps) {
   const progress = useProgress(progressStore);
   const settings = useSettings(settingsStore);
@@ -62,8 +71,20 @@ export function AppShell({
   useSoundEffects(controller, audio);
   useAppAudio(audio, settings.volume);
 
+  const [fallbackScoreboard] = useState(
+    () => new ScoreboardStore(getBrowserStorage() ?? createMemoryStorage()),
+  );
+  const scoreboardSource = scoreboardStore ?? fallbackScoreboard;
+  const scoreboard = useScoreboard(scoreboardSource);
+
   const [screenState, setScreenState] =
     useState<ScreenState>(createScreenState);
+  // Sandbox mengubah parameter level, jadi rekornya tidak adil: hanya Arena kampanye.
+  useScoreRecorder(
+    controller,
+    scoreboardSource,
+    screenState.current.id === 'play',
+  );
   // Level yang terakhir dimuat ke controller; mencegah muat ulang saat kembali
   // dari Pengaturan ke Arena yang sama.
   const loadedLevelId = useRef<string | null>(null);
@@ -76,6 +97,11 @@ export function AppShell({
     }),
     [progress, settings.demoMode],
   );
+
+  const resetAll = (): void => {
+    progressStore.reset();
+    scoreboardSource.reset();
+  };
 
   const enterPlay = (levelId: string, force: boolean) => {
     const level = findLevelById(levelId);
@@ -193,7 +219,9 @@ export function AppShell({
         navigation={navigation}
         settings={settings}
         onChange={(patch) => settingsStore.update(patch)}
-        onResetProgress={() => progressStore.reset()}
+        onResetProgress={resetAll}
+        scoreboard={scoreboard}
+        scoreboardLevels={ALL_LEVELS}
       />
     );
   }
@@ -286,7 +314,7 @@ export function AppShell({
       onToggleDemo={() =>
         settingsStore.update({ demoMode: !settings.demoMode })
       }
-      onResetProgress={() => progressStore.reset()}
+      onResetProgress={resetAll}
     />
   );
 }

@@ -56,7 +56,7 @@ export const level2_3: LevelDefinition = {
       mood: 'netral',
     },
     {
-      text: `Misimu: semua teknisi harus selesai bekerja ${LEVEL_2_3_MEALS} kali. Tekan Run tanpa alat dulu dan perhatikan apa yang terjadi. Bintang tambahan untuk yang cepat dan hemat waktu tunggu.`,
+      text: `Misimu: semua teknisi harus selesai bekerja ${LEVEL_2_3_MEALS} kali. Tekan Run tanpa alat dulu dan perhatikan apa yang terjadi. Pada seed 1, bintang kedua untuk selesai dalam 80 tick, dan bintang ketiga bila total waktu tunggu paling banyak 100 tick.`,
       mood: 'berpikir',
     },
     {
@@ -69,6 +69,7 @@ export const level2_3: LevelDefinition = {
     'Semua teknisi mengambil kunci kiri lebih dulu, lalu menunggu kunci kanan yang dipegang tetangganya. Lingkaran saling menunggu ini yang membuat macet.',
     'Kartu Akses bisa membatasi berapa teknisi yang boleh mulai mengambil kunci. Bungkus seluruh pekerjaan dari ambil kunci sampai lepas kunci.',
     'Dengan 5 teknisi dan 5 kunci, batasi menjadi 4 teknisi. Selalu ada satu yang bisa mendapat dua kunci, selesai, lalu melepasnya.',
+    'Batas 4 sudah bebas macet, tetapi belum tentu paling cepat. Coba nilai Kartu Akses yang lebih kecil dan bandingkan total tick serta waktu tunggunya untuk mengejar bintang penuh.',
   ],
   concepts: [
     'Deadlock',

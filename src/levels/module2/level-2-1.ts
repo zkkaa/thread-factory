@@ -67,16 +67,18 @@ export const level2_1: LevelDefinition = {
         'Sekarang belum ada aturan, jadi kacau. Begitu mulai, pengepak langsung meraih ban yang ' +
         'masih kosong (underflow), dan kalau perakit lebih cepat, ban penuh lalu barang jatuh (overflow). ' +
         'Misimu: kedelapan barang lewat tanpa jatuh dan tanpa meraih kosong. ' +
-        'Selesai cepat dan sedikit menunggu memberi bintang tambahan.',
+        'Pada seed 10, bintang kedua untuk selesai dalam 24 tick, dan bintang ketiga ' +
+        'bila total waktu tunggu semua robot paling banyak 12 tick.',
     },
     {
       mood: 'berpikir',
       text:
-        'Kuncinya dua penghitung, bukan satu kunci. "Slot Kosong" dimulai dari 3, ' +
-        '"Barang Tersedia" dimulai dari 0. Perakit menunggu slot kosong sebelum menaruh, ' +
-        'lalu menambah hitungan barang. Pengepak sebaliknya. Robot yang harus menunggu akan tidur, ' +
-        'bukan terus mengecek. Di toolbox ada dua penjaga: Penjaga Slot untuk perakit dan ' +
-        'Penjaga Barang untuk pengepak. Nyalakan keduanya, lalu tekan Run.',
+        'Kuncinya dua penghitung (semaphore), bukan satu kunci. Satu menghitung slot yang ' +
+        'masih kosong, satu lagi menghitung barang yang siap diambil. Perakit harus menunggu ' +
+        'sampai ada slot kosong sebelum menaruh barang, dan pengepak harus menunggu sampai ada ' +
+        'barang sebelum mengambil. Robot yang menunggu akan tidur, bukan terus mengecek. ' +
+        'Di toolbox ada dua penjaga: Penjaga Slot untuk perakit dan Penjaga Barang untuk ' +
+        'pengepak. Nyalakan keduanya, lalu tekan Run.',
     },
   ],
   hints: [

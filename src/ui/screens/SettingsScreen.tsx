@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import type { ScoreboardData } from '../../progress/scoreboardStore';
 import type { SettingsData, SettingsPatch } from '../../progress/settingsStore';
 import { APP_VERSION } from '../../version';
+import { ScoreboardPanel } from '../components/ScoreboardPanel';
 import {
   ASSET_CREDITS,
   GENERATOR_NOTE,
@@ -14,6 +16,9 @@ interface SettingsScreenProps {
   settings: Readonly<SettingsData>;
   onChange: (patch: SettingsPatch) => void;
   onResetProgress: () => void;
+  /** Papan skor lokal; bagian Papan Skor hanya tampil bila diberikan. */
+  scoreboard?: Readonly<ScoreboardData>;
+  scoreboardLevels?: readonly { id: string; title: string }[];
 }
 
 const FOCUS =
@@ -58,6 +63,8 @@ export function SettingsScreen({
   settings,
   onChange,
   onResetProgress,
+  scoreboard,
+  scoreboardLevels = [],
 }: SettingsScreenProps) {
   const [confirming, setConfirming] = useState(false);
   const [resetDone, setResetDone] = useState(false);
@@ -169,6 +176,10 @@ export function SettingsScreen({
             </div>
           )}
         </section>
+
+        {scoreboard !== undefined && (
+          <ScoreboardPanel data={scoreboard} levels={scoreboardLevels} />
+        )}
 
         <section className="flex flex-col gap-3" aria-label="Kredit">
           <h2 className="text-2xl font-black text-sun-400">Kredit</h2>
