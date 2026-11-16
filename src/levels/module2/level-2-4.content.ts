@@ -3,6 +3,7 @@ import type { LevelDefinition } from '../types';
 /**
  * Teks Pak Mandor untuk Level 2-4 (Lini Produksi Penuh).
  * Tiga area: Ban Berjalan, Papan Pengumuman, dan Meja Teknisi.
+ * Angka anggaran (4 koin) harus sama dengan LEVEL_2_4_TOOL_BUDGET.
  */
 export const LEVEL_2_4_CONTENT: Required<
   Pick<
@@ -29,10 +30,11 @@ export const LEVEL_2_4_CONTENT: Required<
     {
       mood: 'berpikir',
       text:
-        'Anggaran kita pas: 4 koin. Ban butuh dua pengaman, papan satu, dan ' +
-        'meja satu. Semuanya perlu, jadi tantanganmu adalah setelannya: ' +
-        'kebijakan papan dan jumlah Kartu Akses di meja. Jalankan dan lihat ' +
-        'apakah ketiga area aman.',
+        'Anggaran kita terbatas: 4 koin untuk semua pengaman. Perhatikan ' +
+        'berapa koin yang dipakai tiap alat di toolbox, lalu bagi dengan ' +
+        'cermat. Misimu: ketiga area aman dan tuntas. Pada seed 1, bintang ' +
+        'kedua untuk selesai dalam 100 tick, dan bintang ketiga bila total ' +
+        'waktu tunggu paling banyak 300 tick. Selamat bekerja!',
     },
   ],
   hints: [
@@ -45,9 +47,9 @@ export const LEVEL_2_4_CONTENT: Required<
       'bila pembaca selalu didahulukan, apakah penulis pernah kebagian giliran?',
     'Meja teknisi macet kalau semua teknisi memegang satu kunci dan menunggu ' +
       'tetangganya. Kartu Akses membatasi berapa teknisi yang boleh mulai.',
-    'Semua pengaman memakai koin dan jumlahnya pas. Setelah semuanya aman, ' +
-      'coba ubah kebijakan papan dan nilai Kartu Akses, lalu bandingkan ' +
-      'waktu tunggunya.',
+    'Semua pengaman memakai koin dan anggarannya pas. Setelah ketiga area ' +
+      'aman, coba ubah kebijakan papan dan nilai Kartu Akses, lalu ' +
+      'bandingkan waktu tunggunya.',
   ],
   concepts: [
     'Kombinasi masalah klasik konkurensi',
@@ -60,14 +62,16 @@ export const LEVEL_2_4_CONTENT: Required<
   explanation: {
     pass:
       'Dengan kombinasi pengaman yang tepat dalam anggaran terbatas, ketiga ' +
-      'area berjalan lancar. Ban tidak meluap atau kosong, papan menampilkan ' +
-      'data yang utuh, dan teknisi makan tanpa saling menunggu. Pilihanmu ' +
-      'menunjukkan pemahaman tentang prioritas dan trade-off dalam sistem nyata.',
+      'area berjalan tuntas. Ban tidak meluap atau kosong, papan menampilkan ' +
+      'data yang utuh dan semua penulis kebagian giliran, dan teknisi ' +
+      'menyelesaikan pekerjaan tanpa macet. Tiap area punya masalah dan ' +
+      'pengaman yang berbeda, dan pilihanmu menunjukkan trade-off dalam ' +
+      'sistem nyata.',
     fail:
-      'Masih ada area yang bermasalah. Mungkin kamu belum memasang pengaman ' +
-      'cukup untuk melindungi area kritis, atau kombinasimu belum optimal. ' +
-      'Periksa log kejadian untuk melihat di mana masalahnya, lalu coba ' +
-      'konfigurasi pengaman yang berbeda.',
+      'Masih ada area yang bermasalah. Pesan hasil menyebut level komponen ' +
+      'pertama yang gagal: 2-1 untuk ban, 2-2 untuk papan, 2-3 untuk meja ' +
+      'teknisi. Periksa log kejadian untuk area itu, lalu coba konfigurasi ' +
+      'pengaman yang berbeda.',
   },
   resultTitle: {
     pass: 'Luar Biasa! Pabrik Beroperasi Optimal!',

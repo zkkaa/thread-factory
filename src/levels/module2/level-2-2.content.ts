@@ -34,11 +34,13 @@ export const LEVEL_2_2_CONTENT: Required<
     {
       mood: 'netral',
       text:
-        'Pasang pengaman di papan, lalu pilih kebijakannya: utamakan ' +
-        'pembaca (reader), utamakan penulis (writer), atau bergiliran ' +
-        'sesuai urutan datang (fair). Tiap kebijakan ada untung dan ' +
-        'ruginya, jadi perhatikan waktu tunggu pembaca dan penulis. ' +
-        'Selamat bekerja!',
+        'Misimu: tidak ada bacaan setengah jadi, tidak ada tulisan yang ' +
+        'bertabrakan, dan tidak ada penulis yang menunggu terlalu lama ' +
+        '(batasnya 10 tick berturut-turut). Pasang pengaman di papan, lalu ' +
+        'pilih kebijakannya: utamakan pembaca (reader), utamakan penulis ' +
+        '(writer), atau bergiliran sesuai urutan datang (fair). Pada seed 1, ' +
+        'bintang kedua untuk selesai dalam 100 tick, dan bintang ketiga bila ' +
+        'total waktu tunggu paling banyak 170 tick. Selamat bekerja!',
     },
   ],
   hints: [
@@ -64,9 +66,9 @@ export const LEVEL_2_2_CONTENT: Required<
       'sedangkan penulis mendapat akses eksklusif sehingga tidak ada ' +
       'tulisan setengah jadi yang terbaca. Kebijakan menentukan siapa yang ' +
       'didahulukan: reader priority cepat bagi pembaca tetapi dapat membuat ' +
-      'penulis kelaparan (starvation), writer priority sebaliknya, dan fair ' +
-      '(FIFO) menjamin semua akhirnya dilayani dengan harga throughput yang ' +
-      'bisa lebih rendah.',
+      'penulis kelaparan (starvation), writer priority sebaliknya dan dapat ' +
+      'membuat pembaca menunggu lama, sedangkan fair (FIFO) menjamin semua ' +
+      'akhirnya dilayani dengan harga throughput yang bisa lebih rendah.',
     fail:
       'Ada dua kemungkinan penyebab. Pertama, pembaca dan penulis berada ' +
       'di papan bersamaan sehingga pembaca melihat data setengah jadi: ' +
