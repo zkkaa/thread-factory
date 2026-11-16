@@ -116,11 +116,11 @@ export interface LevelDefinition {
     target: { variable: string; value: number };
     /** Pengecekan invarian dari snapshot akhir untuk menentukan status lulus/gagal. */
     invariant: (snap: Snapshot) => { ok: boolean; message: string };
-    /** Ambang batas performa untuk bintang â˜…â˜… dan â˜…â˜…â˜…. */
+    /** Ambang batas performa untuk bintang ★★ dan ★★★. */
     stars: {
-      /** Batas maksimum tick untuk mendapatkan bintang kecepatan (â˜…â˜…). */
+      /** Batas maksimum tick untuk mendapatkan bintang kecepatan (★★). */
       fast: number;
-      /** Batas maksimum total waitTicks untuk mendapatkan bintang efisiensi (â˜…â˜…â˜…). */
+      /** Batas maksimum total waitTicks untuk mendapatkan bintang efisiensi (★★★). */
       lowWait: number;
     };
   };

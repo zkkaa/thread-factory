@@ -52,9 +52,9 @@ export const level1_1: LevelDefinition = {
       text:
         'Misimu: stok akhir harus tepat 10. Tapi kadang angkanya kurang dari 10, ' +
         'padahal tidak ada produk yang hilang. Jalankan dulu tanpa pengaman dan ' +
-        'perhatikan apa yang terjadi. Bintang pertama untuk hasil yang benar, ' +
-        'bintang kedua untuk selesai cepat, dan bintang ketiga untuk waktu ' +
-        'tunggu robot yang sedikit.',
+        'perhatikan apa yang terjadi. Bintang pertama untuk hasil yang benar. ' +
+        'Pada seed 10, bintang kedua untuk selesai dalam 60 tick, dan bintang ' +
+        'ketiga bila total waktu tunggu kedua robot paling banyak 25 tick.',
     },
     {
       mood: 'netral',
