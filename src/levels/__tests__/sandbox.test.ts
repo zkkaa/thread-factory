@@ -9,6 +9,8 @@ import {
   sandboxParamsFor,
 } from '../sandbox';
 import { level1_1 } from '../module1/level-1-1';
+// Level yang pasti tidak punya parameter Sandbox.
+const unsupportedLevel = { ...level1_1, id: '9-9' };
 
 function runToEnd(controller: SimulationController) {
   for (let i = 0; i < 5000; i++) {
@@ -19,15 +21,18 @@ function runToEnd(controller: SimulationController) {
 }
 
 describe('applySandboxParams: pendukung dan validasi', () => {
-  it('hanya Level 2-1 dan 2-2 yang mendukung Sandbox', () => {
+    it('hanya level yang terdaftar di SANDBOX_PARAMS yang mendukung Sandbox', () => {
+    expect(isSandboxSupported('1-1')).toBe(true);
     expect(isSandboxSupported('2-1')).toBe(true);
     expect(isSandboxSupported('2-2')).toBe(true);
-    expect(isSandboxSupported('1-1')).toBe(false);
-    expect(sandboxParamsFor('1-1')).toEqual([]);
+    expect(isSandboxSupported('9-9')).toBe(false);
+    expect(sandboxParamsFor('9-9')).toEqual([]);
   });
 
   it('level tanpa dukungan melempar error', () => {
-    expect(() => applySandboxParams(level1_1, {})).toThrow(/belum mendukung/);
+    expect(() => applySandboxParams(unsupportedLevel, {})).toThrow(
+      /belum mendukung/,
+    );
   });
 
   it('kunci yang tidak dikenal ditolak', () => {

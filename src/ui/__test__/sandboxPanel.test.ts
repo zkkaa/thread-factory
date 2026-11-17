@@ -10,6 +10,8 @@ import {
   stepValue,
 } from '../sandboxPanel';
 
+const unsupportedLevel = { ...level1_1, id: '9-9' };
+
 describe('stepValue dan changeValue', () => {
   it('menambah dan mengurangi satu langkah', () => {
     const awal = defaultSandboxValues('2-1');
@@ -79,8 +81,8 @@ describe('planSandbox', () => {
     if (plan.ok) expect(plan.options.rwPolicy).toBe('writer');
   });
 
-  it('level tanpa dukungan menghasilkan pesan, bukan error', () => {
-    const plan = planSandbox(level1_1, {});
+    it('level tanpa dukungan menghasilkan pesan, bukan error', () => {
+    const plan = planSandbox(unsupportedLevel, {});
     expect(plan.ok).toBe(false);
     if (!plan.ok) expect(plan.message).toMatch(/belum mendukung/);
   });

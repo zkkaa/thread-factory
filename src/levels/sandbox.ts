@@ -46,6 +46,60 @@ export interface SandboxResult {
 export const SANDBOX_PARAMS: Readonly<
   Record<string, readonly SandboxParamDef[]>
 > = {
+  '1-1': [
+    {
+      kind: 'number',
+      key: 'repeat',
+      label: 'Produk per robot',
+      min: 1,
+      max: 10,
+      initial: 5,
+    },
+    {
+      kind: 'number',
+      key: 'cores',
+      label: 'Jumlah core',
+      min: 1,
+      max: 2,
+      initial: 1,
+    },
+  ],
+  '1-2': [
+    {
+      kind: 'number',
+      key: 'repeat',
+      label: 'Produk per robot',
+      min: 1,
+      max: 10,
+      initial: 5,
+    },
+    {
+      kind: 'number',
+      key: 'cores',
+      label: 'Jumlah core',
+      min: 1,
+      max: 2,
+      initial: 2,
+    },
+  ],
+  '1-3': [
+    {
+      kind: 'number',
+      key: 'repeat',
+      label: 'Putaran per robot',
+      min: 1,
+      max: 6,
+      initial: 3,
+    },
+    {
+      kind: 'number',
+      key: 'cores',
+      label: 'Jumlah core',
+      min: 1,
+      max: 8,
+      initial: 8,
+    },
+  ],
   '2-1': [
     {
       kind: 'number',
@@ -148,6 +202,26 @@ function resolveValue(
   return raw;
 }
 
+/**
+ * Invariant Level 1-1 dan 1-2 dengan target dihitung dari jumlah produk
+ * (data asli menulis angka 10 tetap, yang hanya benar untuk 2 robot x 5).
+ */
+function stockInvariant(variable: string, expected: number) {
+  return (snap: Snapshot): { ok: boolean; message: string } => {
+    const actual = snap.sharedVars[variable];
+    if (actual === expected) {
+      return {
+        ok: true,
+        message: `Target tercapai! Stok akhir tepat ${expected} tanpa pembaruan hilang.`,
+      };
+    }
+    return {
+      ok: false,
+      message: `Stok akhir bernilai ${actual}, seharusnya ${expected}. Terjadi pembaruan hilang (race condition)!`,
+    };
+  };
+}
+
 /** Invariant Level 2-1 dengan target dihitung dari jumlah barang yang diproduksi. */
 function beltInvariant(expected: number) {
   return (snap: Snapshot): { ok: boolean; message: string } => {
@@ -230,6 +304,16 @@ export function applySandboxParams(
         ? { ...resource, initialValue: capacity }
         : resource,
     );
+  }
+
+  if (level.id === '1-1' || level.id === '1-2') {
+    // Setiap robot menambah stok satu kali per putaran.
+    const expected = threads.reduce((sum, thread) => sum + (thread.repeat ?? 1), 0);
+    next.goal = {
+      ...level.goal,
+      target: { ...level.goal.target, value: expected },
+      invariant: stockInvariant(level.goal.target.variable, expected),
+    };
   }
 
   if (level.id === '2-1') {
