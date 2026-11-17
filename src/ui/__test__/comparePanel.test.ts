@@ -12,6 +12,8 @@ import {
   verdictText,
 } from '../comparePanel';
 
+const unsupportedLevel = { ...level1_1, id: '9-9' };
+
 const summary = (patch: Partial<CompareSummary>): CompareSummary => ({
   rows: [],
   complete: true,
@@ -22,11 +24,20 @@ const summary = (patch: Partial<CompareSummary>): CompareSummary => ({
 });
 
 describe('planSide', () => {
-  it('level tanpa parameter Sandbox dimuat apa adanya tanpa bintang', () => {
-    const plan = planSide(level1_1, {});
+    it('level tanpa parameter Sandbox dimuat apa adanya tanpa bintang', () => {
+    const plan = planSide(unsupportedLevel, {});
     expect(plan.ok).toBe(true);
     if (plan.ok) {
-      expect(plan.level).toBe(level1_1);
+      expect(plan.level).toBe(unsupportedLevel);
+      expect(plan.options.rated).toBe(false);
+    }
+  });
+
+  it('level dengan parameter Sandbox menghasilkan salinan tanpa bintang', () => {
+    const plan = planSide(level1_1, defaultSandboxValues('1-1'));
+    expect(plan.ok).toBe(true);
+    if (plan.ok) {
+      expect(plan.level).not.toBe(level1_1);
       expect(plan.options.rated).toBe(false);
     }
   });
