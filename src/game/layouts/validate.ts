@@ -1,7 +1,7 @@
 import type { LevelDefinition } from '../../levels/types';
 import { roadRectErrors } from '../roadGeometry';
 import { ARENA, ROAD } from '../theme';
-import type { ArenaLayout, Point, TrackLayout } from './types';
+import type { ArenaLayout, Point, TrackLayout, TripleLayout } from './types';
 import { validateHallLayout } from './validateHall';
 import { validateDeskLayout } from './validateDesk';
 import { validateCombinedLayout } from './validateCombined';
@@ -101,18 +101,83 @@ export function validateLayout(
   if (layout.kind === 'belt') return validateBeltLayout(layout, level);
   if (layout.kind === 'table') return validateTableLayout(layout, level);
   if (layout.kind === 'board') return validateBoardLayout(layout, level);
-  if (layout.kind === 'triple') {
-    const prefixed = (label: string, errors: string[]): string[] =>
-      errors.map((error) => `${label}: ${error}`);
-    return [
-      ...prefixed('ban', validateBeltLayout(layout.belt, level)),
-      ...prefixed('papan', validateBoardLayout(layout.board, level)),
-      ...prefixed('meja', validateTableLayout(layout.table, level)),
-    ];
-  }
+  if (layout.kind === 'triple') return validateTripleLayout(layout, level);
   const errors = validateTrackLayout(layout, level);
   if (layout.kind === 'combined') {
     errors.push(...validateCombinedLayout(layout, level));
   }
   return errors;
+}
+
+function componentLevel(
+  level: LevelDefinition,
+  layoutId: string,
+  threadIds: readonly string[],
+): LevelDefinition {
+  const ids = new Set(threadIds);
+  return {
+    ...level,
+    layoutId,
+    threads: level.threads.filter((thread) => ids.has(thread.id)),
+  };
+}
+
+function validateTripleLayout(
+  layout: TripleLayout,
+  level: LevelDefinition,
+): string[] {
+  const errors: string[] = [];
+  if (layout.id !== level.layoutId) {
+    errors.push(`id layout "${layout.id}" != layoutId "${level.layoutId}"`);
+  }
+
+  const beltThreadIds = [
+    ...layout.belt.producerIds,
+    ...layout.belt.consumerIds,
+  ];
+  const boardThreadIds = [...layout.board.readerIds, ...layout.board.writerIds];
+  const tableThreadIds = layout.table.seatIds;
+  const allThreadIds = [...beltThreadIds, ...boardThreadIds, ...tableThreadIds];
+
+  if (new Set(allThreadIds).size !== allThreadIds.length) {
+    errors.push('id thread ganda di layout triple');
+  }
+  if (
+    [...allThreadIds].sort().join('|') !==
+    level.threads
+      .map((thread) => thread.id)
+      .sort()
+      .join('|')
+  ) {
+    errors.push(
+      'layout triple harus mencakup semua thread level tepat satu kali',
+    );
+  }
+
+  const prefixed = (label: string, componentErrors: string[]): string[] =>
+    componentErrors.map((error) => `${label}: ${error}`);
+  return [
+    ...errors,
+    ...prefixed(
+      'ban',
+      validateBeltLayout(
+        layout.belt,
+        componentLevel(level, layout.belt.id, beltThreadIds),
+      ),
+    ),
+    ...prefixed(
+      'papan',
+      validateBoardLayout(
+        layout.board,
+        componentLevel(level, layout.board.id, boardThreadIds),
+      ),
+    ),
+    ...prefixed(
+      'meja',
+      validateTableLayout(
+        layout.table,
+        componentLevel(level, layout.table.id, tableThreadIds),
+      ),
+    ),
+  ];
 }

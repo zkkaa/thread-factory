@@ -4,6 +4,7 @@ import type { LevelDefinition } from '../types';
  * Teks Pak Mandor untuk Level 2-4 (Lini Produksi Penuh).
  * Tiga area: Ban Berjalan, Papan Pengumuman, dan Meja Teknisi.
  * Angka anggaran (4 koin) harus sama dengan LEVEL_2_4_TOOL_BUDGET.
+ * Kriteria bintang tampil di chip Misi, jadi tidak ditulis di dialog.
  */
 export const LEVEL_2_4_CONTENT: Required<
   Pick<
@@ -16,8 +17,8 @@ export const LEVEL_2_4_CONTENT: Required<
       mood: 'netral',
       text:
         'Mandor, sekarang pabrik kita benar-benar besar! Tiga area bekerja ' +
-        'bersamaan: Ban Berjalan di kiri, Papan Pengumuman di tengah, dan ' +
-        'Meja Teknisi di kanan.',
+        'bersamaan: Ban Berjalan dan Papan Pengumuman di bagian atas, ' +
+        'serta Meja Teknisi di bagian bawah.',
     },
     {
       mood: 'sedih',
@@ -32,9 +33,7 @@ export const LEVEL_2_4_CONTENT: Required<
       text:
         'Anggaran kita terbatas: 4 koin untuk semua pengaman. Perhatikan ' +
         'berapa koin yang dipakai tiap alat di toolbox, lalu bagi dengan ' +
-        'cermat. Misimu: ketiga area aman dan tuntas. Pada seed 1, bintang ' +
-        'kedua untuk selesai dalam 100 tick, dan bintang ketiga bila total ' +
-        'waktu tunggu paling banyak 300 tick. Selamat bekerja!',
+        'cermat. Misimu: ketiga area aman dan tuntas. Selamat bekerja!',
     },
   ],
   hints: [
@@ -43,10 +42,14 @@ export const LEVEL_2_4_CONTENT: Required<
       'jadi, atau teknisi saling menunggu.',
     'Ban berjalan butuh dua penjaga: satu agar perakit menunggu slot kosong, ' +
       'satu agar pengepak menunggu barang tersedia.',
-    'Papan butuh pengaman baca-tulis. Pilih kebijakannya dengan hati-hati: ' +
-      'bila pembaca selalu didahulukan, apakah penulis pernah kebagian giliran?',
+    'Papan butuh pengaman baca-tulis. Jika pembaca selalu didahulukan, ' +
+      'penulis bisa menunggu terlalu lama dan tidak kebagian giliran. ' +
+      'Bandingkan tiga aturan giliran dan pilih yang membuat keduanya ' +
+      'mendapat kesempatan.',
     'Meja teknisi macet kalau semua teknisi memegang satu kunci dan menunggu ' +
-      'tetangganya. Kartu Akses membatasi berapa teknisi yang boleh mulai.',
+      'tetangganya. Kartu Akses membatasi berapa teknisi yang boleh mulai. ' +
+      'Pasang gerbang masuk sebelum kunci pertama diambil dan gerbang keluar ' +
+      'setelah kunci terakhir dilepas.',
     'Semua pengaman memakai koin dan anggarannya pas. Setelah ketiga area ' +
       'aman, coba ubah kebijakan papan dan nilai Kartu Akses, lalu ' +
       'bandingkan waktu tunggunya.',
@@ -61,17 +64,19 @@ export const LEVEL_2_4_CONTENT: Required<
   ],
   explanation: {
     pass:
-      'Dengan kombinasi pengaman yang tepat dalam anggaran terbatas, ketiga ' +
-      'area berjalan tuntas. Ban tidak meluap atau kosong, papan menampilkan ' +
-      'data yang utuh dan semua penulis kebagian giliran, dan teknisi ' +
-      'menyelesaikan pekerjaan tanpa macet. Tiap area punya masalah dan ' +
-      'pengaman yang berbeda, dan pilihanmu menunjukkan trade-off dalam ' +
-      'sistem nyata.',
+      'Ketiga area berjalan tuntas dalam anggaran terbatas. Di ban, dua ' +
+      'penjaga membuat perakit menunggu saat ban penuh dan pengepak menunggu ' +
+      'saat ban kosong. Di papan, aturan giliran yang adil membuat pembaca ' +
+      'tidak melihat tulisan setengah jadi dan semua penulis kebagian ' +
+      'giliran. Di meja, Kartu Akses membatasi jumlah teknisi sehingga ' +
+      'lingkaran saling menunggu putus. Tiap area punya masalah dan ' +
+      'pengaman yang berbeda, dan anggaran terbatas memaksamu memilih ' +
+      'dengan cermat. Itulah trade-off dalam sistem nyata.',
     fail:
-      'Masih ada area yang bermasalah. Pesan hasil menyebut level komponen ' +
-      'pertama yang gagal: 2-1 untuk ban, 2-2 untuk papan, 2-3 untuk meja ' +
-      'teknisi. Periksa log kejadian untuk area itu, lalu coba konfigurasi ' +
-      'pengaman yang berbeda.',
+      'Masih ada area yang bermasalah. Pesan hasil menyebut area pertama ' +
+      'yang gagal: Ban Berjalan, Papan Pengumuman, atau Meja Teknisi. ' +
+      'Periksa log kejadian untuk area itu, lalu coba konfigurasi pengaman ' +
+      'yang berbeda.',
   },
   resultTitle: {
     pass: 'Luar Biasa! Pabrik Beroperasi Optimal!',

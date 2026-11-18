@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { level2_4 } from '../../levels/module2/level-2-4';
 import { getLayout } from '../layouts';
+import { validateLayout } from '../layouts/validate';
 
 describe('layout Level 2-4 (T-103)', () => {
   const layout = getLayout('2-4');
 
   it('terdaftar sebagai layout triple', () => {
     expect(layout?.kind).toBe('triple');
+  });
+
+  it('lolos validasi sebagai tiga layout komponen', () => {
+    if (layout?.kind !== 'triple') throw new Error('bukan layout triple');
+    expect(validateLayout(layout, level2_4)).toEqual([]);
   });
 
   it('id thread ketiga arena membagi habis thread level, tanpa tumpang tindih', () => {
