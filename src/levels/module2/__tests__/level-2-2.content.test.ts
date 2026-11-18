@@ -28,7 +28,7 @@ describe('Konten Level 2-2 (T-100)', () => {
     for (const word of [
       'reader',
       'writer',
-      'fair',
+      'adil',
       'starvation',
       'eksklusif',
     ]) {

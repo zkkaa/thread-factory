@@ -1,83 +1,63 @@
 import type { LevelDefinition } from '../types';
 
-/**
- * Teks Pak Mandor untuk Level 2-2 (Papan Pengumuman, Readers-Writers), T-100.
- * Dipisah dari data level agar bisa ditulis sebelum level-2-2.ts dan layout
- * papan (T-099) selesai; level-2-2.ts menyebarkan objek ini ke LevelDefinition.
- *
- * Sesuai mekanik di engine: kunci baca-tulis dengan kebijakan reader, writer,
- * dan fair; penulis dianggap kelaparan (starvation) bila menunggu
- * terus-menerus melewati ambang `starvationTicks`.
- */
-export const LEVEL_2_2_CONTENT: Required<
-  Pick<
-    LevelDefinition,
-    'intro' | 'hints' | 'concepts' | 'explanation' | 'resultTitle'
-  >
-> = {
+// Konten teks Level 2-2 (Papan Pengumuman).
+// Kriteria bintang dan batas waktu tunggu ada di goal dan chip Misi.
+
+type Level22Content = Pick<
+  LevelDefinition,
+  'intro' | 'hints' | 'concepts'
+> & {
+  explanation: NonNullable<LevelDefinition['explanation']>;
+  resultTitle: NonNullable<LevelDefinition['resultTitle']>;
+};
+
+export const LEVEL_2_2_CONTENT: Level22Content = {
   intro: [
     {
       mood: 'netral',
       text:
-        'Mandor, sekarang kita punya Papan Pengumuman besar. Banyak pembaca ' +
-        'datang untuk membaca isinya, dan beberapa penulis datang untuk ' +
-        'memperbarui isinya. Semuanya memakai papan yang sama.',
+        'Mandor, sekarang kita punya Papan Pengumuman besar. Banyak Pembaca datang untuk membaca isinya, ' +
+        'dan beberapa Penulis datang untuk memperbarui isinya. Semuanya memakai papan yang sama.',
     },
     {
       mood: 'berpikir',
       text:
-        'Aturannya begini: banyak pembaca boleh membaca bersamaan, karena ' +
-        'membaca tidak mengubah apa pun. Tetapi penulis harus sendirian di ' +
-        'papan. Kalau pembaca melihat papan saat penulis belum selesai, ia ' +
-        'akan membaca tulisan setengah jadi.',
+        'Banyak Pembaca boleh membaca bersamaan karena membaca tidak mengubah isi papan. ' +
+        'Tetapi Penulis harus bekerja sendiri. Jika Pembaca melihat papan saat Penulis belum selesai, ' +
+        'ia bisa membaca tulisan yang belum selesai diperbarui.',
     },
     {
       mood: 'netral',
       text:
-        'Misimu: tidak ada bacaan setengah jadi, tidak ada tulisan yang ' +
-        'bertabrakan, dan tidak ada penulis yang menunggu terlalu lama ' +
-        '(batasnya 10 tick berturut-turut). Pasang pengaman di papan, lalu ' +
-        'pilih kebijakannya: utamakan pembaca (reader), utamakan penulis ' +
-        '(writer), atau bergiliran sesuai urutan datang (fair). Pada seed 1, ' +
-        'bintang kedua untuk selesai dalam 100 tick, dan bintang ketiga bila ' +
-        'total waktu tunggu paling banyak 170 tick. Selamat bekerja!',
+        'Misimu adalah menjaga agar tidak ada tulisan setengah jadi yang terbaca dan tidak ada pihak yang menunggu terlalu lama. ' +
+        'Coba aturan giliran Tanpa Aturan, Pembaca Duluan, Penulis Duluan, dan Adil (FIFO). Selamat bekerja!',
     },
   ],
+
   hints: [
-    'Jalankan dulu tanpa pengaman. Perhatikan apa yang dilihat pembaca ' +
-      'ketika penulis sedang bekerja di papan.',
-    'Pembaca boleh bersamaan, tetapi penulis harus sendirian. Pengaman ' +
-      'perlu membedakan keduanya, bukan memperlakukan semua orang sama.',
-    'Bila pembaca selalu didahulukan dan terus berdatangan, perhatikan ' +
-      'penulis yang menunggu. Apakah gilirannya pernah tiba?',
-    'Coba ketiga kebijakan dengan seed yang sama, lalu bandingkan waktu ' +
-      'tunggu pembaca dan penulis. Kebijakan mana yang menjamin semua ' +
-      'akhirnya mendapat giliran?',
+    'Jalankan dengan Tanpa Aturan terlebih dahulu. Perhatikan apa yang terjadi ketika Pembaca melihat papan saat Penulis sedang mengubah isinya.',
+    'Beberapa Pembaca boleh membaca bersamaan, tetapi Penulis harus bekerja sendiri. Aturan giliran harus mengatur keduanya agar tidak saling mengganggu.',
+    'Jika Pembaca selalu didahulukan dan terus berdatangan, Penulis bisa menunggu terlalu lama. Perhatikan apakah Penulis akhirnya mendapat giliran.',
+    'Coba ketiga aturan giliran dengan seed yang sama. Bandingkan waktu tunggu Pembaca dan Penulis. Aturan mana yang membuat keduanya mendapat kesempatan?',
   ],
+
   concepts: [
     'Readers-Writers',
-    'Akses bersama untuk pembaca, akses eksklusif untuk penulis',
     'Starvation',
-    'Trade-off kebijakan antrean',
+    'Aturan Giliran',
+    'FIFO',
   ],
+
   explanation: {
-    pass:
-      'Pembaca boleh membaca bersamaan karena membaca tidak mengubah data, ' +
-      'sedangkan penulis mendapat akses eksklusif sehingga tidak ada ' +
-      'tulisan setengah jadi yang terbaca. Kebijakan menentukan siapa yang ' +
-      'didahulukan: reader priority cepat bagi pembaca tetapi dapat membuat ' +
-      'penulis kelaparan (starvation), writer priority sebaliknya dan dapat ' +
-      'membuat pembaca menunggu lama, sedangkan fair (FIFO) menjamin semua ' +
-      'akhirnya dilayani dengan harga throughput yang bisa lebih rendah.',
     fail:
-      'Ada dua kemungkinan penyebab. Pertama, pembaca dan penulis berada ' +
-      'di papan bersamaan sehingga pembaca melihat data setengah jadi: ' +
-      'penulis harus mendapat akses eksklusif. Kedua, satu pihak menunggu ' +
-      'terus-menerus karena kebijakannya selalu mendahulukan pihak lain ' +
-      '(starvation). Periksa mana yang terjadi, lalu ganti kebijakannya.',
+      'Papan belum aman. Ada dua kemungkinan masalah. Pertama, Pembaca melihat papan saat Penulis belum selesai memperbarui isinya. Kedua, salah satu pihak menunggu terlalu lama karena pihak lain terus didahulukan. Kondisi ini disebut starvation. Periksa aturan giliran yang digunakan.',
+
+    pass:
+      'Papan aman! Beberapa Pembaca boleh membaca bersamaan karena tidak mengubah isi papan, sedangkan Penulis harus mendapat akses eksklusif untuk memperbarui isinya. Pembaca Duluan (Reader Priority) mendahulukan Pembaca, tetapi Penulis bisa menunggu terlalu lama. Penulis Duluan (Writer Priority) mendahulukan Penulis, tetapi Pembaca bisa menunggu lama. Adil (FIFO) memberikan giliran sesuai urutan kedatangan agar keduanya mendapat kesempatan.',
   },
+
   resultTitle: {
-    pass: 'Bagus! Papan Aman dan Adil!',
+    pass: 'Papan Pengumuman Aman!',
     fail: 'Waduh, Papan Bermasalah!',
   },
 };
