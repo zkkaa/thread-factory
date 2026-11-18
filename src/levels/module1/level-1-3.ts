@@ -37,24 +37,26 @@ export const level1_3: LevelDefinition = {
     {
       mood: 'netral',
       text:
-        'Selamat datang di Aula Mesin, Mandor! Di sini kita punya 3 mesin bubut, ' +
-        'tetapi ada 8 robot pekerja yang siap masuk bersamaan dengan 8 core.',
+        'Selamat datang di aula mesin! Hari ini 8 robot mau masuk Aula Mesin ' +
+        'sekaligus. Tetapi aula punya 3 mesin, jadi paling banyak 3 robot ' +
+        'boleh di dalam.',
     },
     {
       mood: 'berpikir',
       text:
-        'Kalau lebih dari 3 robot masuk ke aula secara bersamaan, listrik pabrik ' +
-        'akan korsleting dan mesin mengalami BENTROK (overload). Jangan biarkan ' +
-        'hal itu terjadi! Pada seed 10, bintang kedua untuk selesai dalam 80 ' +
-        'tick, dan bintang ketiga bila total waktu tunggu paling banyak 170 tick.',
+        'Kalau lebih dari 3 robot masuk ke aula secara bersamaan, listrik ' +
+        'pabrik akan korsleting dan mesin mengalami BENTROK (overload). Jangan ' +
+        'biarkan hal itu terjadi! Pada seed 10, bintang kedua untuk selesai ' +
+        'dalam 80 tick, dan bintang ketiga bila total waktu tunggu paling ' +
+        'banyak 170 tick.',
     },
     {
       mood: 'senang',
       text:
-        'Alatmu adalah Kartu Akses (counting semaphore): jumlah kartu menentukan ' +
-        'berapa robot boleh berada di dalam aula. Pasang gerbang kartu dari ' +
-        'pintu masuk sampai pintu keluar aula, lalu coba beberapa jumlah kartu ' +
-        'dan bandingkan hasilnya. Selamat bekerja!',
+        'Alatmu adalah Kartu Akses (counting semaphore): jumlah kartu ' +
+        'menentukan berapa robot boleh berada di dalam aula. Pasang gerbang ' +
+        'kartu dari pintu masuk sampai pintu keluar aula, lalu coba beberapa ' +
+        'jumlah kartu dan bandingkan hasilnya. Selamat bekerja!',
     },
   ],
   hints: [
@@ -62,25 +64,23 @@ export const level1_3: LevelDefinition = {
     'Bila Kartu Akses disetel lebih dari 3, robot ke-4 akan masuk dan memicu BENTROK.',
     'Bila Kartu Akses disetel 1 atau 2, mesin tidak akan bentrok tetapi beberapa mesin menganggur. Pasang nilai 3 untuk efisiensi maksimal!',
   ],
-  concepts: [
-    'Counting Semaphore',
-    'Wait & Signal',
-    'Kapasitas Resource',
-    'Antrean FIFO',
-  ],
+  concepts: ['Counting semaphore', 'Antrean'],
   explanation: {
     pass:
-      'Tidak ada bentrok: Kartu Akses membatasi jumlah robot di aula sesuai ' +
-      'kapasitasnya. Kapasitas 3 sama dengan jumlah mesin, jadi semua mesin ' +
-      'terpakai tanpa pernah korslet. Kapasitas yang lebih kecil tetap aman, ' +
-      'tetapi mesin menganggur dan pabrik jadi lebih lambat. Bedanya dengan ' +
-      'mutex: mutex hanya memuat satu pemilik, sedangkan semaphore menghitung ' +
-      'jumlah kartu sehingga beberapa robot boleh masuk sekaligus.',
+      'Tidak ada bentrok karena Kartu Akses membatasi jumlah robot yang masuk ' +
+      'sesuai kapasitas aula. Kapasitas 3 sesuai dengan jumlah mesin, sehingga ' +
+      'ketiga mesin bisa digunakan secara bersamaan tanpa mengalami overload. ' +
+      'Dengan begitu, pekerjaan berjalan lebih efisien.',
     fail:
       'Terjadi bentrok: lebih dari 3 robot berada di aula mesin pada saat yang ' +
       'sama. Pasang gerbang Kartu Akses yang menutupi masuk dan keluar aula ' +
       '(dari ENTER_AREA sampai LEAVE_AREA), lalu setel kapasitasnya tidak ' +
       'lebih dari 3.',
+    partial:
+      'Tidak ada bentrok: Kartu Akses berhasil mencegah bentrok karena ' +
+      'membatasi jumlah robot yang masuk ke aula. Namun, kapasitas yang ' +
+      'digunakan terlalu kecil dibandingkan jumlah mesin. Akibatnya, beberapa ' +
+      'mesin menganggur, pekerjaan menjadi lebih lama, dan bintangmu berkurang.',
   },
   resultTitle: {
     pass: 'Bagus! Aula Aman dari Bentrok!',

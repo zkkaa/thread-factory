@@ -42,55 +42,47 @@ export const level1_1: LevelDefinition = {
     {
       mood: 'netral',
       text:
-        'Halo, Mandor baru! Selamat datang di pabrik. Hari ini dua robot kita, ' +
-        'Robot A dan Robot B, masing-masing merakit 5 produk. Setiap selesai ' +
-        'merakit, robot membaca angka di Papan Stok, menambahnya satu, lalu ' +
-        'menulis angka baru itu kembali ke papan.',
+        'Halo, Mandor baru! Selamat datang di pabrik. Hari ini dua robot kita ' +
+        'masing-masing merakit 5 produk. Tiap produk selesai, robot menambah ' +
+        'angka di Papan Stok sebanyak 1. Jadi akhirnya harus 10.',
     },
     {
       mood: 'berpikir',
       text:
-        'Misimu: stok akhir harus tepat 10. Tapi kadang angkanya kurang dari 10, ' +
-        'padahal tidak ada produk yang hilang. Jalankan dulu tanpa pengaman dan ' +
-        'perhatikan apa yang terjadi. Bintang pertama untuk hasil yang benar. ' +
-        'Pada seed 10, bintang kedua untuk selesai dalam 60 tick, dan bintang ' +
-        'ketiga bila total waktu tunggu kedua robot paling banyak 25 tick.',
+        'Misimu: pastikan stok akhir tepat 10. Namun, terkadang jumlah stok ' +
+        'kurang dari 10 karena kedua robot memperbarui angka secara bersamaan. ' +
+        'Coba jalankan tanpa pengaman dan lihat apa yang terjadi. Bintang ' +
+        'pertama didapat jika hasilnya benar. Pada seed 10, bintang kedua jika ' +
+        'selesai dalam 60 tick dan bintang ketiga jika total waktu tunggu ' +
+        'kedua robot maksimal 25 tick.',
     },
     {
       mood: 'netral',
       text:
-        'Alat kita adalah Pintu Mutex. Seret pintu masuk ke celah di jalur robot, ' +
-        'lalu seret pintu keluarnya ke celah sesudahnya. Bagian jalur di antara ' +
-        'kedua pintu hanya boleh dimasuki satu robot pada satu waktu; robot lain ' +
-        'menunggu di depan pintu. Pikirkan bagian mana yang perlu dijaga. ' +
-        'Selamat bekerja!',
+        'Tugasmu: pasang Pintu Mutex, yaitu pintu dengan satu kunci, supaya ' +
+        'hanya satu robot boleh masuk. Jalankan dulu tanpa pintu dan lihat ' +
+        'kekacauannya.',
     },
   ],
   hints: [
-    'Jalankan dulu tanpa alat. Perhatikan catatan di tangan kedua robot: ' +
-      'pernahkah mereka memegang angka yang sama?',
-    'Ada tiga langkah berurutan yang saling bergantung: baca stok, tambah satu, ' +
-      'tulis stok. Kalau robot lain ikut membaca sebelum robot pertama selesai ' +
-      'menulis, tulisan salah satunya akan tertimpa.',
-    'Pasang pintu masuk tepat sebelum READ dan pintu keluar tepat sesudah WRITE. ' +
-      'Merakit (WORK) tidak menyentuh papan, jadi tidak perlu dijaga.',
+    'Perhatikan catatan pada robot saat Step. Adakah dua robot yang memegang angka sama?',
+    'Kekacauan terjadi di antara membaca dan menulis. Bagian itu yang perlu dijaga.',
+    'Pasang pintu masuk sebelum READ, pintu keluar sesudah WRITE.',
   ],
-  concepts: [
-    'Race condition',
-    'Critical section',
-    'Mutual exclusion dan mutex',
-  ],
+  concepts: ['Race condition', 'Critical section', 'Mutex'],
   explanation: {
     pass:
-      'Mutex menjamin mutual exclusion: hanya satu robot yang boleh berada di critical section ' +
-      '(baca stok, tambah, tulis stok) pada satu waktu. Robot lain menunggu di depan pintu ' +
-      '(WAITING) sampai pintu dilepas, sehingga tidak ada pembaruan yang hilang. ' +
-      'Harganya adalah waktu tunggu.',
+      'Mutex memastikan hanya satu robot yang boleh masuk ke critical section ' +
+      '(membaca, menambah, dan menulis stok) dalam satu waktu. Robot lain harus ' +
+      'menunggu sampai pintu dibuka kembali. Dengan begitu, tidak ada pembaruan ' +
+      'stok yang hilang. Namun, robot harus bergantian sehingga menimbulkan ' +
+      'waktu tunggu.',
     fail:
-      'Ini race condition: kedua robot bisa membaca angka stok yang sama sebelum salah satunya ' +
-      'menulis. Tulisan yang datang belakangan menimpa yang lebih dulu, sehingga satu pembaruan ' +
-      'hilang (lost update). Bagian baca-hitung-tulis adalah critical section dan harus dijaga ' +
-      'dengan mutex agar hanya satu robot yang memasukinya pada satu waktu.',
+      'Ini disebut race condition karena kedua robot membaca jumlah stok yang ' +
+      'sama sebelum memperbaruinya. Akibatnya, salah satu perubahan bisa hilang ' +
+      'karena tertimpa oleh perubahan lainnya. Oleh karena itu, proses membaca, ' +
+      'menghitung, dan menulis harus dilindungi mutex agar robot melakukannya ' +
+      'secara bergantian.',
   },
   layoutId: '1-1',
   threads: LEVEL_1_1_THREADS,
