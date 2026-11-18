@@ -16,49 +16,54 @@ export const level1_2: LevelDefinition = {
       mood: 'netral',
       text:
         'Kerja bagus, Mandor! Papan Stok sudah aman. Sekarang pabrik punya dua ' +
-        'core, dua meja kerja Si Penjadwal, jadi kedua robot benar-benar bisa ' +
-        'bekerja bersamaan. Misinya masih sama: stok akhir harus tepat 10.',
+        'core atau tempat kerja, sehingga kedua robot bisa bekerja bersamaan. ' +
+        'Misimu masih sama, yaitu memastikan stok akhir tepat 10.',
     },
     {
       mood: 'berpikir',
       text:
-        'Bedanya, pintu kali ini boleh dipasang di mana saja, bahkan sebelum ' +
-        'merakit. Pintu yang terlalu besar membuat robot lain menunggu di depan ' +
-        'pintu, dan satu core jadi menganggur. Datanya tetap benar, tetapi ' +
-        'pabrik jadi lambat. Pada seed 10, bintang kedua untuk selesai dalam ' +
-        '45 tick, dan bintang ketiga bila total waktu tunggu paling banyak ' +
-        '25 tick.',
+        'Bedanya, pintu kali ini bisa dipasang di bagian mana saja, bahkan ' +
+        'sebelum proses perakitan. Jika pintu terlalu besar, robot lain harus ' +
+        'menunggu dan satu core bisa menganggur. Data tetap benar, tetapi ' +
+        'pekerjaan menjadi lebih lambat. Pada seed 10, bintang kedua didapat ' +
+        'jika selesai dalam 45 tick dan bintang ketiga jika total waktu tunggu ' +
+        'maksimal 25 tick.',
     },
     {
       mood: 'netral',
       text:
-        'Coba dulu tanpa pintu, lalu pasang pintu yang menutupi semuanya dan ' +
-        'catat total tick-nya. Setelah itu coba pintu yang hanya menjaga bagian ' +
-        'yang menyentuh papan. Bandingkan hasilnya. Selamat bekerja!',
+        'Coba jalankan tanpa pintu, lalu pasang pintu yang menutupi seluruh ' +
+        'proses dan catat total langkahnya. Setelah itu, coba pasang pintu ' +
+        'yang hanya melindungi bagian yang berhubungan dengan papan stok. ' +
+        'Bandingkan hasilnya. Selamat bekerja!',
     },
   ],
   hints: [
-    'Jalankan dulu tanpa pintu. Dengan dua core, kedua robot membaca stok ' +
-      'hampir bersamaan. Lihat angka akhirnya.',
-    'Pintu yang menutupi seluruh jalur memang aman, tetapi merakit (WORK) tidak ' +
-      'menyentuh papan. Perlukah robot lain menunggu selama robot pertama merakit?',
-    'Pasang pintu masuk tepat sebelum READ dan pintu keluar tepat sesudah WRITE. ' +
-      'Dengan begitu satu robot bisa merakit di luar pintu saat robot lain ' +
-      'sedang menulis stok.',
+    'Jalankan tanpa pintu terlebih dahulu. Dengan dua core, kedua robot bisa membaca stok hampir bersamaan. Perhatikan hasil akhirnya.',
+    'Pintu yang melindungi seluruh proses memang aman. Namun, proses merakit (WORK) tidak berhubungan dengan papan stok. Jadi, apakah robot lain perlu menunggu saat robot pertama sedang merakit?',
+    'Pasang pintu masuk sebelum READ dan pintu keluar setelah WRITE. Dengan begitu, satu robot tetap bisa merakit di luar pintu saat robot lain sedang memperbarui stok.',
   ],
-  concepts: ['Granularitas lock', 'Trade-off aman vs cepat', 'Utilisasi core'],
+  concepts: ['Ukuran kunci (granularitas lock)', 'Aman versus cepat'],
   explanation: {
     pass:
-      'Pintu yang hanya menjaga critical section (baca, hitung, tulis) membuat ' +
-      'data tetap benar sekaligus membiarkan robot lain merakit di luar pintu, ' +
-      'sehingga kedua core tetap terpakai. Itu lock berbutir halus. Bila pintumu ' +
-      'menutupi lebih dari yang perlu, data tetap benar tetapi satu core ' +
-      'menganggur dan bintangmu berkurang.',
+      'Pintu Mutex hanya melindungi critical section (proses membaca, ' +
+      'menghitung, dan menulis stok). Dengan begitu, robot lain tetap bisa ' +
+      'merakit produk di luar pintu. Kedua core dapat bekerja secara bersamaan ' +
+      'sehingga pekerjaan selesai lebih cepat dan waktu tunggu lebih sedikit. ' +
+      'Cara ini disebut lock berbutir halus.',
     fail:
-      'Stok salah karena kedua robot berada di critical section pada saat yang ' +
-      'sama, sehingga satu pembaruan tertimpa (race condition). Pastikan pintu ' +
-      'menutupi seluruh bagian baca, hitung, dan tulis stok. Melindungi hanya ' +
-      'sebagian dari ketiganya tidak cukup.',
+      'Stok menjadi salah karena kedua robot mengakses dan mengubah stok secara ' +
+      'bersamaan. Akibatnya, salah satu perubahan tertimpa (race condition). ' +
+      'Pastikan pintu melindungi seluruh proses membaca, menghitung, dan ' +
+      'menulis stok. Jika hanya sebagian proses yang dilindungi, masalah tetap ' +
+      'bisa terjadi.',
+    partial:
+      'Pintu Mutex yang melindungi critical section (membaca, menghitung, dan ' +
+      'menulis stok) membuat data tetap aman. Namun, jika pintu dipasang ' +
+      'terlalu luas, robot lain harus menunggu lebih lama dan salah satu core ' +
+      'bisa menganggur, sehingga bintangmu berkurang. Pintu yang hanya ' +
+      'melindungi bagian yang menyentuh papan (lock berbutir halus) membuat ' +
+      'robot lain tetap bisa merakit di luar pintu.',
   },
   resultTitle: {
     pass: 'Bagus! Pintunya Pas!',

@@ -58,8 +58,16 @@ export interface LevelDefinition {
    * `pass` dipakai bila level lulus, `fail` bila gagal. Isinya harus benar secara
    * konsep sisop (lihat CLAUDE.md bagian 7).
    */
-  explanation?: { pass: string; fail: string };
-  /** Judul popup hasil (S6). Bila kosong, tampilan memakai judul umum. */
+  explanation?: {
+    pass: string;
+    fail: string;
+    /**
+     * Opsional: hasil benar tetapi bintang berkurang (mis. pintu terlalu
+     * besar di Level 1-2, kapasitas terlalu kecil di Level 1-3). Belum
+     * ditampilkan UI; penyambungannya menyusul.
+     */
+    partial?: string;
+  };
   resultTitle?: { pass: string; fail: string };
   /**
    * Kunci tata letak arena di game/layouts/. Koordinat tidak disimpan di data

@@ -57,8 +57,8 @@ describe('hasil lulus (seed tutorial, mutex pas)', () => {
     expect(view.cards[0]).toEqual({ label: 'Pembaruan hilang', value: '0' });
   });
 
-  it('penjelasan menyebut mutual exclusion', () => {
-    expect(view.explanation).toContain('mutual exclusion');
+  it('penjelasan menyebut critical section', () => {
+    expect(view.explanation).toContain('critical section');
   });
 
   it('dialog menampilkan BENAR dan kutipan hasil', () => {

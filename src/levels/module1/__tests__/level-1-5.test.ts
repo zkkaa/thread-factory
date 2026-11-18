@@ -125,11 +125,12 @@ describe('Level 1-5: Lini Gabungan (T-047)', () => {
     expect(intro).toContain('Bintang pertama');
     expect(intro).toContain('70 tick');
     expect(intro).toContain('80 tick');
-    expect(hints).toContain('mutex');
-    expect(hints).toContain('semaphore');
-    expect(hints).toContain('condition variable');
+    const hintsLower = hints.toLowerCase();
+    expect(hintsLower).toContain('mutex');
+    expect(hintsLower).toContain('kartu akses');
+    expect(hintsLower).toContain('lampu sinyal');
     expect(level1_5.concepts.length).toBeGreaterThanOrEqual(4);
-    expect(explanation).toContain('lost update');
-    expect(explanation).toContain('busy waiting');
+    expect(explanation).toContain('tidak saling bertabrakan');
+    expect(explanation).toContain('terus-menerus mengecek');
   });
 });

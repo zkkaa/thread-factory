@@ -77,11 +77,13 @@ export const level1_5: LevelDefinition = {
         'Selamat bekerja!',
     },
   ],
+
   hints: [
-    'Amati tiga masalah berbeda: angka di Papan Stok, kapasitas area bersama, dan Pengepak yang menunggu barang.',
-    'Mutex melindungi baca-hitung-tulis. Semaphore membatasi jumlah robot di aula, sedangkan condition variable membuat Pengepak tidur tanpa busy waiting.',
-    'Pasang mutex di slot 1 sampai 4, semaphore bernilai 1 di slot 4 sampai 7, lalu condition variable pada Pengepak dengan sinyal Perakit di slot 4.',
+    'Jalankan tanpa alat dan perhatikan: mana yang salah angka, mana yang bentrok, mana yang kehabisan baterai?',
+    'Salah angka: Pintu Mutex. Bentrok karena kepenuhan: Kartu Akses. Boros baterai: Lampu Sinyal.',
+    'Jangan pasang alat di tempat yang tidak bermasalah. Setiap alat punya harga berupa waktu menunggu.',
   ],
+
   concepts: [
     'Race condition dan critical section',
     'Mutex dan granularitas lock',
@@ -89,18 +91,22 @@ export const level1_5: LevelDefinition = {
     'Condition variable',
     'Blocking vs busy waiting',
   ],
+
   explanation: {
     pass:
-      'Pintu Mutex menjaga pembaruan Papan Stok agar tidak ada lost update. ' +
-      'Kartu Akses membatasi isi aula sesuai kapasitasnya, dan Lampu Sinyal ' +
-      'membuat Pengepak menunggu tanpa busy waiting. Ketiga alat punya tugas ' +
-      'berbeda dan dipakai bersama, bukan saling menggantikan.',
+      'Pintu Mutex menjaga agar pembaruan Papan Stok tidak saling bertabrakan. ' +
+      'Kartu Akses membatasi jumlah robot yang boleh masuk ke aula. Sementara itu, ' +
+      'Lampu Sinyal membuat Pengepak bisa menunggu tanpa terus-menerus mengecek barang. ' +
+      'Ketiga alat memiliki fungsi masing-masing dan digunakan bersama karena ' +
+      'saling melengkapi, bukan menggantikan satu sama lain.',
+
     fail:
-      'Periksa tiap masalah secara terpisah: pembaruan stok perlu mutex pada ' +
-      'READ, COMPUTE, dan WRITE; aula perlu semaphore bernilai 1; dan ' +
-      'Pengepak perlu condition variable yang memberi sinyal setelah barang ' +
-      'tersedia. Condition variable digunakan bersama mutex dan syarat barang ' +
-      'tetap harus diperiksa setelah bangun.',
+      'Periksa setiap masalah satu per satu. Pembaruan stok membutuhkan mutex untuk ' +
+      'melindungi proses READ, COMPUTE, dan WRITE. Aula membutuhkan semaphore dengan ' +
+      'nilai 1 agar hanya satu robot yang boleh masuk. Sementara itu, Pengepak ' +
+      'membutuhkan condition variable agar bisa menunggu sampai barang tersedia tanpa ' +
+      'terus-menerus mengecek meja. Condition variable harus digunakan bersama mutex, ' +
+      'dan jumlah barang tetap harus diperiksa kembali setelah robot bangun.',
   },
   resultTitle: {
     pass: 'Bagus! Lini Berjalan Serempak!',
