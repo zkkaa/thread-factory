@@ -48,6 +48,7 @@ export const LEVEL_2_1_THREADS: ThreadDef[] = [
  * semaphore empty dan full.
  * Alat pemain: dua penjaga semaphorePair (Penjaga Slot dan Penjaga Barang),
  * lihat ui/beltTool.ts.
+ * Kriteria bintang (goal.stars) tampil di chip Misi, jadi tidak ditulis di dialog.
  */
 export const level2_1: LevelDefinition = {
   id: '2-1',
@@ -64,28 +65,23 @@ export const level2_1: LevelDefinition = {
     {
       mood: 'sedih',
       text:
-        'Sekarang belum ada aturan, jadi kacau. Begitu mulai, pengepak langsung meraih ban yang ' +
-        'masih kosong (underflow), dan kalau perakit lebih cepat, ban penuh lalu barang jatuh (overflow). ' +
-        'Misimu: kedelapan barang lewat tanpa jatuh dan tanpa meraih kosong. ' +
-        'Pada seed 10, bintang kedua untuk selesai dalam 24 tick, dan bintang ketiga ' +
-        'bila total waktu tunggu semua robot paling banyak 12 tick.',
+        'Saat ini belum ada aturan, jadi terjadi kekacauan. Kalau perakit terlalu cepat, ban penuh ' +
+        'dan barang jatuh. Kalau ban masih kosong, pengepak meraih angin. ' +
+        'Misimu: semua 8 barang sampai tanpa ada yang jatuh atau terambil dari ban kosong.',
     },
     {
       mood: 'berpikir',
       text:
-        'Kuncinya dua penghitung (semaphore), bukan satu kunci. Satu menghitung slot yang ' +
-        'masih kosong, satu lagi menghitung barang yang siap diambil. Perakit harus menunggu ' +
-        'sampai ada slot kosong sebelum menaruh barang, dan pengepak harus menunggu sampai ada ' +
-        'barang sebelum mengambil. Robot yang menunggu akan tidur, bukan terus mengecek. ' +
-        'Di toolbox ada dua penjaga: Penjaga Slot untuk perakit dan Penjaga Barang untuk ' +
-        'pengepak. Nyalakan keduanya, lalu tekan Run.',
+        'Di toolbox ada dua penjaga. Penjaga Slot menghitung ruang kosong di ban, dan membuat ' +
+        'perakit menunggu kalau ban penuh. Penjaga Barang menghitung barang yang siap diambil, ' +
+        'dan membuat pengepak menunggu kalau ban kosong. Pasang keduanya, lalu tekan Run!',
     },
   ],
   hints: [
-    'Ada dua hal yang bisa salah di ban: menaruh barang saat ban penuh, dan mengambil barang saat ban kosong. Sebelum bertindak, tiap robot perlu bertanya: "boleh lanjut sekarang?"',
-    'Tiap masalah butuh satu penghitung (semaphore): satu menghitung slot yang masih kosong, satu menghitung barang yang siap diambil.',
-    'Penghitung slot kosong ("empty") dimulai dari kapasitas ban, yaitu 3. Penghitung barang ("full") dimulai dari 0 karena ban awalnya kosong.',
-    'Perakit: wait(empty), taruh barang, lalu signal(full). Pengepak: wait(full), ambil barang, lalu signal(empty). Urutan "tunggu dulu, baru taruh atau ambil" tidak boleh terbalik.',
+    'Ada dua masalah: barang jatuh karena ban penuh, dan pengepak mengambil dari ban kosong. Perhatikan kapan masing-masing robot seharusnya menunggu.',
+    'Perakit harus menunggu kalau ban penuh. Pengepak harus menunggu kalau belum ada barang yang bisa diambil.',
+    'Penjaga Slot mulai dari 3 karena ban punya 3 ruang kosong. Penjaga Barang mulai dari 0 karena belum ada barang di ban.',
+    'Perakit menunggu dulu sampai ada ruang kosong, baru menaruh barang. Lalu ia memberi kabar ke pengepak bahwa barang sudah ada. Pengepak melakukan hal yang sama, dengan arah sebaliknya. Urutannya tidak boleh terbalik.',
   ],
   concepts: [
     'Producer-Consumer',
@@ -95,17 +91,17 @@ export const level2_1: LevelDefinition = {
   ],
   explanation: {
     pass:
-      'Tidak ada overflow maupun underflow. Semaphore empty (Slot Kosong) membuat perakit menunggu ' +
-      'saat ban penuh, dan semaphore full (Barang Tersedia) membuat pengepak menunggu saat ban kosong. ' +
-      'Keduanya counting semaphore: penghitung, bukan kunci dengan satu pemilik seperti mutex. ' +
-      'Robot yang menunggu tidur (WAITING), tidak terus mengecek. ' +
-      'Di sistem nyata ban juga butuh mutex agar dua robot tidak mengubahnya bersamaan; ' +
-      'di simulasi ini taruh dan ambil selesai dalam satu tick, jadi pembatas utamanya dua semaphore tadi.',
+      'Ban aman! Tidak ada barang yang jatuh (overflow) atau terambil dari ban kosong (underflow). ' +
+      'Penjaga Slot membuat perakit menunggu saat ban penuh, dan Penjaga Barang membuat pengepak ' +
+      'menunggu saat ban kosong. Robot yang menunggu berhenti dulu, tidak terus mengecek ban. ' +
+      'Alat penghitung seperti ini disebut semaphore, dan pola kerja perakit-pengepak ini disebut ' +
+      'producer-consumer. Catatan: di pabrik sungguhan, ban juga butuh mutex supaya tidak disentuh ' +
+      'dua robot sekaligus. Di simulasi ini menaruh dan mengambil selesai dalam satu tick, ' +
+      'jadi dua semaphore sudah cukup.',
     fail:
-      'Ban belum aman: robot menaruh barang di ban penuh (overflow), mengambil dari ban kosong ' +
-      '(underflow), atau robot saling menunggu sampai simulasi macet. Pembatasnya dua semaphore: ' +
-      'empty (slot kosong, nilai awal sama dengan kapasitas ban, 3) dan full (barang tersedia, ' +
-      'nilai awal 0), dengan urutan tunggu dulu, baru taruh atau ambil.',
+      'Ban belum aman. Barang masih bisa jatuh karena ban penuh, atau pengepak masih meraih ban ' +
+      'kosong, atau robot saling menunggu sampai pekerjaan berhenti. Periksa apakah Penjaga Slot ' +
+      'dan Penjaga Barang sudah terpasang dua-duanya.',
   },
   resultTitle: {
     pass: 'Bagus! Ban Lancar Jaya!',
