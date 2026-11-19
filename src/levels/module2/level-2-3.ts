@@ -33,7 +33,7 @@ function invariant(snap: Snapshot): { ok: boolean; message: string } {
   if (!allDone || Boolean(snap.deadlock)) {
     return {
       ok: false,
-      message: 'Masih ada teknisi yang belum selesai makan.',
+      message: 'Masih ada teknisi yang belum selesai bekerja.',
     };
   }
   const preemptions = snap.preemptions ?? 0;
@@ -56,11 +56,14 @@ export const level2_3: LevelDefinition = {
       mood: 'netral',
     },
     {
-      text: `Misimu: semua teknisi harus selesai bekerja ${LEVEL_2_3_MEALS} kali. Tekan Run tanpa alat dulu dan perhatikan apa yang terjadi. Pada seed 1, bintang kedua untuk selesai dalam 80 tick, dan bintang ketiga bila total waktu tunggu paling banyak 100 tick.`,
+      text: `Misimu: semua teknisi harus selesai bekerja ${LEVEL_2_3_MEALS} kali. Tekan Run tanpa alat dulu dan perhatikan apa yang terjadi.`,
       mood: 'berpikir',
     },
     {
-      text: 'Kalau mereka macet, kamu punya dua jalan: cegah macet dengan Kartu Akses di sekeliling pekerjaan, atau biarkan macet lalu tekan "Rampas kunci" untuk memaksa satu teknisi melepas kuncinya.',
+      text:
+    'Kalau semua teknisi mengambil kunci kirinya bersamaan, masing-masing menunggu kunci kanan yang dipegang tetangganya, dan tidak ada yang bisa maju. ' +
+    'Kalau mereka macet, kamu punya dua jalan: cegah macet dengan Kartu Akses di sekeliling pekerjaan, ' +
+    'atau biarkan macet lalu tekan "Rampas kunci" untuk memaksa satu teknisi melepas kuncinya (pekerjaannya diulang dari awal).',
       mood: 'netral',
     },
   ],
@@ -79,7 +82,12 @@ export const level2_3: LevelDefinition = {
     'Deteksi dan pemulihan deadlock',
   ],
   explanation: {
-    pass: 'Deadlock butuh empat syarat sekaligus (kondisi Coffman): mutual exclusion, hold and wait, no preemption, dan circular wait. Membatasi jumlah teknisi menjadi 4 memutus circular wait, karena selalu ada satu teknisi yang bisa mendapat dua kunci. Merampas kunci memutus no preemption, tetapi pekerjaan yang sudah berjalan harus diulang.',
+    pass:
+    'Macet total (deadlock) terjadi kalau empat hal ini ada bersamaan: kunci hanya boleh dipegang satu orang, ' +
+    'orang yang sudah memegang kunci tetap menunggu kunci lain, kunci tidak bisa direbut paksa, ' +
+    'dan mereka saling menunggu melingkar (circular wait). ' +
+    'Dengan membatasi teknisi jadi 4, lingkaran tunggu putus karena selalu ada satu teknisi yang bisa mendapat dua kunci. ' +
+    'Merampas kunci memutus syarat "tidak bisa direbut", tetapi pekerjaan yang sudah berjalan harus diulang.',
     fail: 'Semua teknisi memegang satu kunci dan menunggu kunci tetangganya: itu circular wait, jadi tidak ada yang bisa maju. Ini deadlock. Menunggu lebih lama tidak akan membantu; salah satu syarat deadlock harus diputus, misalnya dengan membatasi jumlah teknisi atau dengan merampas kunci.',
   },
   resultTitle: {

@@ -46,7 +46,7 @@ export function RwToolbox({ controller, state }: RwToolboxProps) {
   const choose = (next: RwPolicy): void => {
     if (!editable) return;
     setPicked(next);
-    if (installed !== undefined) apply(next);
+    apply(next);
   };
 
   return (
