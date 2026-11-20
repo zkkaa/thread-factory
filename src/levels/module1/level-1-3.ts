@@ -37,18 +37,15 @@ export const level1_3: LevelDefinition = {
     {
       mood: 'netral',
       text:
-        'Selamat datang di aula mesin! Hari ini 8 robot mau masuk Aula Mesin ' +
-        'sekaligus. Tetapi aula punya 3 mesin, jadi paling banyak 3 robot ' +
-        'boleh di dalam.',
+       'Selamat datang di Aula Mesin! Hari ini 8 robot ingin masuk ke aula sekaligus. ' +
+        'Tapi aula hanya punya 3 mesin, jadi paling banyak 3 robot boleh berada di dalam.',
     },
     {
       mood: 'berpikir',
       text:
-        'Kalau lebih dari 3 robot masuk ke aula secara bersamaan, listrik ' +
-        'pabrik akan korsleting dan mesin mengalami BENTROK (overload). Jangan ' +
-        'biarkan hal itu terjadi! Pada seed 10, bintang kedua untuk selesai ' +
-        'dalam 80 tick, dan bintang ketiga bila total waktu tunggu paling ' +
-        'banyak 170 tick.',
+        'Kalau lebih dari 3 robot masuk, listrik korsleting dan terjadi BENTROK. ' +
+        'Jangan sampai! Pada seed 10, bintang 2 jika selesai dalam 80 tick, dan ' +
+        'bintang 3 jika total waktu tunggu paling banyak 170 tick.',
     },
     {
       mood: 'senang',
@@ -60,9 +57,10 @@ export const level1_3: LevelDefinition = {
     },
   ],
   hints: [
-    'Perhatikan kapasitas aula mesin: aula hanya dapat menampung maksimal 3 robot.',
-    'Bila Kartu Akses disetel lebih dari 3, robot ke-4 akan masuk dan memicu BENTROK.',
-    'Bila Kartu Akses disetel 1 atau 2, mesin tidak akan bentrok tetapi beberapa mesin menganggur. Pasang nilai 3 untuk efisiensi maksimal!',
+    'Aula hanya muat 3 robot. Itu batas amannya.',
+    'Kalau kartu lebih dari 3, robot ke-4 ikut masuk dan terjadi BENTROK.',
+    'Kalau kartu hanya 1 atau 2, tidak ada bentrok, tapi ada mesin yang menganggur. ' +
+    'Coba nilai 3.',
   ],
   concepts: ['Counting semaphore', 'Antrean'],
   explanation: {
@@ -123,4 +121,15 @@ export const level1_3: LevelDefinition = {
     //   kapasitas 4 sampai 8 dan tanpa gerbang: bentrok -> gagal
     stars: { fast: 80, lowWait: 170 },
   },
+  resultQuote: {
+  stars1:
+    'Tidak ada bentrok, aman! Tapi masih ada mesin yang menganggur. ' +
+    'Coba tambah jumlah Kartu Akses.',
+  stars2:
+    'Hampir pas! Aula sudah cukup sibuk. Hitung lagi: ada berapa mesin ' +
+    'yang benar-benar tersedia?',
+  stars3:
+    'Sempurna! Jumlah Kartu Akses sama dengan jumlah mesin. Tidak ada ' +
+    'bentrok dan tidak ada mesin yang menganggur.',
+},
 };

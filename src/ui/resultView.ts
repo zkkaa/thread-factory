@@ -199,9 +199,10 @@ export function deriveResultView(
   let quote: string;
   if (verdictMode) {
     quote = result.message;
-  } else if (area !== null) {
-    quote = areaQuote(result.ok, area.name, overload);
-  } else if (battery) {
+  }else if (area !== null) {
+    quote =
+    starQuote(level, result) ?? areaQuote(result.ok, area.name, overload);
+} else if (battery) {
     quote = batteryQuote(result.ok, completed, busyWait, percent, timingFail);
   } else if (result.ok) {
   quote =
