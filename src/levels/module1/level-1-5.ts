@@ -53,30 +53,27 @@ export const level1_5: LevelDefinition = {
     {
       mood: 'netral',
       text:
-        'Perakit, Penggudang, dan Pengepak kini bekerja di lini yang sama. ' +
-        'Perakit dan Penggudang masing-masing menambahkan 3 barang ke Papan ' +
-        'Stok, sementara Pengepak menunggu barang pertama sebelum mulai.',
+        'Perakit, Penggudang, dan Pengepak kini bekerja di satu lini. Perakit dan ' +
+        'Penggudang masing-masing menambah 3 barang ke Papan Stok. Pengepak menunggu ' +
+        'barang pertama, lalu mengambil satu.',
     },
     {
       mood: 'berpikir',
       text:
-        'Tiga robot berbagi area yang hanya muat satu robot. Papan Stok juga ' +
-        'diperbarui oleh lebih dari satu robot, jadi hasil akhirnya harus ' +
-        'tepat 5 setelah Pengepak mengambil satu barang. Bintang pertama ' +
-        'memerlukan hasil benar tanpa bentrok atau busy waiting. Pada seed 10, ' +
-        'bintang kedua untuk selesai dalam 70 tick, dan bintang ketiga bila ' +
-        'total waktu tunggu paling banyak 80 tick.',
+       'Ada tiga masalah sekaligus. Papan Stok diubah banyak robot, aula hanya muat ' +
+        'satu robot, dan Pengepak tidak boleh terus mengecek barang. Hasil akhir harus ' +
+        'tepat 5. Bintang 1 butuh hasil benar tanpa bentrok dan tanpa busy waiting. ' +
+        'Pada seed 10, bintang 2 jika selesai dalam 70 tick, dan bintang 3 jika total ' +
+        'waktu tunggu paling banyak 80 tick.',
     },
     {
       mood: 'senang',
       text:
-        'Kali ini masalahnya ada tiga, dan tiap masalah punya alatnya sendiri. ' +
-        'Amati dulu apa yang salah, lalu pilih dari toolbox: Pintu Mutex, ' +
-        'Kartu Akses, atau Lampu Sinyal. Tidak ada alat yang bisa menggantikan ' +
-        'yang lain, jadi pikirkan mana yang cocok untuk masalah yang mana. ' +
-        'Selamat bekerja!',
+        'Tiap masalah punya alatnya sendiri: Pintu Mutex, Kartu Akses, dan Lampu ' +
+        'Sinyal. Satu alat tidak bisa menggantikan yang lain. Amati dulu apa yang ' +
+        'salah, baru pilih alatnya. Selamat bekerja!',
     },
-  ],
+  ],  
 
   hints: [
     'Jalankan tanpa alat dan perhatikan: mana yang salah angka, mana yang bentrok, mana yang kehabisan baterai?',

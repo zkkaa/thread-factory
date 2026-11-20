@@ -496,7 +496,7 @@ function ResultCard({
                   fig.match ? 'text-emerald-300' : 'text-red-300'
                 }`}
               >
-                {`${fig.actual} ${fig.match ? '=' : '≠'} ${fig.target}`}
+               {fig.display ?? `${fig.actual} ${fig.match ? '=' : '≠'} ${fig.target}`}
               </span>
               <span className="sr-only">
                 {fig.match ? '(sesuai target)' : '(tidak sesuai target)'}

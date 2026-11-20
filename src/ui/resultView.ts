@@ -19,7 +19,7 @@ export interface ResultView {
   /** Utilisasi core untuk level multicore (null bila single core). */
   coreUtilization: string | null;
   /** Angka kunci untuk bar besar, mis. "Stok: 8 ≠ 10". Hanya untuk tampilan. */
-  keyFigure: { label: string; actual: string; target: string; match: boolean };
+  keyFigure: { label: string; actual: string; target: string; match: boolean; display?: string; };
 }
 
 const DEFAULT_TITLES = {
@@ -172,6 +172,7 @@ export function deriveResultView(
       actual: result.ok || overload > 0 ? String(overload) : 'belum selesai',
       target: '0',
       match: result.ok,
+      display: result.ok ? 'Tidak ada' : undefined,
     };
   } else if (timingFail) {
     keyFigure = {
