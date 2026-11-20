@@ -77,6 +77,15 @@ function batteryQuote(
   return 'Barang di meja belum sesuai target.';
 }
 
+/** Kalimat gelembung khusus level menurut bintang; null bila tidak ada. */
+function starQuote(level: LevelDefinition, result: LevelResult): string | null {
+  const custom = level.resultQuote;
+  if (custom === undefined || !result.ok) return null;
+  if (result.stars === 3) return custom.stars3 ?? null;
+  if (result.stars === 2) return custom.stars2 ?? null;
+  if (result.stars === 1) return custom.stars1 ?? null;
+  return null;
+}
 /** Mengubah hasil penilaian controller menjadi data tampilan. Tidak menilai ulang. */
 export function deriveResultView(
   level: LevelDefinition,
@@ -99,9 +108,14 @@ export function deriveResultView(
     (a, b) => a + b,
     0,
   );
-  const { fast, lowWait } = level.goal.stars;
+  // BARU: fastest opsional; bila ada, ★★★ dinilai dari tick (sama dengan evaluateLevel).
+  const { fast, lowWait, fastest } = level.goal.stars;
   const efficient = result.ok && result.metrics.tick <= fast;
-  const frugal = efficient && totalWait <= lowWait;
+  const frugal =
+    efficient &&
+    (fastest !== undefined
+      ? result.metrics.tick <= fastest
+      : totalWait <= lowWait);
   const titles = level.resultTitle ?? DEFAULT_TITLES;
   const verdictMode = level.resultMode === 'verdict';
 
@@ -190,7 +204,9 @@ export function deriveResultView(
   } else if (battery) {
     quote = batteryQuote(result.ok, completed, busyWait, percent, timingFail);
   } else if (result.ok) {
-    quote = `Hasilnya ${actualText}, sesuai target ${target}.`;
+  quote =
+    starQuote(level, result) ??
+    `Hasilnya ${actualText}, sesuai target ${target}.`;
   } else {
     quote = `Seharusnya ${target}, hasilnya ${actualText}.`;
   }
@@ -208,12 +224,23 @@ export function deriveResultView(
   if (result.ok) title = titles.pass;
   else if (timingFail) title = TIMING_FAIL_TITLE;
 
+  // BARU: pesan dipilih dari bintang. ★★★ atau tidak dinilai (seed bukan
+  // tutorial) memakai `pass`; ★ dan ★★ memakai `partial` bila level punya.
   let explanation: string | null = null;
   if (timingFail) {
     explanation = TIMING_FAIL_EXPLANATION;
   } else if (level.explanation) {
-    explanation = result.ok ? level.explanation.pass : level.explanation.fail;
+    const { pass, fail, partial } = level.explanation;
+    if (!result.ok) explanation = fail;
+    else if (result.stars === null || result.stars === 3) explanation = pass;
+    else explanation = partial ?? pass;
   }
+
+  // BARU: label kriteria ★★★ mengikuti jenis ambangnya.
+  const thirdLabel =
+    fastest !== undefined
+      ? `Hemat: selesai dalam ${fastest} tick atau kurang (tick: ${result.metrics.tick})`
+      : `Hemat: total waktu tunggu ${lowWait} tick atau kurang (total: ${totalWait})`;
 
   return {
     ok: result.ok,
@@ -231,10 +258,7 @@ export function deriveResultView(
         label: `Efisien: selesai dalam ${fast} tick atau kurang (tick: ${result.metrics.tick})`,
         met: efficient,
       },
-      {
-        label: `Hemat: total waktu tunggu ${lowWait} tick atau kurang (total: ${totalWait})`,
-        met: frugal,
-      },
+      { label: thirdLabel, met: frugal },
     ],
     cards,
     explanation,

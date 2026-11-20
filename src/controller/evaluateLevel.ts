@@ -40,7 +40,9 @@ const NOT_COMPLETED_MESSAGE =
  * Bintang bersifat bertingkat (PRD bagian 10):
  *  - 1 bintang : benar (lulus invariant dan semua robot selesai)
  *  - 2 bintang : benar DAN total tick <= goal.stars.fast
- *  - 3 bintang : 2 bintang DAN total waitTicks <= goal.stars.lowWait
+ *  - 3 bintang : 2 bintang DAN salah satu:
+ *      * bila level mengisi `goal.stars.fastest`: total tick <= fastest
+ *      * bila tidak: total waitTicks <= goal.stars.lowWait
  */
 export function evaluateLevel(
   level: LevelDefinition,
@@ -65,11 +67,14 @@ export function evaluateLevel(
     stars = 1;
     if (snapshot.tick <= level.goal.stars.fast) {
       stars = 2;
+      const { fastest, lowWait } = level.goal.stars;
       const totalWait = Object.values(metrics.waitTicksByThread).reduce(
         (a, b) => a + b,
         0,
       );
-      if (totalWait <= level.goal.stars.lowWait) stars = 3;
+      const earnedThird =
+        fastest !== undefined ? snapshot.tick <= fastest : totalWait <= lowWait;
+      if (earnedThird) stars = 3;
     }
   }
   return { ok: verdict.ok, message: verdict.message, metrics, stars };
