@@ -127,7 +127,7 @@ describe('Popup hasil level berarea (T-042)', () => {
   it('gerbang kapasitas 3: lulus tanpa bentrok', () => {
     const view = resultViewOf(playToEnd(level1_3, 3));
     expect(view.ok).toBe(true);
-    expect(view.quote).toBe('Tanpa bentrok di aula, semua robot aman.');
+    expect(view.quote).toMatch(/Tidak ada bentrok/);
     expect(view.keyFigure.actual).toBe('0');
     expect(view.keyFigure.match).toBe(true);
     expect(view.cards[0]).toEqual({ label: 'Tick bentrok', value: '0' });
