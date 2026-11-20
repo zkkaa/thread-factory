@@ -42,47 +42,46 @@ export const level1_1: LevelDefinition = {
     {
       mood: 'netral',
       text:
-        'Halo, Mandor baru! Selamat datang di pabrik. Hari ini dua robot kita ' +
-        'masing-masing merakit 5 produk. Tiap produk selesai, robot menambah ' +
-        'angka di Papan Stok sebanyak 1. Jadi akhirnya harus 10.',
+        'Halo, Mandor baru! Selamat datang di pabrik. Dua robot kita masing-masing ' +
+        'merakit 5 produk. Tiap satu produk selesai, robot menambah angka di Papan ' +
+        'Stok sebanyak 1. Jadi di akhir, angkanya harus 10.',
     },
     {
       mood: 'berpikir',
       text:
-        'Misimu: pastikan stok akhir tepat 10. Namun, terkadang jumlah stok ' +
-        'kurang dari 10 karena kedua robot memperbarui angka secara bersamaan. ' +
-        'Coba jalankan tanpa pengaman dan lihat apa yang terjadi. Bintang ' +
-        'pertama didapat jika hasilnya benar. Pada seed 10, bintang kedua jika ' +
-        'selesai dalam 60 tick dan bintang ketiga jika total waktu tunggu ' +
-        'kedua robot maksimal 25 tick.',
+        'Masalahnya, kadang angka akhir kurang dari 10. Bayangkan dua orang mencatat saldo di ' +
+        'buku yang sama pada saat bersamaan. Keduanya melihat angka 5, keduanya menulis 6, ' +
+        'padahal seharusnya 7. Satu tambahan hilang! Coba jalankan dulu tanpa pengaman dan lihat ' +
+        'sendiri. Bintang 1: stok akhir tepat 10. Pada seed 10, bintang 2 jika selesai dalam 60 tick, dan ' +
+        'bintang 3 jika total waktu tunggu kedua robot maksimal 25 tick.',
     },
     {
       mood: 'netral',
       text:
-        'Tugasmu: pasang Pintu Mutex, yaitu pintu dengan satu kunci, supaya ' +
-        'hanya satu robot boleh masuk. Jalankan dulu tanpa pintu dan lihat ' +
-        'kekacauannya.',
+        'Alatmu adalah Pintu Mutex: pintu dengan satu kunci, seperti bilik toilet. ' +
+        'Kalau ada yang di dalam, yang lain antre di luar. Pasang pintunya di bagian ' +
+        'yang menyentuh Papan Stok, lalu jalankan lagi.',
     },
   ],
   hints: [
-    'Perhatikan catatan pada robot saat Step. Adakah dua robot yang memegang angka sama?',
-    'Kekacauan terjadi di antara membaca dan menulis. Bagian itu yang perlu dijaga.',
-    'Pasang pintu masuk sebelum READ, pintu keluar sesudah WRITE.',
+     'Tekan Step pelan-pelan dan lihat catatan di tangan robot. Adakah dua robot ' +
+      'yang memegang data angka yang sama?',
+      'Kekacauan terjadi di antara membaca angka dan menuliskannya kembali. ' +
+        'Bagian itu yang perlu dijaga.',
+      'Pasang pintu masuk sebelum READ dan pintu keluar sesudah WRITE.'
   ],
   concepts: ['Race condition', 'Critical section', 'Mutex'],
   explanation: {
     pass:
-      'Mutex memastikan hanya satu robot yang boleh masuk ke critical section ' +
-      '(membaca, menambah, dan menulis stok) dalam satu waktu. Robot lain harus ' +
-      'menunggu sampai pintu dibuka kembali. Dengan begitu, tidak ada pembaruan ' +
-      'stok yang hilang. Namun, robot harus bergantian sehingga menimbulkan ' +
-      'waktu tunggu.',
+       'Pintu Mutex membuat hanya satu robot yang boleh mengurus Papan Stok pada satu ' +
+      'waktu. Bagian yang dijaga itu disebut critical section. Robot lain menunggu ' +
+      'giliran, jadi tidak ada tambahan yang hilang. Harganya: robot harus antre, ' +
+      'sehingga ada waktu tunggu.',
     fail:
-      'Ini disebut race condition karena kedua robot membaca jumlah stok yang ' +
-      'sama sebelum memperbaruinya. Akibatnya, salah satu perubahan bisa hilang ' +
-      'karena tertimpa oleh perubahan lainnya. Oleh karena itu, proses membaca, ' +
-      'menghitung, dan menulis harus dilindungi mutex agar robot melakukannya ' +
-      'secara bergantian.',
+      'Ini disebut race condition. Kedua robot membaca angka stok yang sama, lalu ' +
+      'masing-masing menulis hasilnya, sehingga satu tambahan tertimpa dan hilang. ' +
+      'Bagian membaca, menambah, dan menulis harus dikerjakan satu robot dulu sampai ' +
+      'selesai. Lindungi bagian itu dengan mutex.',
   },
   layoutId: '1-1',
   threads: LEVEL_1_1_THREADS,
