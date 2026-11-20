@@ -69,7 +69,7 @@ function batteryQuote(
   timingFail: boolean,
 ): string {
   if (!completed) return 'Simulasi berhenti sebelum semua robot selesai.';
-  if (ok) return `Baterai masih ${percent}%, hemat sekali.`;
+  if (ok) return `Pengepak tidur sampai lampu menyala, baterai masih ${percent}%.`;
   if (timingFail) return 'Lampu menyala sebelum barang cukup.';
   if (busyWait > 0) {
     return `Mengecek ${busyWait} kali sia-sia, baterai tinggal ${percent}%.`;
@@ -176,10 +176,11 @@ export function deriveResultView(
     };
   } else if (timingFail) {
     keyFigure = {
-      label: 'Waktu lampu',
-      actual: 'terlalu cepat',
-      target: 'tepat',
-      match: false,
+    label: 'Lampu',
+    actual: 'terlalu cepat',
+    target: 'tepat',
+    match: false,
+    display: 'Terlalu cepat',
     };
   } else if (battery) {
     keyFigure = {
@@ -187,6 +188,11 @@ export function deriveResultView(
       actual: `${percent}%`,
       target: 'hemat',
       match: result.ok,
+      display: result.ok
+        ? `${percent}% (hemat)`
+        : percent === 0
+          ? 'Habis'
+          : `${percent}% (boros)`,
     };
   } else {
     keyFigure = {
