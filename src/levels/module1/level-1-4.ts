@@ -57,36 +57,36 @@ export const level1_4: LevelDefinition = {
     {
       mood: 'netral',
       text:
-        'Sekarang kita mengurus bagian pengepakan, Mandor. Robot perakit akan ' +
-        'menyiapkan 3 barang di atas meja. Robot pengepak baru boleh mulai ' +
-        'bekerja setelah semua 3 barang tersedia.',
+        'Sekarang bagian pengepakan, Mandor. Robot perakit menaruh 3 barang di meja. ' +
+        'Robot pengepak baru boleh mulai setelah ketiga barang itu ada.',
     },
     {
       mood: 'sedih',
       text:
-        'Tanpa pengaman, robot pengepak akan terus-menerus mengecek meja. ' +
-        'Akibatnya, core terpakai hanya untuk mengecek barang, padahal belum ' +
-        'ada yang bisa dikemas. Kondisi ini disebut busy waiting. Misi berhasil ' +
-        'jika jumlah barang tetap 3, robot pengepak membaca minimal 3 barang, ' +
-        'dan waktu busy waiting tidak lebih dari 10 tick.',
+       'Tanpa pengaman, pengepak akan terus-menerus melirik meja sambil bertanya, ' +
+        '"Sudah ada belum? Sudah ada belum?" Dia sibuk, tapi tidak menghasilkan ' +
+        'apa-apa, dan baterainya terkuras. Ini disebut busy waiting. Misi berhasil ' +
+        'jika barang di meja 3, pengepak mengepak setelah barang cukup, dan waktu ' +
+        'busy waiting tidak lebih dari 10 tick.',
     },
     {
       mood: 'senang',
       text:
-        'Pasang Lampu Sinyal (condition variable) agar robot pengepak bisa ' +
-        'menunggu tanpa terus-menerus mengecek meja. Robot perakit akan ' +
-        'menyalakan lampu setelah meletakkan barang. Gunakan bersama Pintu ' +
-        'Mutex dan kirim sinyal setelah jumlah barang mencapai 3. Pada seed ' +
-        'ke 10, bintang pertama didapat jika misi berhasil, bintang kedua jika ' +
-        'selesai maksimal dalam 32 tick, dan bintang ketiga jika total ' +
-        'waktu tunggu maksimal 25 tick.',
+     'Alatmu adalah Lampu Sinyal, seperti bel panggilan. Pengepak tidur dulu, dan ' +
+      'perakit menyalakan lampu setelah barang ketiga siap. Kunci Meja sudah ' +
+      'dipasang otomatis. Tentukan di mana lampu dinyalakan, lalu lihat meter ' +
+      'baterai Pengepak.',
     },
   ],
 
   hints: [
-    'Perhatikan meter baterai robot pengepak. Apa yang dilakukannya saat menunggu barang?',
-    'Terus-menerus mengecek meja disebut busy waiting. Hal ini membuat core terpakai meskipun belum ada pekerjaan. Condition variable membuat robot pengepak bisa tidur saat menunggu dan mengambil kembali mutex ketika bangun.',
-    'Gunakan condition variable bersama Pintu Mutex. Atur robot pengepak untuk menunggu dan robot perakit untuk mengirim sinyal setelah jumlah barang mencapai 3. Setelah bangun, robot pengepak harus memeriksa kembali apakah barang sudah cukup. Jika sinyal dikirim terlalu awal, robot bisa bangun sebelum barang tersedia.',
+   'Lihat meter baterai pengepak. Apa yang dia lakukan selama menunggu barang?',
+    'Terus-menerus mengecek meja disebut busy waiting: tenaga terpakai padahal ' +
+    'belum ada yang bisa dikerjakan. Dengan Lampu Sinyal, pengepak bisa tidur ' +
+    'sampai dibangunkan.',
+   'Pasang Lampu Sinyal di robot perakit, tepat sesudah barang ketiga ditulis ' +
+    'ke meja. Kalau lampu menyala terlalu awal, pengepak bangun padahal barang ' +
+    'belum cukup.',
   ],
 
   concepts: ['Condition variable', 'Menunggu dengan tidur vs busy waiting'],
@@ -157,6 +157,6 @@ export const level1_4: LevelDefinition = {
     // Hitungan tangan pada seed 10 (belum diukur; sesuaikan bila tes gagal):
     //   tanpa alat (SPIN_UNTIL): tick 24 sampai 25, busy waiting 20 sampai 21 -> gagal
     //   dengan Lampu Sinyal: tick 28, total tunggu 22, busy waiting 0 -> 3 bintang
-    stars: { fast: 32, lowWait: 25 },
+    stars: { fast: 45, lowWait: 45 },
   },
 };

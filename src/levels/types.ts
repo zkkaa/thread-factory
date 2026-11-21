@@ -58,16 +58,9 @@ export interface LevelDefinition {
    * `pass` dipakai bila level lulus, `fail` bila gagal. Isinya harus benar secara
    * konsep sisop (lihat CLAUDE.md bagian 7).
    */
-  explanation?: {
-    pass: string;
-    fail: string;
-    /**
-     * Opsional: hasil benar tetapi bintang berkurang (mis. pintu terlalu
-     * besar di Level 1-2, kapasitas terlalu kecil di Level 1-3). Belum
-     * ditampilkan UI; penyambungannya menyusul.
-     */
-    partial?: string;
-  };
+  explanation?: { pass: string; fail: string; partial?: string };
+  // ...di dalam goal.stars:
+  fastest?: number;
   resultTitle?: { pass: string; fail: string };
   /**
    * Kunci tata letak arena di game/layouts/. Koordinat tidak disimpan di data
@@ -126,12 +119,14 @@ export interface LevelDefinition {
     invariant: (snap: Snapshot) => { ok: boolean; message: string };
     /** Ambang batas performa untuk bintang ★★ dan ★★★. */
     stars: {
-      /** Batas maksimum tick untuk mendapatkan bintang kecepatan (★★). */
       fast: number;
-      /** Batas maksimum total waitTicks untuk mendapatkan bintang efisiensi (★★★). */
       lowWait: number;
+      /** Opsional: bila diisi, ★★★ dinilai dari total tick (<= nilai ini), bukan dari waktu tunggu. */
+      fastest?: number;
     };
   };
+  /** Opsional: kalimat gelembung Pak Mandor menurut bintang (hanya saat lulus). */
+  resultQuote?: { stars1?: string; stars2?: string; stars3?: string };
 }
 
 /** Satu modul pembelajaran: kumpulan level berurutan (data di levels/modules.ts). */

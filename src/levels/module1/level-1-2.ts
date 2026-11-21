@@ -22,26 +22,27 @@ export const level1_2: LevelDefinition = {
     {
       mood: 'berpikir',
       text:
-        'Bedanya, pintu kali ini bisa dipasang di bagian mana saja, bahkan ' +
-        'sebelum proses perakitan. Jika pintu terlalu besar, robot lain harus ' +
-        'menunggu dan satu core bisa menganggur. Data tetap benar, tetapi ' +
-        'pekerjaan menjadi lebih lambat. Pada seed 10, bintang kedua didapat ' +
-        'jika selesai dalam 45 tick dan bintang ketiga jika total waktu tunggu ' +
-        'maksimal 25 tick.',
+        'Bedanya, kali ini pintu boleh dipasang di mana saja, bahkan sebelum proses ' +
+        'merakit. Kalau pintunya terlalu besar, robot yang menunggu hanya diam, dan ' +
+        'satu meja kerja jadi kosong. Datanya tetap benar, tapi kerjanya lambat. Pada ' +
+        'seed 10, bintang 2 jika selesai dalam 45 tick, dan bintang 3 jika total waktu ' +
+        'tunggu maksimal 25 tick.',
     },
     {
       mood: 'netral',
       text:
-        'Coba jalankan tanpa pintu, lalu pasang pintu yang menutupi seluruh ' +
-        'proses dan catat total langkahnya. Setelah itu, coba pasang pintu ' +
-        'yang hanya melindungi bagian yang berhubungan dengan papan stok. ' +
-        'Bandingkan hasilnya. Selamat bekerja!',
+        'Coba dua cara. Pertama, pasang pintu yang menutupi semuanya, termasuk ' +
+        'merakit, dan catat berapa tick-nya. Kedua, pasang pintu yang hanya menutupi ' +
+        'bagian Papan Stok. Bandingkan. Selamat bekerja!',
     },
   ],
   hints: [
-    'Jalankan tanpa pintu terlebih dahulu. Dengan dua core, kedua robot bisa membaca stok hampir bersamaan. Perhatikan hasil akhirnya.',
-    'Pintu yang melindungi seluruh proses memang aman. Namun, proses merakit (WORK) tidak berhubungan dengan papan stok. Jadi, apakah robot lain perlu menunggu saat robot pertama sedang merakit?',
-    'Pasang pintu masuk sebelum READ dan pintu keluar setelah WRITE. Dengan begitu, satu robot tetap bisa merakit di luar pintu saat robot lain sedang memperbarui stok.',
+    'Jalankan tanpa pintu dulu. Karena ada dua core, kedua robot bisa membaca stok ' +
+    'hampir bersamaan. Lihat hasil akhirnya.',
+    'Pintu besar memang aman, tapi merakit (WORK) tidak menyentuh Papan Stok. ' +
+      'Perlukah robot lain menunggu saat robot pertama hanya merakit?',
+    'Pasang pintu masuk sebelum READ dan pintu keluar sesudah WRITE. Jadi satu ' +
+    'robot bisa merakit di luar sementara robot lain mengurus stok.',
   ],
   concepts: ['Ukuran kunci (granularitas lock)', 'Aman versus cepat'],
   explanation: {
@@ -95,6 +96,11 @@ export const level1_2: LevelDefinition = {
     },
     // Diukur pada seed tutorial 10: pintu pas [1, 3] selesai tick 42 (wait 20);
     // pintu terlalu besar [0, 3] selesai tick 51 (wait 37) karena satu core menganggur.
-    stars: { fast: 45, lowWait: 25 },
+    stars: { fast: 45, lowWait: 0, fastest: 42 },
+  },
+  resultQuote: {
+  stars1: 'Datanya benar, tapi pabrik masih lambat. Coba pintu yang lebih kecil!',
+  stars2: 'Lumayan cepat! Masih ada pintu yang lebih pas.',
+  stars3: 'Sempurna! Pintunya hanya menutup bagian yang perlu.',
   },
 };
