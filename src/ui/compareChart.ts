@@ -32,21 +32,8 @@ export function barFractions(a: number, b: number): BarFractions {
   return { a: scale(cleanA), b: scale(cleanB) };
 }
 
-/** Ukuran dan warna grafik (satuan viewBox SVG). Warna selalu disertai huruf A/B. */
+/** Warna batang grafik. Warna selalu disertai huruf A/B. */
 export const CHART = {
-  width: 640,
-  rowHeight: 64,
-  padding: 8,
-  labelY: 12,
-  barHeight: 16,
-  barGap: 4,
-  barsTop: 20,
-  barX: 28,
-  barMax: 380,
-  valueGap: 8,
-  fontSize: 13,
   colorA: '#f5c542',
   colorB: '#2dd4bf',
-  textStrong: '#f9fafb',
-  textSoft: '#d1d5db',
 } as const;

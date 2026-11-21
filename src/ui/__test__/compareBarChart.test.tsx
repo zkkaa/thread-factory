@@ -32,9 +32,15 @@ describe('CompareBarChart', () => {
   it('memiliki teks alternatif dan satu grup per metrik', () => {
     const html = renderToStaticMarkup(<CompareBarChart summary={summary} />);
     expect(html).toContain('role="img"');
-    expect(html).toContain('aria-label="Grafik batang perbandingan A dan B untuk 2 metrik');
+    expect(html).toContain(
+      'aria-label="Grafik batang perbandingan A dan B untuk 2 metrik',
+    );
     expect(html).toContain('data-metric="ticks"');
     expect(html).toContain('data-metric="wait"');
+    expect(html).toContain('grid-cols-[1.25rem_minmax(0,1fr)_minmax(0,30%)]');
+    expect(html).toContain('sm:grid-cols-2');
+    expect(html).toContain('xl:grid-cols-3');
+    expect(html).toContain('break-words');
   });
 
   it('menandai pemenang dengan teks, bukan hanya warna', () => {
