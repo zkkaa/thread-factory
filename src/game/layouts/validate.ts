@@ -8,6 +8,7 @@ import { validateCombinedLayout } from './validateCombined';
 import { validateBeltLayout } from './validateBelt';
 import { validateTableLayout } from './validateTable';
 import { validateBoardLayout } from './validateBoard';
+import { validateLineLayout } from './validateLine';
 
 const inArena = (p: Point): boolean =>
   p.x >= 0 && p.x <= ARENA.width && p.y >= 0 && p.y <= ARENA.height;
@@ -102,6 +103,7 @@ export function validateLayout(
   if (layout.kind === 'table') return validateTableLayout(layout, level);
   if (layout.kind === 'board') return validateBoardLayout(layout, level);
   if (layout.kind === 'triple') return validateTripleLayout(layout, level);
+    if (layout.kind === 'line') return validateLineLayout(layout, level);
   const errors = validateTrackLayout(layout, level);
   if (layout.kind === 'combined') {
     errors.push(...validateCombinedLayout(layout, level));

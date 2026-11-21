@@ -203,6 +203,7 @@ export type ArenaLayout =
   | HallLayout
   | DeskLayout
   | CombinedLayout
+  | LineLayout
   | BeltLayout
   | TableLayout
   | BoardLayout
