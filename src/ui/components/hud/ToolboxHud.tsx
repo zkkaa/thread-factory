@@ -27,6 +27,7 @@ import { useGatePlacement } from '../../hooks/useGatePlacement';
 import { RwToolbox } from './RwToolbox';
 import { findRwSetup } from '../../rwTool';
 import { ResourceDef } from '../../../levels';
+import { ToolboxDock, type DockTab } from './ToolboxDock';
 
 interface ToolboxHudProps {
   controller: SimulationController;
@@ -80,14 +81,26 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
   if (!hasMutex && !hasSemaphore && !hasCondition && !hasBelt && !hasRw) {
     return null;
   }
-  return (
-    <>
-      {level.toolBudget !== undefined && (
-        <BudgetChip budget={level.toolBudget} used={state.tools.length} />
-      )}
-      {hasBelt && <BeltToolbox controller={controller} state={state} />}
-      {hasRw && <RwToolbox controller={controller} state={state} />}
-      {hasMutex && (
+    const tabs: DockTab[] = [];
+  if (hasBelt) {
+    tabs.push({
+      id: 'belt',
+      label: 'Ban Berjalan',
+      content: <BeltToolbox controller={controller} state={state} />,
+    });
+  }
+  if (hasRw) {
+    tabs.push({
+      id: 'rw',
+      label: 'Papan Pengumuman',
+      content: <RwToolbox controller={controller} state={state} />,
+    });
+  }
+  if (hasMutex) {
+    tabs.push({
+      id: 'mutex',
+      label: 'Pintu Mutex',
+      content: (
         <MutexToolbox
           controller={controller}
           state={state}
@@ -95,8 +108,14 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
           threadIds={level.threads.map((thread) => thread.id)}
           ops={first.program.map((instruction) => instruction.op)}
         />
-      )}
-      {hasSemaphore && (
+      ),
+    });
+  }
+  if (hasSemaphore) {
+    tabs.push({
+      id: 'semaphore',
+      label: 'Kartu Akses',
+      content: (
         <SemaphoreToolbox
           controller={controller}
           state={state}
@@ -105,11 +124,26 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
           threadIds={semThreads.map((thread) => thread.id)}
           ops={semFirst.program.map((instruction) => instruction.op)}
         />
-      )}
-      {hasCondition && (
-        <ConditionToolbox controller={controller} state={state} />
-      )}
-    </>
+      ),
+    });
+  }
+  if (hasCondition) {
+    tabs.push({
+      id: 'condition',
+      label: 'Lampu Sinyal',
+      content: <ConditionToolbox controller={controller} state={state} />,
+    });
+  }
+
+  return (
+    <ToolboxDock
+      tabs={tabs}
+      header={
+        level.toolBudget !== undefined ? (
+          <BudgetChip budget={level.toolBudget} used={state.tools.length} />
+        ) : undefined
+      }
+    />
   );
 }
 

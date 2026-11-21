@@ -122,7 +122,7 @@ describe('Level 1-5: Lini Gabungan (T-047)', () => {
     const explanation = `${level1_5.explanation?.pass} ${level1_5.explanation?.fail}`;
 
     expect(level1_5.intro).toHaveLength(3);
-    expect(intro).toContain('Bintang pertama');
+    expect(intro).toContain('Bintang 1');
     expect(intro).toContain('70 tick');
     expect(intro).toContain('80 tick');
     const hintsLower = hints.toLowerCase();

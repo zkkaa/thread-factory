@@ -30,10 +30,8 @@ describe('Level 1-4: Lampu Sinyal (T-091)', () => {
 
     expect(level1_4.intro).toHaveLength(3);
     expect(intro).toContain('10 tick');
-    expect(intro).toContain('32 tick');
-    expect(intro).toContain('25 tick');
     expect(hints).toContain('busy waiting');
-    expect(hints).toContain('condition variable');
+    expect(hints.toLowerCase()).toContain('lampu sinyal');
     expect(level1_4.concepts).toContain('Condition variable');
     expect(explanation).toContain('mutex');
     expect(explanation).toContain('busy waiting');

@@ -141,7 +141,7 @@ export function PlayScreen({
       }
       bottomLeft={<LogHud controller={controller} />}
       bottomCenter={
-        <div className="w-105">
+        <div className="w-140 max-w-[48vw]">
           <ToolboxHud controller={controller} state={state} />
         </div>
       }

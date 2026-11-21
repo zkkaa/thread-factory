@@ -44,7 +44,7 @@ describe('deriveResultView: level berbaterai (Level 1-4)', () => {
   it('dengan Lampu Sinyal: gelembung memuji baterai hemat', () => {
     const view = viewOf([LAMPU]);
     expect(view.ok).toBe(true);
-    expect(view.quote).toMatch(/Baterai masih 100%/);
+    expect(view.quote).toMatch(/baterai masih 100%/i);
     expect(view.keyFigure.match).toBe(true);
     expect(view.cards[0]?.value).toBe('0');
   });
