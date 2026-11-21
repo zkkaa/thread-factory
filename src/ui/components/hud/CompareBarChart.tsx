@@ -7,7 +7,7 @@ interface CompareBarChartProps {
 }
 
 /**
- * Grafik batang SVG buatan sendiri: satu pasang batang (A dan B) per metrik.
+ * Grafik batang buatan sendiri: satu pasang batang (A dan B) per metrik.
  * Pemenang ditulis dengan teks "lebih baik" dan tiap batang diberi huruf A/B,
  * jadi tidak bergantung pada warna. Angka lengkap tetap ada di tabel.
  */
@@ -15,80 +15,66 @@ export function CompareBarChart({ summary }: CompareBarChartProps) {
   const { rows } = summary;
   if (rows.length === 0) return null;
 
-  const height = rows.length * CHART.rowHeight + CHART.padding;
   const bars = [
-    { side: 'A' as const, color: CHART.colorA, offset: 0 },
-    { side: 'B' as const, color: CHART.colorB, offset: CHART.barHeight + CHART.barGap },
+    { side: 'A' as const, color: CHART.colorA },
+    { side: 'B' as const, color: CHART.colorB },
   ];
 
   return (
-    <figure className="space-y-1">
-      <svg
-        viewBox={`0 0 ${CHART.width} ${height}`}
-        className="w-full"
+    <figure className="space-y-2">
+      <div
         role="img"
         aria-label={`Grafik batang perbandingan A dan B untuk ${rows.length} metrik. Angka lengkap ada di tabel.`}
+        className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 xl:grid-cols-3"
       >
-        <title>Grafik batang perbandingan A dan B</title>
-        {rows.map((row, index) => {
-          const top = index * CHART.rowHeight + CHART.padding;
+        {rows.map((row) => {
           const fractions = barFractions(row.a, row.b);
           return (
-            <g key={row.key} data-metric={row.key}>
-              <text
-                x={0}
-                y={top + CHART.labelY}
-                fontSize={CHART.fontSize}
-                fontWeight="bold"
-                fill={CHART.textStrong}
-              >
+            <div key={row.key} data-metric={row.key} className="space-y-2">
+              <h3 className="font-semibold leading-tight text-ink-100">
                 {row.label}
-              </text>
-              {bars.map(({ side, color, offset }) => {
-                const value = side === 'A' ? row.a : row.b;
-                const fraction = side === 'A' ? fractions.a : fractions.b;
-                const width = fraction * CHART.barMax;
-                const y = top + CHART.barsTop + offset;
-                const winner = row.better === side;
-                return (
-                  <g key={side}>
-                    <text
-                      x={0}
-                      y={y + CHART.barHeight - 3}
-                      fontSize={CHART.fontSize}
-                      fill={CHART.textSoft}
+              </h3>
+              <div className="space-y-1.5">
+                {bars.map(({ side, color }) => {
+                  const value = side === 'A' ? row.a : row.b;
+                  const fraction = side === 'A' ? fractions.a : fractions.b;
+                  const winner = row.better === side;
+                  return (
+                    <div
+                      key={side}
+                      className="grid grid-cols-[1.25rem_minmax(0,1fr)_minmax(0,30%)] items-center gap-x-2"
                     >
-                      {side}
-                    </text>
-                    <rect
-                      x={CHART.barX}
-                      y={y}
-                      width={width}
-                      height={CHART.barHeight}
-                      rx={3}
-                      fill={color}
-                    />
-                    <text
-                      x={CHART.barX + width + CHART.valueGap}
-                      y={y + CHART.barHeight - 3}
-                      fontSize={CHART.fontSize}
-                      fill={winner ? CHART.textStrong : CHART.textSoft}
-                      fontWeight={winner ? 'bold' : 'normal'}
-                    >
-                      {winner
-                        ? `${formatNumber(value)} (lebih baik)`
-                        : formatNumber(value)}
-                    </text>
-                  </g>
-                );
-              })}
-            </g>
+                      <span className="text-ink-300">{side}</span>
+                      <div className="h-4 min-w-0 overflow-hidden rounded-full bg-navy-700">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${fraction * 100}%`,
+                            backgroundColor: color,
+                          }}
+                        />
+                      </div>
+                      <span
+                        className={`min-w-0 break-words text-sm leading-tight ${
+                          winner ? 'font-bold text-ink-100' : 'text-ink-300'
+                        }`}
+                      >
+                        {formatNumber(value)}
+                        {winner ? ' (lebih baik)' : ''}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
-      </svg>
+      </div>
       <figcaption className="text-xs text-ink-300">
         Panjang batang dibandingkan per metrik (batang terpanjang = penuh).
-        {summary.complete ? '' : ' Angka masih sementara sampai kedua sisi selesai.'}
+        {summary.complete
+          ? ''
+          : ' Angka masih sementara sampai kedua sisi selesai.'}
       </figcaption>
     </figure>
   );
