@@ -246,6 +246,9 @@ export class LevelScene extends Scene {
         spansByMutex.get(mutex.id) ?? [],
         panelY,
         nameOf,
+        layout.kind === 'combined' && doorIndex === 0
+          ? layout.warehouse.doorPanel
+          : undefined,
       );
     });
 
@@ -276,6 +279,7 @@ export class LevelScene extends Scene {
         labelSide: laneIndex === 0 ? -1 : 1,
         totalRounds,
         spriteFrame: robotFrameFor(laneIndex),
+        compactLabel: layout.kind === 'combined',
       });
     });
   }

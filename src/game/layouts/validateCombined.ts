@@ -1,12 +1,12 @@
 import type { LevelDefinition } from '../../levels/types';
-import { ARENA, HUD_SAFE } from '../theme';
+import { ARENA, ARENA_SAFE, DOCK_ZONE } from '../theme';
 import type { CombinedLayout, Point, Rect } from './types';
 
 const rectInSafeArea = (rect: Rect): boolean =>
-  rect.x >= HUD_SAFE.x &&
-  rect.y >= HUD_SAFE.y &&
-  rect.x + rect.width <= HUD_SAFE.x + HUD_SAFE.width &&
-  rect.y + rect.height <= HUD_SAFE.y + HUD_SAFE.height &&
+  rect.x >= ARENA_SAFE.x &&
+  rect.y >= ARENA_SAFE.y &&
+  rect.x + rect.width <= ARENA_SAFE.x + ARENA_SAFE.width &&
+  rect.y + rect.height <= ARENA_SAFE.y + ARENA_SAFE.height &&
   rect.x + rect.width <= ARENA.width &&
   rect.y + rect.height <= ARENA.height;
 
@@ -59,9 +59,18 @@ export function validateCombinedLayout(
     width: layout.road.width,
     height: layout.road.height,
   };
+  if (!rectInSafeArea(roadBounds)) {
+    errors.push('jalur robot di luar area aman arena');
+  }
+  if (overlaps(roadBounds, DOCK_ZONE)) {
+    errors.push('jalur robot menimpa area dok toolbox');
+  }
   for (const [name, zone] of zones) {
     if (!rectInSafeArea(zone)) {
       errors.push(`zona ${name} di luar area aman HUD`);
+    }
+    if (overlaps(zone, DOCK_ZONE)) {
+      errors.push(`zona ${name} menimpa area dok toolbox`);
     }
     if (overlaps(zone, roadBounds)) {
       errors.push(`zona ${name} bertumpuk dengan jalur robot`);
@@ -75,6 +84,20 @@ export function validateCombinedLayout(
         errors.push(`zona ${a[0]} dan zona ${b[0]} bertumpuk`);
       }
     }
+  }
+
+  const { doorPanel } = layout.warehouse;
+  const panelInside =
+    pointInRect({ x: doorPanel.x, y: doorPanel.y }, layout.warehouse.zone) &&
+    pointInRect(
+      {
+        x: doorPanel.x + doorPanel.width,
+        y: doorPanel.y + doorPanel.height,
+      },
+      layout.warehouse.zone,
+    );
+  if (!panelInside) {
+    errors.push('panel Pintu Kunci di luar zona Penggudang');
   }
 
   const capacity = level.areas?.[layout.area.id];

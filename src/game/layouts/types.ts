@@ -46,7 +46,7 @@ export interface CombinedLayout extends TrackLayout {
   kind: 'combined';
   tools: { mutexId: string; semaphoreId: string; conditionId: string };
   assembler: { threadId: string; zone: Rect };
-  warehouse: { threadId: string; zone: Rect };
+  warehouse: { threadId: string; zone: Rect; doorPanel: Rect };
   area: {
     id: string;
     zone: Rect;
