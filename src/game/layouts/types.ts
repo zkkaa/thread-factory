@@ -207,3 +207,42 @@ export type ArenaLayout =
   | TableLayout
   | BoardLayout
   | TripleLayout;
+
+  /** Satu lajur robot pada arena lini lurus. */
+export interface LineLane {
+  threadId: string;
+  /** Garis tengah lajur (piksel kanvas). */
+  y: number;
+  /** Kartu nama dan status satu baris di kiri lajur. */
+  label: Rect;
+}
+
+/**
+ * Arena lini lurus (Level 1-5, T-094): tiap robot punya lajur sendiri, semua
+ * lajur berbagi posisi x checkpoint dan slot (program ketiganya sama panjang).
+ * Gerbang alat berupa batang tegak yang memotong semua lajur di `slotX[k]`.
+ * Belum masuk union ArenaLayout; didaftarkan setelah LineArena ada.
+ */
+export interface LineLayout {
+  kind: 'line';
+  /** Sama dengan LevelDefinition.layoutId. */
+  id: string;
+  tools: { mutexId: string; semaphoreId: string; conditionId: string };
+  lanes: LineLane[];
+  /** x tiap checkpoint (n), urut program asli. */
+  checkpointX: number[];
+  /** x tiap slot (n+1); slot k tepat sebelum checkpoint k. */
+  slotX: number[];
+  hall: {
+    id: string;
+    zone: Rect;
+    /** Indeks instruksi ASLI ENTER_AREA dan LEAVE_AREA (inklusif). */
+    gate: { start: number; end: number };
+  };
+  board: Rect;
+  boardLinks: { checkpoint: number; direction: 'read' | 'write' }[];
+  storage: Rect;
+  packer: { threadId: string; card: Rect; lamp: Point; battery: Point };
+  mutexPanel: Rect;
+  areaPanel: Rect;
+}

@@ -524,3 +524,15 @@ export const COMBINED = {
   zzzGap: 30,
   packerStatusGap: 26,
 } as const;
+
+/** Arena lini lurus Level 1-5 (T-094). Ukuran dasar untuk validator dan view. */
+export const LINE = {
+  /** Setengah tinggi satu lajur (piksel). */
+  laneHalf: 32,
+  /** Radius checkpoint kecil di lajur. */
+  checkpointRadius: 20,
+  /** Jarak x minimal antara slot dan checkpoint yang bersebelahan. */
+  minXGap: 40,
+  /** Jarak y minimal antar lajur. */
+  minLaneGap: 64,
+} as const;
