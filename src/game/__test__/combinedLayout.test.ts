@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { level1_5 } from '../../levels/module1/level-1-5';
+import { level1_5 } from '../../levels/module1/level-1-5.old';
 import { getLayout } from '../layouts';
 import { layout1_5 } from '../layouts/level-1-5.combined.layout';
 import type { CombinedLayout } from '../layouts/types';

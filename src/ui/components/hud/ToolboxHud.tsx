@@ -1,14 +1,11 @@
-import { findConditionSetup } from '../../conditionTool';
-import { ConditionToolbox } from './ConditionToolbox';
-import { BeltToolbox } from './BeltToolbox';
-import { findBeltSetup } from '../../beltTool';
-import { BudgetChip } from './BudgetChip';
 import { useState } from 'react';
 import type {
   ControllerState,
   SimulationController,
 } from '../../../controller/SimulationController';
 import { toolBus } from '../../../game/toolBus';
+import { findBeltSetup } from '../../beltTool';
+import { findConditionSetup } from '../../conditionTool';
 import {
   buildSharedMutexTool,
   buildSharedSemaphoreTool,
@@ -21,12 +18,11 @@ import {
   type Door,
 } from '../../doorSlots';
 import { useDoorPlacement } from '../../hooks/useDoorPlacement';
-import { mutexToolId, replaceTool } from '../../toolSpans';
-import { GateDragChip } from './GateDragChip';
 import { useGatePlacement } from '../../hooks/useGatePlacement';
-import { RwToolbox } from './RwToolbox';
-import { findRwSetup } from '../../rwTool';
-import { ResourceDef } from '../../../levels';
+import { mutexToolId, replaceTool } from '../../toolSpans';
+import { BeltToolbox } from './BeltToolbox';
+import { ConditionToolbox } from './ConditionToolbox';
+import { GateDragChip } from './GateDragChip';
 import { ToolboxDock, type DockTab } from './ToolboxDock';
 
 interface ToolboxHudProps {
@@ -40,33 +36,26 @@ const BUTTON =
   'rounded border px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50';
 
 /**
- * Toolbox bawah (PRD 17.2). Menampilkan hanya alat yang tersedia di level
- * ditambah Hapus. Pintu dipasang dengan menyeret chip ke slot di arena
- * (pintu masuk dahulu, lalu pintu keluar), atau lewat mode klik slot sebagai
- * alternatif (touchpad dan aksesibilitas). Berlaku untuk semua robot di loop
- * bersama. Terkunci setelah simulasi dimulai.
+ * Toolbox bawah (PRD 17.2). Menampilkan hanya alat yang tersedia di level,
+ * satu per tab (ToolboxDock). Pintu dipasang dengan menyeret chip ke slot di
+ * arena (pintu masuk dahulu, lalu pintu keluar), atau lewat mode klik slot
+ * sebagai alternatif. Terkunci setelah simulasi dimulai.
+ *
+ * Alat mutex dan semaphore hanya dipasang pada thread yang programnya sama
+ * panjang dengan robot pertama. Di Level 1-5 Pengepak berprogram lain dan
+ * tidak ikut dijaga; tanpa penyaringan ini applyTools menolak rentang yang
+ * di luar program Pengepak.
  */
 export function ToolboxHud({ controller, state }: ToolboxHudProps) {
   const { level } = state;
   const mutex = level?.resources.find((resource) => resource.kind === 'mutex');
-  const semId = level?.semaphoreScope?.sem;
   const sem = level?.resources.find(
-    (resource): resource is Extract<ResourceDef, { kind: 'semaphore' }> =>
-      resource.kind === 'semaphore' &&
-      (semId === undefined || resource.id === semId),
+    (resource) => resource.kind === 'semaphore',
   );
   const first = level?.threads[0];
   if (level === null || first === undefined) {
     return null;
   }
-  const semScope = level.semaphoreScope;
-  const semThreads =
-    semScope === undefined
-      ? level.threads
-      : level.threads.filter((thread) =>
-          semScope.threadIds.includes(thread.id),
-        );
-  const semFirst = semThreads[0] ?? first;
 
   const hasMutex =
     mutex !== undefined && level.availableTools.includes('mutex');
@@ -76,24 +65,22 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
     level.availableTools.includes('condition') &&
     findConditionSetup(level) !== null;
   const hasBelt = findBeltSetup(level) !== null;
-  const hasRw = findRwSetup(level) !== null;
 
-  if (!hasMutex && !hasSemaphore && !hasCondition && !hasBelt && !hasRw) {
+  if (!hasMutex && !hasSemaphore && !hasCondition && !hasBelt) {
     return null;
   }
-    const tabs: DockTab[] = [];
+
+  const guardedIds = level.threads
+    .filter((thread) => thread.program.length === first.program.length)
+    .map((thread) => thread.id);
+  const ops = first.program.map((instruction) => instruction.op);
+
+  const tabs: DockTab[] = [];
   if (hasBelt) {
     tabs.push({
       id: 'belt',
       label: 'Ban Berjalan',
       content: <BeltToolbox controller={controller} state={state} />,
-    });
-  }
-  if (hasRw) {
-    tabs.push({
-      id: 'rw',
-      label: 'Papan Pengumuman',
-      content: <RwToolbox controller={controller} state={state} />,
     });
   }
   if (hasMutex) {
@@ -105,8 +92,8 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
           controller={controller}
           state={state}
           mutexId={mutex.id}
-          threadIds={level.threads.map((thread) => thread.id)}
-          ops={first.program.map((instruction) => instruction.op)}
+          threadIds={guardedIds}
+          ops={ops}
         />
       ),
     });
@@ -121,8 +108,8 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
           state={state}
           semId={sem.id}
           initialValue={sem.initialValue}
-          threadIds={semThreads.map((thread) => thread.id)}
-          ops={semFirst.program.map((instruction) => instruction.op)}
+          threadIds={guardedIds}
+          ops={ops}
         />
       ),
     });
@@ -135,16 +122,7 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
     });
   }
 
-  return (
-    <ToolboxDock
-      tabs={tabs}
-      header={
-        level.toolBudget !== undefined ? (
-          <BudgetChip budget={level.toolBudget} used={state.tools.length} />
-        ) : undefined
-      }
-    />
-  );
+  return <ToolboxDock tabs={tabs} />;
 }
 
 interface MutexToolboxProps extends ToolboxHudProps {
@@ -473,7 +451,7 @@ export function SemaphoreToolbox({
           Kartu Akses (Semaphore)
         </span>
 
-        {/* Stepper Kontrol Nilai Semaphore (1..8) */}
+        {/* Stepper nilai semaphore (1..8) */}
         <div className="flex items-center gap-1 rounded border border-teal-500/50 bg-navy-900 px-2 py-0.5">
           <span className="text-xs text-ink-300">Kapasitas:</span>
           <button

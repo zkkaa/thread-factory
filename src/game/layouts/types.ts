@@ -125,6 +125,7 @@ export interface DeskLayout {
   /** Pusat badan meter baterai pengepak. */
   battery: Point;
 }
+
 /**
  * Arena jenis ban berjalan (Level 2-1, T-096): perakit (producer) di kiri,
  * pengepak (consumer) di kanan, ban di tengah. Robot diam di titiknya; yang
@@ -147,7 +148,7 @@ export interface BeltLayout {
   consumerIds: string[];
   consumerSpots: Point[];
 }
-// BeltLayout dan BoardLayout ditambahkan saat levelnya dikerjakan.
+
 /**
  * Arena jenis meja bundar (Level 2-3, T-101): teknisi duduk melingkar dan
  * satu kunci inggris di antara tiap dua teknisi. Tidak ada jalan atau
@@ -198,18 +199,7 @@ export interface TripleLayout {
   table: TableLayout;
 }
 
-export type ArenaLayout =
-  | LoopLayout
-  | HallLayout
-  | DeskLayout
-  | CombinedLayout
-  | LineLayout
-  | BeltLayout
-  | TableLayout
-  | BoardLayout
-  | TripleLayout;
-
-  /** Satu lajur robot pada arena lini lurus. */
+/** Satu lajur robot pada arena lini lurus. */
 export interface LineLane {
   threadId: string;
   /** Garis tengah lajur (piksel kanvas). */
@@ -219,10 +209,10 @@ export interface LineLane {
 }
 
 /**
- * Arena lini lurus (Level 1-5, T-094): tiap robot punya lajur sendiri, semua
- * lajur berbagi posisi x checkpoint dan slot (program ketiganya sama panjang).
- * Gerbang alat berupa batang tegak yang memotong semua lajur di `slotX[k]`.
- * Belum masuk union ArenaLayout; didaftarkan setelah LineArena ada.
+ * Arena lini lurus (Level 1-5 versi tiga lajur, T-094): tiap robot punya lajur
+ * sendiri, semua lajur berbagi posisi x checkpoint dan slot (program ketiganya
+ * sama panjang). Gerbang alat berupa batang tegak yang memotong semua lajur di
+ * `slotX[k]`.
  */
 export interface LineLayout {
   kind: 'line';
@@ -247,3 +237,75 @@ export interface LineLayout {
   mutexPanel: Rect;
   areaPanel: Rect;
 }
+
+/**
+ * Arena alur A sampai E (Level 1-5): kerja -> aula (semaphore) -> papan stok
+ * (mutex) -> Pengepak (condition variable) -> selesai. Robot tidak berjalan
+ * di jalan; posisinya ditentukan zona (lihat game/flowSpots.ts). Semua
+ * koordinat dalam piksel kanvas dan berada di dalam HUD_SAFE (theme.ts).
+ */
+export interface FlowLayout {
+  kind: 'flow';
+  /** Sama dengan LevelDefinition.layoutId. */
+  id: string;
+  /** Nama area berkapasitas di level (mis. 'aula'). */
+  area: string;
+  /** Id thread Pengepak; thread lain dianggap perakit. */
+  packerId: string;
+  /** Id resource yang dipakai alur ini. */
+  tools: { mutexId: string; semaphoreId: string; conditionId: string };
+  /** Indeks instruksi ASLI perakit: ENTER_AREA sampai LEAVE_AREA, inklusif. */
+  hallSpan: { start: number; end: number };
+  /** Indeks instruksi ASLI perakit: READ sampai WRITE, inklusif. */
+  stockSpan: { start: number; end: number };
+
+  /** Zona A: tempat robot merakit. */
+  workZone: Rect;
+  /** Satu titik per perakit (urut thread). */
+  workSpots: Point[];
+
+  /** Zona B: aula mesin berkapasitas. */
+  hallZone: Rect;
+  /** Antrean kartu; indeks 0 paling dekat pintu. */
+  hallQueueSpots: Point[];
+  /** Pusat pintu aula, di dalam `hallZone`. */
+  hallDoor: Point;
+  /** Posisi mesin; jumlahnya sama dengan kapasitas area. */
+  machines: Point[];
+  /** Tempat robot bila aula kelebihan kapasitas (bentrok). */
+  overflowSpots: Point[];
+
+  /** Zona C: papan stok yang dijaga mutex. */
+  stockZone: Rect;
+  /** Papan stok di bagian atas zona C. */
+  stockBoard: Rect;
+  /** Antrean pintu mutex; indeks 0 paling dekat gerbang. */
+  stockQueueSpots: Point[];
+  /** Pusat gerbang mutex, di dalam `stockZone`. */
+  stockDoor: Point;
+  /** Titik robot yang sudah melewati gerbang (area kritis). */
+  stockSpots: Point[];
+
+  /** Zona D: Pengepak, lampu sinyal, dan baterai. */
+  packZone: Rect;
+  packerSpot: Point;
+  lamp: Point;
+  battery: Point;
+
+  /** Zona E: robot yang sudah selesai. */
+  doneZone: Rect;
+  /** Satu titik per perakit (urut thread). */
+  doneSpots: Point[];
+}
+
+export type ArenaLayout =
+  | LoopLayout
+  | HallLayout
+  | DeskLayout
+  | CombinedLayout
+  | LineLayout
+  | FlowLayout
+  | BeltLayout
+  | TableLayout
+  | BoardLayout
+  | TripleLayout;

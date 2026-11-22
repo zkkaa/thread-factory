@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyToolsDetailed, type PlacedTool } from '../../engine/tools';
-import { level1_5 } from '../../levels/module1/level-1-5';
+import { level1_5 } from '../../levels/module1/level-1-5.old';
 import { layout1_5Line as layout } from '../layouts/level-1-5.line.layout';
 import {
   lineAnchorX,

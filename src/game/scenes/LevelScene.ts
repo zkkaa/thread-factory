@@ -27,6 +27,7 @@ import { HallArena } from './HallArena';
 import { DeskArena } from './DeskArena';
 import { CombinedArena } from './CombinedArena';
 import { LineArena } from './LineArena';
+import { FlowArena } from './FlowArena';
 import { BeltArena } from './BeltArena';
 import { TableArena } from './TableArena';
 import { BoardArena } from './BoardArena';
@@ -39,8 +40,8 @@ export interface LevelSceneData {
 
 /**
  * Pratinjau arena lini lurus Level 1-5: aktif hanya bila URL memuat "line"
- * (mis. http://localhost:5173/?line). Tanpa itu Level 1-5 tetap memakai
- * arena 'combined'. Hapus fungsi ini setelah LineArena resmi menggantikan.
+ * (mis. http://localhost:5173/?line). Tanpa itu Level 1-5 memakai layout
+ * dari data level. Hapus fungsi ini setelah LineArena tidak dipakai lagi.
  */
 function wantsLinePreview(levelId: string): boolean {
   return levelId === '1-5' && window.location.search.includes('line');
@@ -59,8 +60,8 @@ function wantsLinePreview(levelId: string): boolean {
  * Jenis layout dan penanganannya:
  * - hall -> HallArena        - desk  -> DeskArena     - belt   -> BeltArena
  * - board -> BoardArena      - table -> TableArena    - triple -> TripleArena
- * - line (pratinjau 1-5) -> LineArena
- * - combined (1-5) dan loop (1-1, 1-2): digambar di sini (jalan, checkpoint,
+ * - flow (1-5) -> FlowArena  - line (pratinjau) -> LineArena
+ * - combined dan loop (1-1, 1-2): digambar di sini (jalan, checkpoint,
  *   slot, papan, robot); combined juga memakai CombinedArena untuk kartu stasiun.
  */
 export class LevelScene extends Scene {
@@ -73,6 +74,7 @@ export class LevelScene extends Scene {
   private deskArena: DeskArena | null = null;
   private combinedArena: CombinedArena | null = null;
   private lineArena: LineArena | null = null;
+  private flowArena: FlowArena | null = null;
   private beltArena: BeltArena | null = null;
   private boardArena: BoardArena | null = null;
   private tableArena: TableArena | null = null;
@@ -156,12 +158,16 @@ export class LevelScene extends Scene {
       this.tripleArena.update(snapshot, state.events, durationMs);
       return;
     }
+    if (this.flowArena !== null) {
+      this.flowArena.update(snapshot, state.tools, state.events, durationMs);
+      return;
+    }
     if (this.lineArena !== null) {
       this.lineArena.update(snapshot, state.tools, state.events, durationMs);
       return;
     }
 
-    // Loop (1-1, 1-2) dan combined (1-5): digambar di scene ini.
+    // Loop (1-1, 1-2) dan combined: digambar di scene ini.
     this.combinedArena?.update(snapshot, state.tools, state.events);
     this.playEvents(state.events, durationMs);
     this.refresh(snapshot);
@@ -180,13 +186,23 @@ export class LevelScene extends Scene {
       this.showNotice(`Layout "${level.layoutId}" belum tersedia`);
       return;
     }
-
     const { threads: effective, origins } = effectivePrograms(
       level,
       state.tools,
     );
 
     // Jenis layout yang diserahkan penuh ke arena masing-masing.
+    if (layout.kind === 'flow') {
+      this.flowArena = new FlowArena(
+        this,
+        layout,
+        level,
+        snapshot,
+        effective,
+        state.tools,
+      );
+      return;
+    }
     if (layout.kind === 'hall') {
       this.hallArena = new HallArena(
         this,
@@ -393,6 +409,8 @@ export class LevelScene extends Scene {
     this.combinedArena = null;
     this.lineArena?.destroy();
     this.lineArena = null;
+    this.flowArena?.destroy();
+    this.flowArena = null;
     this.board?.destroy();
     this.board = null;
     this.doorDrag?.dispose();
