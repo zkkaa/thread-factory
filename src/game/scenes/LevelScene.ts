@@ -10,6 +10,7 @@ import { computeAnchors } from '../anchors';
 import { DoorDragSession } from '../doorDrag';
 import { buildDoorSpans } from '../doorSpans';
 import { getLayout } from '../layouts';
+import { layout1_5Line } from '../layouts/level-1-5.line.layout';
 import { pointAt } from '../pathMath';
 import { buildRoad } from '../roadGeometry';
 import { ARENA, COLORS, DEPTH, DOOR_PANEL, TEXT_STYLE } from '../theme';
@@ -25,6 +26,8 @@ import { ARENA_BACKGROUND, robotFrameFor } from '../assetManifest';
 import { HallArena } from './HallArena';
 import { DeskArena } from './DeskArena';
 import { CombinedArena } from './CombinedArena';
+import { LineArena } from './LineArena';
+import { FlowArena } from './FlowArena';
 import { BeltArena } from './BeltArena';
 import { TableArena } from './TableArena';
 import { BoardArena } from './BoardArena';
@@ -36,19 +39,30 @@ export interface LevelSceneData {
 }
 
 /**
+ * Pratinjau arena lini lurus Level 1-5: aktif hanya bila URL memuat "line"
+ * (mis. http://localhost:5173/?line). Tanpa itu Level 1-5 memakai layout
+ * dari data level. Hapus fungsi ini setelah LineArena tidak dipakai lagi.
+ */
+function wantsLinePreview(levelId: string): boolean {
+  return levelId === '1-5' && window.location.search.includes('line');
+}
+
+/**
  * Scene arena satu level. Tugasnya hanya MENGGAMBAR dan MENGANIMASIKAN apa yang
  * dilaporkan controller; benar/salah, menang/kalah, dan metrik dihitung engine
  * (aturan arsitektur 3). Tata letak dibaca dari game/layouts/, bukan
- * di-hardcode di sini. Layout 'loop' (jalan, checkpoint, slot, papan) digambar
- * di sini; layout lain diserahkan ke arena masing-masing: 'hall' (aula Level
- * 1-3) ke HallArena, 'desk' (meja barang Level 1-4) ke DeskArena, 'combined'
- * (Level 1-5) ke CombinedArena, 'belt' (ban berjalan Level 2-1) ke BeltArena,
- * 'board' (papan pengumuman Level 2-2) ke BoardArena, dan 'table' (meja bundar
- * Level 2-3) ke TableArena.
+ * di-hardcode di sini.
  *
- * Pada tick 0 (level dimuat, Reset, atau alat berubah) semua view dibangun
- * ulang. Pada tick berikutnya, event INSTRUCTION menggerakkan robot ke jangkar
- * instruksinya dan snapshot memperbarui label, papan, dan pintu.
+ * Alur: pada tick 0 (level dimuat, Reset, atau alat berubah) semua view dibangun
+ * ulang di rebuild(). Pada tick berikutnya handleState() meneruskan snapshot
+ * dan event ke arena yang sedang aktif.
+ *
+ * Jenis layout dan penanganannya:
+ * - hall -> HallArena        - desk  -> DeskArena     - belt   -> BeltArena
+ * - board -> BoardArena      - table -> TableArena    - triple -> TripleArena
+ * - flow (1-5) -> FlowArena  - line (pratinjau) -> LineArena
+ * - combined dan loop (1-1, 1-2): digambar di sini (jalan, checkpoint,
+ *   slot, papan, robot); combined juga memakai CombinedArena untuk kartu stasiun.
  */
 export class LevelScene extends Scene {
   private controller: SimulationController | null = null;
@@ -59,6 +73,8 @@ export class LevelScene extends Scene {
   private hallArena: HallArena | null = null;
   private deskArena: DeskArena | null = null;
   private combinedArena: CombinedArena | null = null;
+  private lineArena: LineArena | null = null;
+  private flowArena: FlowArena | null = null;
   private beltArena: BeltArena | null = null;
   private boardArena: BoardArena | null = null;
   private tableArena: TableArena | null = null;
@@ -107,6 +123,7 @@ export class LevelScene extends Scene {
     });
   }
 
+  /** Titik masuk tiap perubahan state controller. */
   private handleState(state: ControllerState): void {
     const { level, snapshot } = state;
     if (level === null || snapshot === null) return;
@@ -115,6 +132,8 @@ export class LevelScene extends Scene {
       return;
     }
     const durationMs = TICK_INTERVAL_MS / state.speed;
+
+    // Arena yang menangani dirinya sendiri: perbarui lalu selesai.
     if (this.hallArena !== null) {
       this.hallArena.update(snapshot, durationMs);
       return;
@@ -139,6 +158,16 @@ export class LevelScene extends Scene {
       this.tripleArena.update(snapshot, state.events, durationMs);
       return;
     }
+    if (this.flowArena !== null) {
+      this.flowArena.update(snapshot, state.tools, state.events, durationMs);
+      return;
+    }
+    if (this.lineArena !== null) {
+      this.lineArena.update(snapshot, state.tools, state.events, durationMs);
+      return;
+    }
+
+    // Loop (1-1, 1-2) dan combined: digambar di scene ini.
     this.combinedArena?.update(snapshot, state.tools, state.events);
     this.playEvents(state.events, durationMs);
     this.refresh(snapshot);
@@ -150,16 +179,30 @@ export class LevelScene extends Scene {
     if (level === null || snapshot === null) return;
 
     this.destroyViews();
-    const layout = getLayout(level.layoutId);
+    const layout = wantsLinePreview(level.id)
+      ? layout1_5Line
+      : getLayout(level.layoutId);
     if (layout === undefined) {
       this.showNotice(`Layout "${level.layoutId}" belum tersedia`);
       return;
     }
-
     const { threads: effective, origins } = effectivePrograms(
       level,
       state.tools,
     );
+
+    // Jenis layout yang diserahkan penuh ke arena masing-masing.
+    if (layout.kind === 'flow') {
+      this.flowArena = new FlowArena(
+        this,
+        layout,
+        level,
+        snapshot,
+        effective,
+        state.tools,
+      );
+      return;
+    }
     if (layout.kind === 'hall') {
       this.hallArena = new HallArena(
         this,
@@ -197,6 +240,21 @@ export class LevelScene extends Scene {
       );
       return;
     }
+    if (layout.kind === 'line') {
+      this.lineArena = new LineArena(
+        this,
+        layout,
+        level,
+        snapshot,
+        effective,
+        origins,
+        state.tools,
+      );
+      return;
+    }
+
+    // Sisanya: 'loop' dan 'combined'. Kartu stasiun combined dibuat dulu,
+    // lalu jalan dan robot digambar di bawah ini.
     if (layout.kind === 'combined') {
       this.combinedArena = new CombinedArena(
         this,
@@ -246,6 +304,9 @@ export class LevelScene extends Scene {
         spansByMutex.get(mutex.id) ?? [],
         panelY,
         nameOf,
+        layout.kind === 'combined' && doorIndex === 0
+          ? layout.warehouse.doorPanel
+          : undefined,
       );
     });
 
@@ -276,6 +337,7 @@ export class LevelScene extends Scene {
         labelSide: laneIndex === 0 ? -1 : 1,
         totalRounds,
         spriteFrame: robotFrameFor(laneIndex),
+        compactLabel: layout.kind === 'combined',
       });
     });
   }
@@ -345,6 +407,10 @@ export class LevelScene extends Scene {
     this.tableArena = null;
     this.combinedArena?.destroy();
     this.combinedArena = null;
+    this.lineArena?.destroy();
+    this.lineArena = null;
+    this.flowArena?.destroy();
+    this.flowArena = null;
     this.board?.destroy();
     this.board = null;
     this.doorDrag?.dispose();

@@ -15,6 +15,7 @@ import {
 } from '../theme';
 import { REDUCE_MOTION_KEY } from '../registryKeys';
 import { deriveRobotFx } from '../robotFx';
+import { robotLabelLines } from '../robotLabel';
 
 export interface RobotViewOptions {
   path: SampledPath;
@@ -28,6 +29,8 @@ export interface RobotViewOptions {
   totalRounds: number;
   /** Nomor frame sprite robot pada spritesheet TINY_FACTORY (lihat ROBOT_FRAMES). */
   spriteFrame: number;
+    /** Label satu baris saja (arena ramai seperti Level 1-5); detail ada di kartu stasiun. */
+  compactLabel?: boolean;
 }
 
 /**
@@ -116,21 +119,13 @@ export class RobotView {
     this.box.setFillStyle(style.color);
     this.applyFx(thread.state);
 
-    const status = thread.state === 'READY' ? 'READY (zzz)' : style.label;
-    const round =
-      thread.state === 'TERMINATED'
-        ? totalRounds
-        : Math.min(thread.iteration + 1, totalRounds);
-    const notes = Object.entries(thread.registers).map(
-      ([name, value]) => `${name} = ${value}`,
+       this.label.setText(
+      robotLabelLines(
+        thread,
+        totalRounds,
+        this.options.compactLabel === true,
+      ).join('\n'),
     );
-    const lines = [
-      `${thread.label} · ${status}`,
-      `Produk ${round}/${totalRounds} · tunggu ${thread.waitTicks}`,
-    ];
-    if (thread.waitingOn !== null) lines.push(`menunggu ${thread.waitingOn}`);
-    else if (notes.length > 0) lines.push(`catatan: ${notes.join(', ')}`);
-    this.label.setText(lines.join('\n'));
   }
 
   /**

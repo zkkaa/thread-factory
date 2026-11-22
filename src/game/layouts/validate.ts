@@ -8,6 +8,8 @@ import { validateCombinedLayout } from './validateCombined';
 import { validateBeltLayout } from './validateBelt';
 import { validateTableLayout } from './validateTable';
 import { validateBoardLayout } from './validateBoard';
+import { validateLineLayout } from './validateLine';
+import { validateFlowLayout } from './validateFlow';
 
 const inArena = (p: Point): boolean =>
   p.x >= 0 && p.x <= ARENA.width && p.y >= 0 && p.y <= ARENA.height;
@@ -99,9 +101,11 @@ export function validateLayout(
   if (layout.kind === 'hall') return validateHallLayout(layout, level);
   if (layout.kind === 'desk') return validateDeskLayout(layout, level);
   if (layout.kind === 'belt') return validateBeltLayout(layout, level);
+  if (layout.kind === 'flow') return validateFlowLayout(layout, level);
   if (layout.kind === 'table') return validateTableLayout(layout, level);
   if (layout.kind === 'board') return validateBoardLayout(layout, level);
   if (layout.kind === 'triple') return validateTripleLayout(layout, level);
+  if (layout.kind === 'line') return validateLineLayout(layout, level);
   const errors = validateTrackLayout(layout, level);
   if (layout.kind === 'combined') {
     errors.push(...validateCombinedLayout(layout, level));

@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import type { MutexSnapshot, ThreadId } from '../../engine/types';
 import type { DoorSpan } from '../doorSpans';
+import type { Rect } from '../layouts/types';
 import { pointAt, type SampledPath } from '../pathMath';
 import {
   COLORS,
@@ -25,14 +26,16 @@ interface GateView {
 }
 
 /**
-- Tampilan satu pintu kunci (mutex): pintu masuk (LOCK) dan pintu keluar
-- (UNLOCK) berupa batang melintang di jalan, segmen terlindungi di antaranya
-- diwarnai, plus panel status (pemegang dan antrean) di sisi kanan arena.
+ * Tampilan satu pintu kunci (mutex): pintu masuk (LOCK) dan pintu keluar
+ * (UNLOCK) berupa batang melintang di jalan, segmen terlindungi di antaranya
+ * diwarnai, plus panel status (pemegang dan antrean).
  *
-- Warna (hijau/merah) selalu disertai label teks BEBAS/TERKUNCI. View ini
-- hanya menggambar MutexSnapshot; siapa yang memegang dan mengantre
-- ditentukan oleh engine. Robot yang menunggu LOCK berhenti di pintu masuk
-- karena jangkarnya ada di sana (lihat anchors.ts).
+ * Panel berada di sisi kanan arena (DOOR_PANEL) kecuali `panelRect` diberikan:
+ * panel lalu digambar ringkas di dalam persegi itu (dipakai kartu Penggudang
+ * Level 1-5). Warna (hijau/merah) selalu disertai label teks BEBAS/TERKUNCI.
+ * View ini hanya menggambar MutexSnapshot; siapa yang memegang dan mengantre
+ * ditentukan oleh engine. Robot yang menunggu LOCK berhenti di pintu masuk
+ * karena jangkarnya ada di sana (lihat anchors.ts).
  */
 export class DoorView {
   readonly mutexId: string;
@@ -42,6 +45,7 @@ export class DoorView {
   private wasLocked: boolean;
   private readonly spans: readonly DoorSpan[];
   private readonly title: string;
+  private readonly compact: boolean;
   private readonly segments: GameObjects.Graphics;
   private readonly locks: GameObjects.Graphics;
   private readonly gates: GateView[] = [];
@@ -56,6 +60,7 @@ export class DoorView {
     spans: readonly DoorSpan[],
     panelY: number,
     nameOf: NameOf,
+    panelRect?: Rect,
   ) {
     this.mutexId = mutex.id;
     this.scene = scene;
@@ -63,6 +68,7 @@ export class DoorView {
     this.title = title;
     this.path = path;
     this.spans = spans;
+    this.compact = panelRect !== undefined;
 
     this.segments = scene.add.graphics().setDepth(DEPTH.segment);
     this.locks = scene.add.graphics().setDepth(DEPTH.lock);
@@ -71,21 +77,27 @@ export class DoorView {
       this.gates.push(this.makeGate(scene, span.exit, 'exit'));
     }
 
+    const centerX = panelRect
+      ? panelRect.x + panelRect.width / 2
+      : DOOR_PANEL.x;
+    const centerY = panelRect
+      ? panelRect.y + panelRect.height / 2
+      : panelY;
+    const width = panelRect?.width ?? DOOR_PANEL.width;
+    const height = panelRect?.height ?? DOOR_PANEL.height;
+
     this.panel = scene.add
-      .rectangle(
-        DOOR_PANEL.x,
-        panelY,
-        DOOR_PANEL.width,
-        DOOR_PANEL.height,
-        COLORS.tile,
-      )
-      .setStrokeStyle(DOOR_GEOMETRY.panelStroke, DOOR_STYLE.free.color);
+      .rectangle(centerX, centerY, width, height, COLORS.tile)
+      .setStrokeStyle(DOOR_GEOMETRY.panelStroke, DOOR_STYLE.free.color)
+      .setDepth(DEPTH.slot);
     this.panelText = scene.add
-      .text(DOOR_PANEL.x, panelY, '', {
+      .text(centerX, centerY, '', {
         ...TEXT_STYLE,
-        wordWrap: { width: DOOR_PANEL.width - DOOR_PANEL.padding },
+        fontSize: this.compact ? '12px' : TEXT_STYLE.fontSize,
+        wordWrap: { width: width - DOOR_PANEL.padding },
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(DEPTH.slot);
 
     this.update(mutex, nameOf);
   }
@@ -109,6 +121,22 @@ export class DoorView {
     }
 
     this.panel.setStrokeStyle(DOOR_GEOMETRY.panelStroke, style.color);
+    if (this.compact) {
+      const holder =
+        mutex.owner !== null ? `Dipegang: ${nameOf(mutex.owner)}` : null;
+      const queue =
+        mutex.queue.length > 0
+          ? `Antre: ${mutex.queue.map(nameOf).join(', ')}`
+          : null;
+      const detail = [holder, queue].filter((part) => part !== null);
+      this.panelText.setText(
+        [
+          `Pintu Kunci: ${this.title} · ${style.label}`,
+          detail.length > 0 ? detail.join(' · ') : 'Tidak ada yang memegang',
+        ].join('\n'),
+      );
+      return;
+    }
     const lines = [`Pintu Kunci: ${this.title}`, style.label];
     if (mutex.owner !== null) lines.push(`Dipegang: ${nameOf(mutex.owner)}`);
     if (mutex.queue.length > 0)

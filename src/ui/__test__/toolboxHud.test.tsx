@@ -82,7 +82,7 @@ describe('ToolboxHud', () => {
     expect(html).toContain('Pintu Mutex (belum dipasang)');
     expect(html).toContain('Kartu Akses (Semaphore)');
     expect(html).toContain('Lampu Sinyal (Condition Variable)');
-    expect(html).toContain('Slot 4, antara WRITE dan ENTER_AREA');
+    expect(html).toContain('Slot 4, antara LEAVE_AREA dan READ');
   });
 
     it('Level 1-5 memakai tab; Level 1-1 tidak', () => {

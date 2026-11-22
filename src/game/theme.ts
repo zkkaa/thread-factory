@@ -477,3 +477,62 @@ export const BULLETIN = {
   patienceWarn: 0xf97316,
   patienceBad: 0xef4444,
 } as const;
+
+// ---------------------------------------------------------------------------
+// Area aman arena dan Level 1-5 (T-094)
+// ---------------------------------------------------------------------------
+
+/**
+ * Area arena yang aman dari HUD atas (y < 90) dan batas bawah arena (y > 540).
+ * Elemen arena Level 1-5 tidak boleh keluar dari kotak ini.
+ */
+export const ARENA_SAFE = { x: 350, y: 90, width: 910, height: 450 } as const;
+
+/**
+ * Perkiraan kotak yang ditutup dok toolbox (bottom-center HUD, lebar 420 px,
+ * tinggi maksimum 42vh = 302 px pada 720 px). Diukur dari tangkapan layar;
+ * sesuaikan bila ukuran dok berubah. Elemen arena tidak boleh menyentuhnya.
+ */
+export const DOCK_ZONE = { x: 420, y: 418, width: 440, height: 302 } as const;
+
+/** Gaya kartu stasiun Level 1-5. Angka posisi relatif terhadap sudut kartu. */
+export const COMBINED = {
+  titleInset: 8,
+  titleFontSize: '13px',
+  textFontSize: '12px',
+  detailFontSize: '11px',
+  roleSwatchRadius: 6,
+  roleInsetX: 22,
+  roleStatusY: 40,
+  roleDetailY: 62,
+  warehouseStatusY: 32,
+  warehouseDetailY: 48,
+  areaTextXRatio: 0.68,
+  areaStatusY: 38,
+  areaTokenY: 58,
+  areaDoorLabelY: 78,
+  areaDropLabelY: 94,
+  machineSize: 36,
+  machineLabelGap: 30,
+  doorWidth: 10,
+  doorHeight: 54,
+  dropRadius: 40,
+  ringRadius: 38,
+  ringStroke: 3,
+  lampRadius: 13,
+  lampLabelGap: 24,
+  zzzGap: 30,
+  packerStatusGap: 26,
+} as const;
+
+/** Arena lini lurus Level 1-5 (T-094). Ukuran dasar untuk validator dan view. */
+export const LINE = {
+  /** Setengah tinggi satu lajur (piksel). */
+  laneHalf: 32,
+  /** Radius checkpoint kecil di lajur. */
+  checkpointRadius: 20,
+  /** Jarak x minimal antara slot dan checkpoint yang bersebelahan. */
+  minXGap: 40,
+  /** Jarak y minimal antar lajur. */
+  minLaneGap: 64,
+} as const;
