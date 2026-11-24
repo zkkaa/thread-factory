@@ -2,17 +2,11 @@ import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { ScoreboardData } from '../../progress/scoreboardStore';
 import type { SettingsData, SettingsPatch } from '../../progress/settingsStore';
-import { APP_VERSION } from '../../version';
 import { CatatanBoard, CatatanPanel } from '../components/catatan/CatatanBoard';
 import { ComicRow, ComicToggle } from '../components/catatan/ComicToggle';
+import { CreditsPanel } from '../components/catatan/CreditsPanel';
 import { StickyNote } from '../components/catatan/StickyNote';
 import { ScoreboardPanel } from '../components/ScoreboardPanel';
-import {
-  ASSET_CREDITS,
-  GENERATOR_NOTE,
-  ICON_NOTE,
-  TEAM_MEMBERS,
-} from '../credits';
 import type { Navigation } from '../navigation';
 import {
   DEFAULT_SETTINGS_TAB,
@@ -198,45 +192,14 @@ export function SettingsScreen({
 
         <CatatanPanel idPrefix={ID} tabId="skor" active={tab === 'skor'}>
           {scoreboard !== undefined ? (
-            <div className="mt-2 rounded-xl border-[3px] border-navy-900 bg-navy-900 p-3 text-ink-100">
-              <ScoreboardPanel data={scoreboard} levels={scoreboardLevels} />
-            </div>
+            <ScoreboardPanel data={scoreboard} levels={scoreboardLevels} />
           ) : (
             <p className="pt-2 font-semibold">Papan skor belum tersedia.</p>
           )}
         </CatatanPanel>
 
         <CatatanPanel idPrefix={ID} tabId="kredit" active={tab === 'kredit'}>
-          <section className="flex flex-col gap-3 pt-2" aria-label="Kredit">
-            <h2 className="text-2xl font-black">Kredit</h2>
-            <ul className="flex flex-col gap-2">
-              {ASSET_CREDITS.map((credit) => (
-                <li
-                  key={credit.name}
-                  className="rounded-lg border-2 border-navy-900/40 bg-white/60 px-3 py-1.5 text-sm"
-                >
-                  <span className="font-bold">{credit.name}</span>
-                  <span className="text-navy-700">
-                    {' '}
-                    · {credit.source} · {credit.license}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="text-sm">{ICON_NOTE}</p>
-            <p className="text-sm">{GENERATOR_NOTE}</p>
-            <div>
-              <h3 className="font-bold">Tim</h3>
-              <ul className="mt-1 list-disc pl-6 text-sm">
-                {TEAM_MEMBERS.map((member) => (
-                  <li key={member}>{member}</li>
-                ))}
-              </ul>
-            </div>
-            <p className="text-sm text-navy-700">
-              Thread Factory: Pabrik Rebutan v{APP_VERSION}
-            </p>
-          </section>
+          <CreditsPanel />
         </CatatanPanel>
       </CatatanBoard>
     </main>

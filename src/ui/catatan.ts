@@ -16,7 +16,7 @@ export const MANDOR_WIDTH_RATIO = 0.34;
 export const MANDOR_OVERLAP_RATIO = 0.06;
 
 /** Area kertas di dalam papan, dalam persen dari ukuran papan. */
-export const PAPER_INSET = { top: 13, right: 8, bottom: 8, left: 8 } as const;
+export const PAPER_INSET = { top: 13, right: 8, bottom: 14, left: 8 } as const;
 
 /**
  * Lebar papan (CSS): papan beserta Pak Mandor harus muat di lebar layar,
