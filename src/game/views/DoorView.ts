@@ -80,9 +80,7 @@ export class DoorView {
     const centerX = panelRect
       ? panelRect.x + panelRect.width / 2
       : DOOR_PANEL.x;
-    const centerY = panelRect
-      ? panelRect.y + panelRect.height / 2
-      : panelY;
+    const centerY = panelRect ? panelRect.y + panelRect.height / 2 : panelY;
     const width = panelRect?.width ?? DOOR_PANEL.width;
     const height = panelRect?.height ?? DOOR_PANEL.height;
 

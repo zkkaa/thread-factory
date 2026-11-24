@@ -26,16 +26,16 @@ describe('robotLabelLines', () => {
   it('mode lengkap sama dengan label lama (tanpa regresi Level 1-1)', () => {
     expect(
       robotLabelLines(thread({ registers: { r: 3 }, waitTicks: 2 }), 5, false),
-    ).toEqual([
-      'Perakit · RUNNING',
-      'Produk 1/5 · tunggu 2',
-      'catatan: r = 3',
-    ]);
+    ).toEqual(['Perakit · RUNNING', 'Produk 1/5 · tunggu 2', 'catatan: r = 3']);
   });
 
   it('menampilkan sumber yang ditunggu, bukan catatan', () => {
     const lines = robotLabelLines(
-      thread({ state: 'WAITING', waitingOn: 'mutex:meja', registers: { r: 1 } }),
+      thread({
+        state: 'WAITING',
+        waitingOn: 'mutex:meja',
+        registers: { r: 1 },
+      }),
       3,
       false,
     );
@@ -44,7 +44,11 @@ describe('robotLabelLines', () => {
 
   it('putaran penuh saat TERMINATED', () => {
     expect(
-      robotLabelLines(thread({ state: 'TERMINATED', iteration: 2 }), 3, false)[1],
+      robotLabelLines(
+        thread({ state: 'TERMINATED', iteration: 2 }),
+        3,
+        false,
+      )[1],
     ).toBe('Produk 3/3 · tunggu 0');
   });
 });

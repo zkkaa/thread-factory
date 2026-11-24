@@ -9,11 +9,7 @@ import type {
 } from '../../engine/types';
 import type { LevelDefinition } from '../../levels/types';
 import { robotFrameFor } from '../assetManifest';
-import {
-  assignFlowSpots,
-  flowRobots,
-  type FlowSeats,
-} from '../flowSpots';
+import { assignFlowSpots, flowRobots, type FlowSeats } from '../flowSpots';
 import type { FlowLayout, Point, Rect } from '../layouts/types';
 import { BatteryMeter } from '../views/BatteryMeter';
 import { HallRobotView } from '../views/HallRobotView';
@@ -93,7 +89,13 @@ export class FlowArena {
       this.machines.push(
         this.track(
           scene.add
-            .rectangle(p.x, p.y, HALL.machineSize, HALL.machineSize, HALL.machineIdle)
+            .rectangle(
+              p.x,
+              p.y,
+              HALL.machineSize,
+              HALL.machineSize,
+              HALL.machineIdle,
+            )
             .setStrokeStyle(HALL.machineStrokeWidth, HALL.machineStroke)
             .setDepth(DEPTH.segment),
         ),
@@ -187,7 +189,8 @@ export class FlowArena {
         level.threads.find((def) => def.id === thread.id)?.repeat ?? 1;
       if (thread.id === layout.packerId) return;
       const view = new HallRobotView(scene, thread, {
-        start: placement.spots.get(thread.id) ?? layout.workSpots[0] ?? packerSpot,
+        start:
+          placement.spots.get(thread.id) ?? layout.workSpots[0] ?? packerSpot,
         spriteFrame: robotFrameFor(assemblerIndex),
         totalRounds: rounds,
       });
@@ -257,7 +260,9 @@ export class FlowArena {
       .setText(`BENTROK! ${occupancy} robot, kapasitas ${this.capacity}`)
       .setVisible(crowded);
     this.machines.forEach((box, index) =>
-      box.setFillStyle(active.has(index) ? HALL.machineActive : HALL.machineIdle),
+      box.setFillStyle(
+        active.has(index) ? HALL.machineActive : HALL.machineIdle,
+      ),
     );
     const cardGated = tools.some((tool) => tool.kind === 'semaphore');
     const cards = snapshot.semaphores.find(
@@ -301,7 +306,8 @@ export class FlowArena {
     this.lamp.setFillStyle(this.signaled ? DESK.lampGreen : DESK.lampRed);
     this.lampLabel.setText(this.signaled ? 'LAMPU HIJAU' : 'LAMPU MERAH');
     const sleeping =
-      packer.state === 'WAITING' && packer.waitingOn?.startsWith('cond:') === true;
+      packer.state === 'WAITING' &&
+      packer.waitingOn?.startsWith('cond:') === true;
     this.zzz.setVisible(sleeping);
     this.packerStatus.setText(this.packerMode(packer, sleeping));
     this.battery.update(batteryLevel(packer.busyWaitTicks));
@@ -318,7 +324,9 @@ export class FlowArena {
   private packerMode(packer: ThreadSnapshot, sleeping: boolean): string {
     if (packer.state === 'TERMINATED') return 'Selesai mengepak';
     if (sleeping) return 'TIDUR · WAITING (hemat core)';
-    const op = this.effective.find((d) => d.id === packer.id)?.program[packer.pc]?.op;
+    const op = this.effective.find((d) => d.id === packer.id)?.program[
+      packer.pc
+    ]?.op;
     if (op === 'SPIN_UNTIL') return 'Mengecek terus · busy waiting';
     if (packer.state === 'WAITING') return 'Menunggu kunci meja';
     return 'Mengepak';
@@ -369,7 +377,13 @@ export class FlowArena {
   private bar(scene: Scene, at: Point): GameObjects.Rectangle {
     return this.track(
       scene.add
-        .rectangle(at.x, at.y, HALL.doorThickness, HALL.doorLength, HALL.doorFree)
+        .rectangle(
+          at.x,
+          at.y,
+          HALL.doorThickness,
+          HALL.doorLength,
+          HALL.doorFree,
+        )
         .setDepth(DEPTH.gate),
     );
   }

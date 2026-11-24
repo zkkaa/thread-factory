@@ -47,7 +47,9 @@ describe('lineSpots', () => {
     const { threads, origins } = applyToolsDetailed(level1_5.threads, []);
     const first = threads[0];
     if (first === undefined) throw new Error('thread kosong');
-    expect(lineGates(first.program, origins[first.id] ?? [], layout)).toEqual([]);
+    expect(lineGates(first.program, origins[first.id] ?? [], layout)).toEqual(
+      [],
+    );
   });
 
   it('lineRobotX menjepit pc di luar rentang', () => {
@@ -59,7 +61,9 @@ describe('lineSpots', () => {
   });
 
   it('label checkpoint pendek untuk instruksi panjang', () => {
-    expect(lineCheckpointLabel({ op: 'ENTER_AREA', area: 'aula' })).toBe('ENTER');
+    expect(lineCheckpointLabel({ op: 'ENTER_AREA', area: 'aula' })).toBe(
+      'ENTER',
+    );
     expect(lineCheckpointLabel({ op: 'WORK', ticks: 1 })).toBe('WORK');
   });
 });

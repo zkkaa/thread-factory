@@ -23,7 +23,9 @@ describe('stepValue dan changeValue', () => {
     const atas = { ...defaultSandboxValues('2-1'), bufferCapacity: 8 };
     expect(stepValue('2-1', atas, 'bufferCapacity', 1).bufferCapacity).toBe(8);
     const bawah = { ...defaultSandboxValues('2-1'), bufferCapacity: 1 };
-    expect(stepValue('2-1', bawah, 'bufferCapacity', -1).bufferCapacity).toBe(1);
+    expect(stepValue('2-1', bawah, 'bufferCapacity', -1).bufferCapacity).toBe(
+      1,
+    );
   });
 
   it('tidak memutasi masukan', () => {
@@ -81,7 +83,7 @@ describe('planSandbox', () => {
     if (plan.ok) expect(plan.options.rwPolicy).toBe('writer');
   });
 
-    it('level tanpa dukungan menghasilkan pesan, bukan error', () => {
+  it('level tanpa dukungan menghasilkan pesan, bukan error', () => {
     const plan = planSandbox(unsupportedLevel, {});
     expect(plan.ok).toBe(false);
     if (!plan.ok) expect(plan.message).toMatch(/belum mendukung/);

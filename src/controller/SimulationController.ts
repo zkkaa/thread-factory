@@ -272,7 +272,11 @@ export class SimulationController {
     if (level === null) return;
     const nextSeed = seed ?? this.state.seed;
     this.engine.load(
-      buildEngineConfig(level, this.placedTools, this.optionsFor(this.rwPolicy)),
+      buildEngineConfig(
+        level,
+        this.placedTools,
+        this.optionsFor(this.rwPolicy),
+      ),
       nextSeed,
     );
     this.stopClock();

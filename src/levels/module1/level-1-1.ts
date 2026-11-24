@@ -64,16 +64,16 @@ export const level1_1: LevelDefinition = {
     },
   ],
   hints: [
-     'Tekan Step pelan-pelan dan lihat catatan di tangan robot. Adakah dua robot ' +
+    'Tekan Step pelan-pelan dan lihat catatan di tangan robot. Adakah dua robot ' +
       'yang memegang data angka yang sama?',
-      'Kekacauan terjadi di antara membaca angka dan menuliskannya kembali. ' +
-        'Bagian itu yang perlu dijaga.',
-      'Pasang pintu masuk sebelum READ dan pintu keluar sesudah WRITE.'
+    'Kekacauan terjadi di antara membaca angka dan menuliskannya kembali. ' +
+      'Bagian itu yang perlu dijaga.',
+    'Pasang pintu masuk sebelum READ dan pintu keluar sesudah WRITE.',
   ],
   concepts: ['Race condition', 'Critical section', 'Mutex'],
   explanation: {
     pass:
-       'Pintu Mutex membuat hanya satu robot yang boleh mengurus Papan Stok pada satu ' +
+      'Pintu Mutex membuat hanya satu robot yang boleh mengurus Papan Stok pada satu ' +
       'waktu. Bagian yang dijaga itu disebut critical section. Robot lain menunggu ' +
       'giliran, jadi tidak ada tambahan yang hilang. Harganya: robot harus antre, ' +
       'sehingga ada waktu tunggu.',

@@ -24,7 +24,7 @@ const summary = (patch: Partial<CompareSummary>): CompareSummary => ({
 });
 
 describe('planSide', () => {
-    it('level tanpa parameter Sandbox dimuat apa adanya tanpa bintang', () => {
+  it('level tanpa parameter Sandbox dimuat apa adanya tanpa bintang', () => {
     const plan = planSide(unsupportedLevel, {});
     expect(plan.ok).toBe(true);
     if (plan.ok) {
@@ -80,9 +80,7 @@ describe('teks perbandingan', () => {
 
   it('headline: sisi yang gagal tidak dianggap menang', () => {
     expect(
-      summaryHeadline(
-        summary({ okA: false, okB: true, wins: { A: 5, B: 0 } }),
-      ),
+      summaryHeadline(summary({ okA: false, okB: true, wins: { A: 5, B: 0 } })),
     ).toBe('B lulus, A gagal.');
     expect(summaryHeadline(summary({ okA: true, okB: false }))).toBe(
       'A lulus, B gagal.',

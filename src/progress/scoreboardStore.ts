@@ -58,7 +58,9 @@ function isNonNegativeInt(value: unknown): value is number {
 }
 
 function isStarsOrNull(value: unknown): value is Stars | null {
-  return value === null || value === 0 || value === 1 || value === 2 || value === 3;
+  return (
+    value === null || value === 0 || value === 1 || value === 2 || value === 3
+  );
 }
 
 /**
@@ -184,7 +186,10 @@ export class ScoreboardStore {
     }
     const key = groupKey(levelId, seed);
     const existing = this.state.groups[key];
-    if (existing === undefined && Object.keys(this.state.groups).length >= MAX_GROUPS) {
+    if (
+      existing === undefined &&
+      Object.keys(this.state.groups).length >= MAX_GROUPS
+    ) {
       return false;
     }
     const group = existing ?? [];
@@ -202,10 +207,16 @@ export class ScoreboardStore {
       waitTicks: input.waitTicks,
       date: new Date(this.now()).toISOString(),
     };
-    const ranked = rankEntries([...group, entry]).slice(0, MAX_ENTRIES_PER_GROUP);
+    const ranked = rankEntries([...group, entry]).slice(
+      0,
+      MAX_ENTRIES_PER_GROUP,
+    );
     if (!ranked.includes(entry)) return false;
 
-    this.commit({ version: 1, groups: { ...this.state.groups, [key]: ranked } });
+    this.commit({
+      version: 1,
+      groups: { ...this.state.groups, [key]: ranked },
+    });
     return true;
   }
 

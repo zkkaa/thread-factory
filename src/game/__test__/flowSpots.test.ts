@@ -59,7 +59,10 @@ function robot(index: number, zone: FlowZone): FlowRobot {
   return { id: `R${index + 1}`, index, zone };
 }
 
-const EMPTY_SEATS = { hall: new Map<string, number>(), stock: new Map<string, number>() };
+const EMPTY_SEATS = {
+  hall: new Map<string, number>(),
+  stock: new Map<string, number>(),
+};
 
 describe('flowZoneOf', () => {
   it('program lengkap: zona menurut pc', () => {
@@ -81,7 +84,9 @@ describe('flowZoneOf', () => {
   });
 
   it('TERMINATED menjadi done', () => {
-    expect(flowZoneOf(FULL, snap({ state: 'TERMINATED' }), 'aula')).toBe('done');
+    expect(flowZoneOf(FULL, snap({ state: 'TERMINATED' }), 'aula')).toBe(
+      'done',
+    );
   });
 
   it('tanpa alat: robot di ENTER_AREA belum dihitung antre', () => {
@@ -91,7 +96,9 @@ describe('flowZoneOf', () => {
   });
 
   it('program tanpa area menjadi work', () => {
-    expect(flowZoneOf([{ op: 'WORK', ticks: 1 }], snap({}), 'aula')).toBe('work');
+    expect(flowZoneOf([{ op: 'WORK', ticks: 1 }], snap({}), 'aula')).toBe(
+      'work',
+    );
   });
 });
 
@@ -118,8 +125,18 @@ describe('assignFlowSpots', () => {
   });
 
   it('antrean aula: pemegang kartu dahulu, lalu urutan FIFO semaphore', () => {
-    const robots = [robot(0, 'hallQueue'), robot(1, 'hallQueue'), robot(2, 'hallQueue')];
-    const { spots } = assignFlowSpots(flow1_5, robots, ['R2', 'R1'], [], EMPTY_SEATS);
+    const robots = [
+      robot(0, 'hallQueue'),
+      robot(1, 'hallQueue'),
+      robot(2, 'hallQueue'),
+    ];
+    const { spots } = assignFlowSpots(
+      flow1_5,
+      robots,
+      ['R2', 'R1'],
+      [],
+      EMPTY_SEATS,
+    );
     expect(spots.get('R3')).toEqual(flow1_5.hallQueueSpots[0]);
     expect(spots.get('R2')).toEqual(flow1_5.hallQueueSpots[1]);
     expect(spots.get('R1')).toEqual(flow1_5.hallQueueSpots[2]);
@@ -127,14 +144,23 @@ describe('assignFlowSpots', () => {
 
   it('antrean mutex mengikuti urutan antrean mutex', () => {
     const robots = [robot(0, 'stockQueue'), robot(1, 'stockQueue')];
-    const { spots } = assignFlowSpots(flow1_5, robots, [], ['R2', 'R1'], EMPTY_SEATS);
+    const { spots } = assignFlowSpots(
+      flow1_5,
+      robots,
+      [],
+      ['R2', 'R1'],
+      EMPTY_SEATS,
+    );
     expect(spots.get('R2')).toEqual(flow1_5.stockQueueSpots[0]);
     expect(spots.get('R1')).toEqual(flow1_5.stockQueueSpots[1]);
   });
 
   it('kursi aula lengket dan robot ketiga memakai tempat luapan', () => {
     const robots = [robot(0, 'hall'), robot(1, 'hall'), robot(2, 'hall')];
-    const previous = { hall: new Map([['R2', 1]]), stock: new Map<string, number>() };
+    const previous = {
+      hall: new Map([['R2', 1]]),
+      stock: new Map<string, number>(),
+    };
     const { spots, seats } = assignFlowSpots(flow1_5, robots, [], [], previous);
     expect(seats.hall.get('R2')).toBe(1);
     expect(spots.get('R2')).toEqual(flow1_5.machines[1]);
@@ -150,7 +176,13 @@ describe('assignFlowSpots', () => {
   });
 
   it('done memakai titik selesai menurut indeks', () => {
-    const { spots } = assignFlowSpots(flow1_5, [robot(4, 'done')], [], [], EMPTY_SEATS);
+    const { spots } = assignFlowSpots(
+      flow1_5,
+      [robot(4, 'done')],
+      [],
+      [],
+      EMPTY_SEATS,
+    );
     expect(spots.get('R5')).toEqual(flow1_5.doneSpots[4]);
   });
 });

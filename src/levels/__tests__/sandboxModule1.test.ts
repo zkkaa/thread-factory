@@ -50,7 +50,10 @@ describe('Sandbox Modul 1: data parameter', () => {
 
   it('tanpa perubahan, level 1-1 setara dengan aslinya', () => {
     const level = levelOf('1-1');
-    const { level: copy } = applySandboxParams(level, defaultSandboxValues('1-1'));
+    const { level: copy } = applySandboxParams(
+      level,
+      defaultSandboxValues('1-1'),
+    );
     expect(copy.goal.target.value).toBe(10);
     expect(copy.threads.map((t) => t.repeat)).toEqual([5, 5]);
     expect(copy.scheduler).toEqual(level.scheduler);
@@ -83,9 +86,10 @@ describe('Sandbox Modul 1: simulasi', () => {
       const controller = new SimulationController();
       controller.loadLevel(sandbox, undefined, { rated: false });
       controller.placeTool(
-        buildSharedMutexTool('papan', ['A', 'B'], { entry: 1, exit: 4 }) ?? (() => {
-          throw new Error('alat null');
-        })(),
+        buildSharedMutexTool('papan', ['A', 'B'], { entry: 1, exit: 4 }) ??
+          (() => {
+            throw new Error('alat null');
+          })(),
       );
       runToEnd(controller);
 
@@ -98,12 +102,18 @@ describe('Sandbox Modul 1: simulasi', () => {
 
   it('level 1-3: Kartu Akses 3 lulus, tanpa gerbang bentrok', () => {
     const level = levelOf('1-3');
-    const { level: sandbox } = applySandboxParams(level, defaultSandboxValues('1-3'));
+    const { level: sandbox } = applySandboxParams(
+      level,
+      defaultSandboxValues('1-3'),
+    );
     const ids = sandbox.threads.map((t) => t.id);
 
     const withGate = new SimulationController();
     withGate.loadLevel(sandbox, undefined, { rated: false });
-    const tool = buildSharedSemaphoreTool('kartu', 3, ids, { entry: 1, exit: 4 });
+    const tool = buildSharedSemaphoreTool('kartu', 3, ids, {
+      entry: 1,
+      exit: 4,
+    });
     if (tool === null) throw new Error('alat null');
     withGate.placeTool(tool);
     runToEnd(withGate);

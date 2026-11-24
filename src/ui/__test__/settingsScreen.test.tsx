@@ -40,31 +40,30 @@ describe('SettingsScreen', () => {
     const html = render();
     expect(html).toContain('Pengaturan');
     expect(html).toContain('Volume suara');
-    expect(html).toContain('Kurangi animasi');
     expect(html).toContain('Buka semua level (mode demo)');
     expect(html).toContain('Reset progres');
     expect(html).toContain('Kredit');
   });
 
-  it('pengaturan awal: volume 70%, kedua sakelar mati dan berlabel teks', () => {
+  it('pengaturan awal: volume 70%, sakelar mode demo mati dan berlabel teks', () => {
     const html = render();
     expect(html).toContain('70%');
     expect(html).toContain('value="70"');
-    expect(hitung(html, /role="switch"/g)).toBe(2);
-    expect(hitung(html, /aria-checked="false"/g)).toBe(2);
+    expect(hitung(html, /role="switch"/g)).toBe(1);
+    expect(hitung(html, /aria-checked="false"/g)).toBe(1);
     expect(html).toContain('Mati');
     expect(html).not.toContain('Aktif');
   });
 
-  it('sakelar aktif menampilkan aria-checked true dan teks Aktif', () => {
+  it('sakelar aktif menampilkan aria-checked true dan teks Hidup', () => {
     const html = render({
       ...DEFAULT_SETTINGS,
       volume: 0.35,
       reduceMotion: true,
       demoMode: true,
     });
-    expect(hitung(html, /aria-checked="true"/g)).toBe(2);
-    expect(html).toContain('Aktif');
+    expect(hitung(html, /aria-checked="true"/g)).toBe(1);
+    expect(html).toContain('Hidup');
     expect(html).toContain('35%');
   });
 

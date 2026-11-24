@@ -21,7 +21,7 @@ function runToEnd(controller: SimulationController) {
 }
 
 describe('applySandboxParams: pendukung dan validasi', () => {
-    it('hanya level yang terdaftar di SANDBOX_PARAMS yang mendukung Sandbox', () => {
+  it('hanya level yang terdaftar di SANDBOX_PARAMS yang mendukung Sandbox', () => {
     expect(isSandboxSupported('1-1')).toBe(true);
     expect(isSandboxSupported('2-1')).toBe(true);
     expect(isSandboxSupported('2-2')).toBe(true);

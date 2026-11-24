@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CompareSession } from '../../controller/CompareSession';
 import { compareStates } from '../../controller/compareMetrics';
-import {
-  defaultSandboxValues,
-  type SandboxValues,
-} from '../../levels/sandbox';
+import { defaultSandboxValues, type SandboxValues } from '../../levels/sandbox';
 import type { LevelDefinition } from '../../levels/types';
 import { CompareControls } from '../components/hud/CompareControls';
 import { ComparePanel } from '../components/hud/ComparePanel';

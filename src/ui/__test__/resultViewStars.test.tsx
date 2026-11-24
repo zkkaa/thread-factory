@@ -11,9 +11,10 @@ function runWithDoor(entry: number, exit: number) {
   const controller = new SimulationController(undefined, clock);
   controller.loadLevel(level1_2);
   controller.placeTool(
-    buildSharedMutexTool('papan', ['A', 'B'], { entry, exit }) ?? (() => {
-      throw new Error('alat tidak terbentuk');
-    })(),
+    buildSharedMutexTool('papan', ['A', 'B'], { entry, exit }) ??
+      (() => {
+        throw new Error('alat tidak terbentuk');
+      })(),
   );
   for (let i = 0; i < 5000; i++) {
     if (controller.getState().runState === 'finished') break;

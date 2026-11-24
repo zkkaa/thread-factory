@@ -22,8 +22,6 @@ export { level2_4 } from './module2/level-2-4';
 export * from './modules';
 export * from './types';
 
-
-
 /** Daftar seluruh level yang tersedia dalam game. */
 export const ALL_LEVELS: LevelDefinition[] = [
   level1_1,

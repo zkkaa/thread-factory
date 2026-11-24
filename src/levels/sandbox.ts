@@ -265,7 +265,8 @@ export function applySandboxParams(
   }
 
   const chosen = new Map<SandboxKey, number | string>();
-  for (const def of defs) chosen.set(def.key, resolveValue(def, values[def.key]));
+  for (const def of defs)
+    chosen.set(def.key, resolveValue(def, values[def.key]));
   const num = (key: SandboxKey): number | undefined => {
     const value = chosen.get(key);
     return typeof value === 'number' ? value : undefined;
@@ -280,8 +281,10 @@ export function applySandboxParams(
   const threads = level.threads.map((thread) => {
     let next = thread.repeat;
     if (repeat !== undefined) next = repeat;
-    if (readRepeat !== undefined && thread.id.startsWith('R')) next = readRepeat;
-    if (writeRepeat !== undefined && thread.id.startsWith('W')) next = writeRepeat;
+    if (readRepeat !== undefined && thread.id.startsWith('R'))
+      next = readRepeat;
+    if (writeRepeat !== undefined && thread.id.startsWith('W'))
+      next = writeRepeat;
     return { ...thread, repeat: next };
   });
 
@@ -308,7 +311,10 @@ export function applySandboxParams(
 
   if (level.id === '1-1' || level.id === '1-2') {
     // Setiap robot menambah stok satu kali per putaran.
-    const expected = threads.reduce((sum, thread) => sum + (thread.repeat ?? 1), 0);
+    const expected = threads.reduce(
+      (sum, thread) => sum + (thread.repeat ?? 1),
+      0,
+    );
     next.goal = {
       ...level.goal,
       target: { ...level.goal.target, value: expected },

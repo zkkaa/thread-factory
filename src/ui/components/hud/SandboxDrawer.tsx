@@ -102,12 +102,7 @@ export function SandboxDrawer({
                   value={String(values[def.key] ?? def.initial)}
                   onChange={(event) =>
                     onChange(
-                      changeValue(
-                        levelId,
-                        values,
-                        def.key,
-                        event.target.value,
-                      ),
+                      changeValue(levelId, values, def.key, event.target.value),
                     )
                   }
                   className="rounded border border-navy-500 bg-navy-800 px-1 py-0.5"

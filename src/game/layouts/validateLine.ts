@@ -55,7 +55,9 @@ export function validateLineLayout(
     errors.push(`id layout "${layout.id}" != layoutId "${level.layoutId}"`);
   }
   if (level.threads.some((thread) => thread.program.length !== n)) {
-    errors.push('semua robot harus berprogram sama panjang (slot dipakai bersama)');
+    errors.push(
+      'semua robot harus berprogram sama panjang (slot dipakai bersama)',
+    );
   }
 
   // Lajur: satu per thread, tidak ganda, berjarak cukup.
@@ -90,9 +92,13 @@ export function validateLineLayout(
     const next = layout.slotX[k + 1];
     if (slot === undefined || cp === undefined || next === undefined) continue;
     if (!(slot < cp && cp < next)) {
-      errors.push(`urutan x salah: slot ${k} < checkpoint ${k} < slot ${k + 1}`);
+      errors.push(
+        `urutan x salah: slot ${k} < checkpoint ${k} < slot ${k + 1}`,
+      );
     } else if (cp - slot < LINE.minXGap || next - cp < LINE.minXGap) {
-      errors.push(`jarak slot dan checkpoint ${k} kurang dari ${LINE.minXGap} px`);
+      errors.push(
+        `jarak slot dan checkpoint ${k} kurang dari ${LINE.minXGap} px`,
+      );
     }
   }
   if (layout.boardLinks.some((l) => l.checkpoint < 0 || l.checkpoint >= n)) {
@@ -115,7 +121,9 @@ export function validateLineLayout(
     );
   });
   if (!gateOk) {
-    errors.push('gerbang harus membungkus ENTER_AREA sampai LEAVE_AREA di semua robot');
+    errors.push(
+      'gerbang harus membungkus ENTER_AREA sampai LEAVE_AREA di semua robot',
+    );
   }
   const gateFrom = layout.checkpointX[hall.gate.start];
   const gateTo = layout.checkpointX[hall.gate.end];
@@ -124,12 +132,13 @@ export function validateLineLayout(
     gateTo !== undefined &&
     (gateFrom < hall.zone.x || gateTo > hall.zone.x + hall.zone.width)
   ) {
-    errors.push('zona aula harus mencakup checkpoint ENTER_AREA sampai LEAVE_AREA');
+    errors.push(
+      'zona aula harus mencakup checkpoint ENTER_AREA sampai LEAVE_AREA',
+    );
   }
   if (
     layout.lanes.some(
-      (lane) =>
-        lane.y < hall.zone.y || lane.y > hall.zone.y + hall.zone.height,
+      (lane) => lane.y < hall.zone.y || lane.y > hall.zone.y + hall.zone.height,
     )
   ) {
     errors.push('zona aula harus mencakup semua lajur');
@@ -137,7 +146,9 @@ export function validateLineLayout(
 
   // Pengepak, lampu, baterai.
   if (!threadIds.includes(layout.packer.threadId)) {
-    errors.push(`Pengepak menunjuk thread "${layout.packer.threadId}" yang tidak ada`);
+    errors.push(
+      `Pengepak menunjuk thread "${layout.packer.threadId}" yang tidak ada`,
+    );
   }
   if (!laneIds.includes(layout.packer.threadId)) {
     errors.push('Pengepak tidak punya lajur');
@@ -155,10 +166,14 @@ export function validateLineLayout(
     errors.push(`mutex "${layout.tools.mutexId}" tidak terdaftar di level`);
   }
   if (resources.get(layout.tools.semaphoreId) !== 'semaphore') {
-    errors.push(`semaphore "${layout.tools.semaphoreId}" tidak terdaftar di level`);
+    errors.push(
+      `semaphore "${layout.tools.semaphoreId}" tidak terdaftar di level`,
+    );
   }
   if (resources.get(layout.tools.conditionId) !== 'condition') {
-    errors.push(`condition variable "${layout.tools.conditionId}" tidak terdaftar di level`);
+    errors.push(
+      `condition variable "${layout.tools.conditionId}" tidak terdaftar di level`,
+    );
   }
 
   // Tata letak: semua di area aman, di luar dok, dan tidak bertumpuk.
@@ -179,7 +194,8 @@ export function validateLineLayout(
 
   for (const [name, rect] of all) {
     if (!inSafe(rect)) errors.push(`${name} di luar area aman arena`);
-    if (overlaps(rect, DOCK_ZONE)) errors.push(`${name} menimpa area dok toolbox`);
+    if (overlaps(rect, DOCK_ZONE))
+      errors.push(`${name} menimpa area dok toolbox`);
   }
   for (let i = 0; i < solids.length; i += 1) {
     for (let j = i + 1; j < solids.length; j += 1) {

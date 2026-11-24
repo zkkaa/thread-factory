@@ -30,7 +30,9 @@ const summary: CompareSummary = {
 
 describe('CompareSummaryTable', () => {
   it('menampilkan baris, pemenang dengan teks, dan hasil lulus/gagal', () => {
-    const html = renderToStaticMarkup(<CompareSummaryTable summary={summary} />);
+    const html = renderToStaticMarkup(
+      <CompareSummaryTable summary={summary} />,
+    );
     expect(html).toContain('Total waktu tunggu');
     expect(html).toContain('A lebih baik');
     expect(html).toContain('Sama');

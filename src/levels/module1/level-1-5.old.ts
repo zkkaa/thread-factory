@@ -60,7 +60,7 @@ export const level1_5: LevelDefinition = {
     {
       mood: 'berpikir',
       text:
-       'Ada tiga masalah sekaligus. Papan Stok diubah banyak robot, aula hanya muat ' +
+        'Ada tiga masalah sekaligus. Papan Stok diubah banyak robot, aula hanya muat ' +
         'satu robot, dan Pengepak tidak boleh terus mengecek barang. Hasil akhir harus ' +
         'tepat 5. Bintang 1 butuh hasil benar tanpa bentrok dan tanpa busy waiting. ' +
         'Pada seed 10, bintang 2 jika selesai dalam 70 tick, dan bintang 3 jika total ' +
@@ -73,7 +73,7 @@ export const level1_5: LevelDefinition = {
         'Sinyal. Satu alat tidak bisa menggantikan yang lain. Amati dulu apa yang ' +
         'salah, baru pilih alatnya. Selamat bekerja!',
     },
-  ],  
+  ],
 
   hints: [
     'Jalankan tanpa alat dan perhatikan: mana yang salah angka, mana yang bentrok, mana yang kehabisan baterai?',

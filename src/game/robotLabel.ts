@@ -3,7 +3,9 @@ import { STATE_STYLE } from './theme';
 
 /** Teks status robot; READY ditambah (zzz) agar tidak hanya warna. */
 export function statusLabel(thread: ThreadSnapshot): string {
-  return thread.state === 'READY' ? 'READY (zzz)' : STATE_STYLE[thread.state].label;
+  return thread.state === 'READY'
+    ? 'READY (zzz)'
+    : STATE_STYLE[thread.state].label;
 }
 
 /**

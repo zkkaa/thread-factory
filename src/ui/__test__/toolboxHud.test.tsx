@@ -85,7 +85,7 @@ describe('ToolboxHud', () => {
     expect(html).toContain('Slot 4, antara LEAVE_AREA dan READ');
   });
 
-    it('Level 1-5 memakai tab; Level 1-1 tidak', () => {
+  it('Level 1-5 memakai tab; Level 1-1 tidak', () => {
     const c15 = new SimulationController(undefined, noClock);
     c15.loadLevel(level1_5);
     const html15 = render(c15);

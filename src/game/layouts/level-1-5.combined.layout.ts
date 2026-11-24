@@ -21,9 +21,7 @@ export const layout1_5: CombinedLayout = {
   tools: { mutexId: 'meja', semaphoreId: 'kartu', conditionId: 'lampu' },
   road: { left: 380, top: 100, width: 512, height: 256 },
   checkpoints: [0.0897, 0.2222, 0.3547, 0.4871, 0.6196, 0.7521, 0.8845],
-  slots: [
-    0.0299, 0.1624, 0.2948, 0.4273, 0.5598, 0.6922, 0.8247, 0.9444,
-  ],
+  slots: [0.0299, 0.1624, 0.2948, 0.4273, 0.5598, 0.6922, 0.8247, 0.9444],
   laneOffsets: [-20, 0, 20],
   board: { x: 516, y: 188, width: 240, height: 80 },
   boardLinks: [

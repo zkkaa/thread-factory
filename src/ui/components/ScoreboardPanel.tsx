@@ -17,9 +17,8 @@ export function ScoreboardPanel({ data, levels }: ScoreboardPanelProps) {
     >
       <h2 className="font-bold">Papan Skor</h2>
       <p className="text-sm text-ink-300">
-        Rekor di perangkat ini, dikelompokkan per seed supaya adil
-        dibandingkan. Hanya hasil yang benar yang dicatat. Ikut terhapus saat
-        progres direset.
+        Rekor di perangkat ini, dikelompokkan per seed supaya adil dibandingkan.
+        Hanya hasil yang benar yang dicatat. Ikut terhapus saat progres direset.
       </p>
       {boards.length === 0 ? (
         <p className="text-sm">

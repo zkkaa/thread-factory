@@ -23,7 +23,11 @@ describe('layout alur Level 1-5', () => {
     if (first === undefined) throw new Error('titik kerja kosong');
     const broken = {
       ...flow1_5,
-      workSpots: [first, { x: first.x + 10, y: first.y }, ...flow1_5.workSpots.slice(2)],
+      workSpots: [
+        first,
+        { x: first.x + 10, y: first.y },
+        ...flow1_5.workSpots.slice(2),
+      ],
     };
     expect(
       validateLayout(broken, level).some((e) => e.includes('terlalu rapat')),

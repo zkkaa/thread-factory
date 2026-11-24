@@ -94,7 +94,10 @@ export const level2_4: LevelDefinition = {
   },
   scheduler: {
     kind: 'random',
-    cores: COMPONENTS.reduce((sum, { level }) => sum + level.scheduler.cores, 0),
+    cores: COMPONENTS.reduce(
+      (sum, { level }) => sum + level.scheduler.cores,
+      0,
+    ),
   },
   // Tanpa alat, komponen meja teknisi pasti deadlock, jadi seed apa pun
   // gagal pada tutorial. Seed 1 mengikuti level 2-2 dan 2-3.

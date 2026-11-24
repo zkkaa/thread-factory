@@ -63,7 +63,7 @@ export const level1_4: LevelDefinition = {
     {
       mood: 'sedih',
       text:
-       'Tanpa pengaman, pengepak akan terus-menerus melirik meja sambil bertanya, ' +
+        'Tanpa pengaman, pengepak akan terus-menerus melirik meja sambil bertanya, ' +
         '"Sudah ada belum? Sudah ada belum?" Dia sibuk, tapi tidak menghasilkan ' +
         'apa-apa, dan baterainya terkuras. Ini disebut busy waiting. Misi berhasil ' +
         'jika barang di meja 3, pengepak mengepak setelah barang cukup, dan waktu ' +
@@ -72,21 +72,21 @@ export const level1_4: LevelDefinition = {
     {
       mood: 'senang',
       text:
-     'Alatmu adalah Lampu Sinyal, seperti bel panggilan. Pengepak tidur dulu, dan ' +
-      'perakit menyalakan lampu setelah barang ketiga siap. Kunci Meja sudah ' +
-      'dipasang otomatis. Tentukan di mana lampu dinyalakan, lalu lihat meter ' +
-      'baterai Pengepak.',
+        'Alatmu adalah Lampu Sinyal, seperti bel panggilan. Pengepak tidur dulu, dan ' +
+        'perakit menyalakan lampu setelah barang ketiga siap. Kunci Meja sudah ' +
+        'dipasang otomatis. Tentukan di mana lampu dinyalakan, lalu lihat meter ' +
+        'baterai Pengepak.',
     },
   ],
 
   hints: [
-   'Lihat meter baterai pengepak. Apa yang dia lakukan selama menunggu barang?',
+    'Lihat meter baterai pengepak. Apa yang dia lakukan selama menunggu barang?',
     'Terus-menerus mengecek meja disebut busy waiting: tenaga terpakai padahal ' +
-    'belum ada yang bisa dikerjakan. Dengan Lampu Sinyal, pengepak bisa tidur ' +
-    'sampai dibangunkan.',
-   'Pasang Lampu Sinyal di robot perakit, tepat sesudah barang ketiga ditulis ' +
-    'ke meja. Kalau lampu menyala terlalu awal, pengepak bangun padahal barang ' +
-    'belum cukup.',
+      'belum ada yang bisa dikerjakan. Dengan Lampu Sinyal, pengepak bisa tidur ' +
+      'sampai dibangunkan.',
+    'Pasang Lampu Sinyal di robot perakit, tepat sesudah barang ketiga ditulis ' +
+      'ke meja. Kalau lampu menyala terlalu awal, pengepak bangun padahal barang ' +
+      'belum cukup.',
   ],
 
   concepts: ['Condition variable', 'Menunggu dengan tidur vs busy waiting'],

@@ -106,7 +106,11 @@ export function validateFlowLayout(
     ['titik kerja', layout.workSpots.length, robots],
     ['titik selesai', layout.doneSpots.length, robots],
     ['antrean aula', layout.hallQueueSpots.length, robots],
-    ['luapan aula', layout.overflowSpots.length, robots - layout.machines.length],
+    [
+      'luapan aula',
+      layout.overflowSpots.length,
+      robots - layout.machines.length,
+    ],
     ['antrean mutex', layout.stockQueueSpots.length, robots - 1],
     ['titik area kritis', layout.stockSpots.length, robots],
   ];
@@ -144,7 +148,11 @@ export function validateFlowLayout(
     ['antrean mutex', layout.stockQueueSpots, layout.stockZone],
     ['area kritis', layout.stockSpots, layout.stockZone],
     ['gerbang mutex', [layout.stockDoor], layout.stockZone],
-    ['pengepak', [layout.packerSpot, layout.lamp, layout.battery], layout.packZone],
+    [
+      'pengepak',
+      [layout.packerSpot, layout.lamp, layout.battery],
+      layout.packZone,
+    ],
     ['selesai', layout.doneSpots, layout.doneZone],
   ];
   for (const [name, spots, rect] of groups) {
@@ -158,13 +166,18 @@ export function validateFlowLayout(
 
   const spacing: [string, readonly Point[]][] = [
     ['kerja', layout.workSpots],
-    ['aula', [...layout.hallQueueSpots, ...layout.machines, ...layout.overflowSpots]],
+    [
+      'aula',
+      [...layout.hallQueueSpots, ...layout.machines, ...layout.overflowSpots],
+    ],
     ['papan stok', [...layout.stockQueueSpots, ...layout.stockSpots]],
     ['selesai', layout.doneSpots],
   ];
   for (const [name, spots] of spacing) {
     if (smallestGap(spots) < HALL.minSpotGap) {
-      errors.push(`titik ${name} terlalu rapat (minimal ${HALL.minSpotGap} px)`);
+      errors.push(
+        `titik ${name} terlalu rapat (minimal ${HALL.minSpotGap} px)`,
+      );
     }
   }
 

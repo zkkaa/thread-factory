@@ -37,7 +37,7 @@ export const level1_3: LevelDefinition = {
     {
       mood: 'netral',
       text:
-       'Selamat datang di Aula Mesin! Hari ini 8 robot ingin masuk ke aula sekaligus. ' +
+        'Selamat datang di Aula Mesin! Hari ini 8 robot ingin masuk ke aula sekaligus. ' +
         'Tapi aula hanya punya 3 mesin, jadi paling banyak 3 robot boleh berada di dalam.',
     },
     {
@@ -60,7 +60,7 @@ export const level1_3: LevelDefinition = {
     'Aula hanya muat 3 robot. Itu batas amannya.',
     'Kalau kartu lebih dari 3, robot ke-4 ikut masuk dan terjadi BENTROK.',
     'Kalau kartu hanya 1 atau 2, tidak ada bentrok, tapi ada mesin yang menganggur. ' +
-    'Coba nilai 3.',
+      'Coba nilai 3.',
   ],
   concepts: ['Counting semaphore', 'Antrean'],
   explanation: {
@@ -122,14 +122,14 @@ export const level1_3: LevelDefinition = {
     stars: { fast: 80, lowWait: 170 },
   },
   resultQuote: {
-  stars1:
-    'Tidak ada bentrok, aman! Tapi masih ada mesin yang menganggur. ' +
-    'Coba tambah jumlah Kartu Akses.',
-  stars2:
-    'Hampir pas! Aula sudah cukup sibuk. Hitung lagi: ada berapa mesin ' +
-    'yang benar-benar tersedia?',
-  stars3:
-    'Sempurna! Jumlah Kartu Akses sama dengan jumlah mesin. Tidak ada ' +
-    'bentrok dan tidak ada mesin yang menganggur.',
-},
+    stars1:
+      'Tidak ada bentrok, aman! Tapi masih ada mesin yang menganggur. ' +
+      'Coba tambah jumlah Kartu Akses.',
+    stars2:
+      'Hampir pas! Aula sudah cukup sibuk. Hitung lagi: ada berapa mesin ' +
+      'yang benar-benar tersedia?',
+    stars3:
+      'Sempurna! Jumlah Kartu Akses sama dengan jumlah mesin. Tidak ada ' +
+      'bentrok dan tidak ada mesin yang menganggur.',
+  },
 };

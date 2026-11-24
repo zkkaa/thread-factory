@@ -1,7 +1,11 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { ScoreboardData } from '../../progress/scoreboardStore';
 import type { SettingsData, SettingsPatch } from '../../progress/settingsStore';
 import { APP_VERSION } from '../../version';
+import { CatatanBoard, CatatanPanel } from '../components/catatan/CatatanBoard';
+import { ComicRow, ComicToggle } from '../components/catatan/ComicToggle';
+import { StickyNote } from '../components/catatan/StickyNote';
 import { ScoreboardPanel } from '../components/ScoreboardPanel';
 import {
   ASSET_CREDITS,
@@ -10,54 +14,55 @@ import {
   TEAM_MEMBERS,
 } from '../credits';
 import type { Navigation } from '../navigation';
+import {
+  DEFAULT_SETTINGS_TAB,
+  SETTINGS_TABS,
+  mandorSays,
+} from '../settingsTabs';
+import type { SettingsTabId } from '../settingsTabs';
+import { UI_ASSETS } from '../uiAssets';
 
 interface SettingsScreenProps {
   navigation: Navigation;
   settings: Readonly<SettingsData>;
   onChange: (patch: SettingsPatch) => void;
   onResetProgress: () => void;
-  /** Papan skor lokal; bagian Papan Skor hanya tampil bila diberikan. */
+  /** Papan skor lokal; isi tab Papan Skor hanya tampil bila diberikan. */
   scoreboard?: Readonly<ScoreboardData>;
   scoreboardLevels?: readonly { id: string; title: string }[];
 }
 
+const ID = 'settings';
+
+/** Latar dengan lapisan gelap agar papan lebih menonjol. */
+const BACKGROUND = `linear-gradient(rgba(5, 15, 32, 0.45), rgba(5, 15, 32, 0.45)), url(${UI_ASSETS.catatanBackground})`;
+
 const FOCUS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sun-400';
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900';
 
-interface ToggleRowProps {
-  label: string;
-  hint: string;
-  checked: boolean;
-  onToggle: () => void;
-}
+const NOTE_BUTTON = `rounded-lg border-[3px] border-navy-900 px-3 py-1.5 text-sm font-black shadow-[3px_3px_0_#0b1f3a] ${FOCUS}`;
 
-/** Sakelar berlabel; status tertulis ("Aktif"/"Mati"), bukan hanya warna. */
-function ToggleRow({ label, hint, checked, onToggle }: ToggleRowProps) {
+function WarningIcon() {
   return (
-    <div className="flex items-center justify-between gap-6 rounded-xl border border-navy-500 bg-navy-800 px-4 py-3">
-      <div>
-        <p className="font-bold">{label}</p>
-        <p className="text-sm text-ink-300">{hint}</p>
-      </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={label}
-        onClick={onToggle}
-        className={`w-24 shrink-0 rounded-lg px-4 py-2 font-bold ${FOCUS} ${
-          checked
-            ? 'bg-sun-400 text-navy-900'
-            : 'border border-navy-500 bg-navy-900 text-ink-100'
-        }`}
-      >
-        {checked ? 'Aktif' : 'Mati'}
-      </button>
-    </div>
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-8 w-8">
+      <path
+        d="M12 3 2 21h20L12 3z"
+        fill="#e53935"
+        stroke="#0b1f3a"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 10v5M12 17.6v.4"
+        stroke="#fff"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
-/** Layar Pengaturan dan Kredit (S10). */
+/** Layar Pengaturan dan Kredit (S10), bergaya buku catatan Pak Mandor. */
 export function SettingsScreen({
   navigation,
   settings,
@@ -66,152 +71,174 @@ export function SettingsScreen({
   scoreboard,
   scoreboardLevels = [],
 }: SettingsScreenProps) {
+  const [tab, setTab] = useState<SettingsTabId>(DEFAULT_SETTINGS_TAB);
   const [confirming, setConfirming] = useState(false);
   const [resetDone, setResetDone] = useState(false);
   const volumePercent = Math.round(settings.volume * 100);
 
   return (
-    <main className="h-screen overflow-y-auto bg-linear-to-br from-navy-900 to-navy-700 px-12 py-8 text-ink-100">
-      <div className="mx-auto flex max-w-3xl flex-col gap-8">
-        <header className="flex items-center justify-between gap-6">
-          <button
-            type="button"
-            onClick={navigation.back}
-            className={`rounded-lg border border-navy-500 bg-navy-800 px-4 py-2 font-semibold hover:bg-navy-700 ${FOCUS}`}
-          >
-            Kembali
-          </button>
-          <h1 className="text-4xl font-black text-sun-400">Pengaturan</h1>
-          <span aria-hidden="true" className="w-24" />
-        </header>
+    <main
+      className="relative flex h-screen flex-col items-center gap-3 overflow-hidden bg-navy-900 bg-cover bg-center px-4 py-4 text-navy-900"
+      style={{ backgroundImage: BACKGROUND }}
+    >
+      <button
+        type="button"
+        onClick={navigation.back}
+        className={`absolute left-3 top-3 z-10 rounded-lg border-[3px] border-navy-900 bg-navy-800 px-4 py-2 font-semibold text-ink-100 hover:bg-navy-700 ${FOCUS}`}
+      >
+        Kembali
+      </button>
+      <h1 className="-rotate-1 border-[3px] border-navy-900 bg-sun-400 px-8 py-1 text-3xl font-black shadow-[4px_4px_0_#0b1f3a]">
+        Pengaturan
+      </h1>
 
-        <section className="flex flex-col gap-3" aria-label="Pengaturan umum">
-          <div className="rounded-xl border border-navy-500 bg-navy-800 px-4 py-3">
-            <label htmlFor="settings-volume" className="font-bold">
-              Volume suara
-            </label>
-            <div className="mt-2 flex items-center gap-4">
-              <input
-                id="settings-volume"
-                type="range"
-                min={0}
-                max={100}
-                step={5}
-                value={volumePercent}
-                onChange={(event) =>
-                  onChange({ volume: Number(event.target.value) / 100 })
-                }
-                className={`flex-1 accent-sun-400 ${FOCUS}`}
-              />
-              <span className="w-12 text-right font-bold">
-                {volumePercent}%
-              </span>
-            </div>
-          </div>
+      <CatatanBoard
+        idPrefix={ID}
+        tabs={SETTINGS_TABS}
+        active={tab}
+        onSelect={setTab}
+        tabsLabel="Bagian pengaturan"
+        bubble={mandorSays(tab, volumePercent)}
+      >
+        <CatatanPanel idPrefix={ID} tabId="umum" active={tab === 'umum'}>
+          <div className="flex gap-6 pt-1">
+            <section
+              className="flex min-w-0 flex-1 flex-col"
+              aria-label="Pengaturan umum"
+            >
+              <ComicRow icon="speaker" label="Volume" htmlFor="settings-volume">
+                <input
+                  id="settings-volume"
+                  aria-label="Volume suara"
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={volumePercent}
+                  onChange={(event) =>
+                    onChange({ volume: Number(event.target.value) / 100 })
+                  }
+                  className="comic-range min-w-0 flex-1"
+                  style={{ '--fill': `${volumePercent}%` } as CSSProperties}
+                />
+                <span className="w-14 text-right text-lg font-black">
+                  {volumePercent}%
+                </span>
+              </ComicRow>
+              <ComicRow
+                icon="gamepad"
+                label="Mode demo"
+                hint="Buka semua level untuk dosen dan penguji."
+              >
+                <ComicToggle
+                  label="Buka semua level (mode demo)"
+                  checked={settings.demoMode}
+                  onToggle={() => onChange({ demoMode: !settings.demoMode })}
+                  reduceMotion={settings.reduceMotion}
+                />
+              </ComicRow>
+            </section>
 
-          <ToggleRow
-            label="Kurangi animasi"
-            hint="Mematikan efek berlebihan; tidak mengubah hasil simulasi."
-            checked={settings.reduceMotion}
-            onToggle={() => onChange({ reduceMotion: !settings.reduceMotion })}
-          />
-          <ToggleRow
-            label="Buka semua level (mode demo)"
-            hint="Untuk dosen dan penguji agar bisa melihat seluruh isi game."
-            checked={settings.demoMode}
-            onToggle={() => onChange({ demoMode: !settings.demoMode })}
-          />
-        </section>
-
-        <section
-          className="flex flex-col gap-3 rounded-xl border border-navy-500 bg-navy-800 px-4 py-3"
-          aria-label="Reset progres"
-        >
-          <h2 className="font-bold">Reset progres</h2>
-          <p className="text-sm text-ink-300">
-            Menghapus semua bintang dan level yang sudah selesai. Tidak bisa
-            dibatalkan.
-          </p>
-          {confirming ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="font-semibold text-ember-500">
-                Yakin hapus semua progres?
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  onResetProgress();
-                  setConfirming(false);
-                  setResetDone(true);
-                }}
-                className={`rounded-lg bg-ember-500 px-4 py-2 font-bold text-navy-900 ${FOCUS}`}
-              >
-                Ya, hapus
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirming(false)}
-                className={`rounded-lg border border-navy-500 bg-navy-900 px-4 py-2 font-bold ${FOCUS}`}
-              >
-                Batal
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setResetDone(false);
-                  setConfirming(true);
-                }}
-                className={`rounded-lg border border-ember-500 bg-navy-900 px-4 py-2 font-bold text-ember-500 ${FOCUS}`}
-              >
+            <StickyNote label="Reset progres">
+              <WarningIcon />
+              <h2 className="border-b-2 border-navy-900 px-2 text-xl font-black uppercase leading-tight">
                 Hapus Progres
-              </button>
+              </h2>
+              {confirming ? (
+                <>
+                  <p className="text-sm font-black">
+                    Yakin hapus semua progres?
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onResetProgress();
+                        setConfirming(false);
+                        setResetDone(true);
+                      }}
+                      className={`${NOTE_BUTTON} bg-[#d0312d] text-white`}
+                    >
+                      Ya, hapus
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirming(false)}
+                      className={`${NOTE_BUTTON} bg-white`}
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-bold leading-snug">
+                    Semua progres akan dihapus! Tidak bisa dibatalkan.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetDone(false);
+                      setConfirming(true);
+                    }}
+                    className={`${NOTE_BUTTON} bg-[#d0312d] text-white`}
+                  >
+                    Hapus Sekarang
+                  </button>
+                </>
+              )}
               {resetDone && (
-                <p role="status" className="text-sm font-semibold text-sun-400">
+                <p role="status" className="text-sm font-black">
                   Progres dihapus.
                 </p>
               )}
+            </StickyNote>
+          </div>
+        </CatatanPanel>
+
+        <CatatanPanel idPrefix={ID} tabId="skor" active={tab === 'skor'}>
+          {scoreboard !== undefined ? (
+            <div className="mt-2 rounded-xl border-[3px] border-navy-900 bg-navy-900 p-3 text-ink-100">
+              <ScoreboardPanel data={scoreboard} levels={scoreboardLevels} />
             </div>
+          ) : (
+            <p className="pt-2 font-semibold">Papan skor belum tersedia.</p>
           )}
-        </section>
+        </CatatanPanel>
 
-        {scoreboard !== undefined && (
-          <ScoreboardPanel data={scoreboard} levels={scoreboardLevels} />
-        )}
-
-        <section className="flex flex-col gap-3" aria-label="Kredit">
-          <h2 className="text-2xl font-black text-sun-400">Kredit</h2>
-          <ul className="flex flex-col gap-2">
-            {ASSET_CREDITS.map((credit) => (
-              <li
-                key={credit.name}
-                className="rounded-xl border border-navy-500 bg-navy-800 px-4 py-2 text-sm"
-              >
-                <span className="font-bold">{credit.name}</span>
-                <span className="text-ink-300">
-                  {' '}
-                  · {credit.source} · {credit.license}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="text-sm">{ICON_NOTE}</p>
-          <p className="text-sm">{GENERATOR_NOTE}</p>
-          <div>
-            <h3 className="font-bold">Tim</h3>
-            <ul className="mt-1 list-disc pl-6 text-sm">
-              {TEAM_MEMBERS.map((member) => (
-                <li key={member}>{member}</li>
+        <CatatanPanel idPrefix={ID} tabId="kredit" active={tab === 'kredit'}>
+          <section className="flex flex-col gap-3 pt-2" aria-label="Kredit">
+            <h2 className="text-2xl font-black">Kredit</h2>
+            <ul className="flex flex-col gap-2">
+              {ASSET_CREDITS.map((credit) => (
+                <li
+                  key={credit.name}
+                  className="rounded-lg border-2 border-navy-900/40 bg-white/60 px-3 py-1.5 text-sm"
+                >
+                  <span className="font-bold">{credit.name}</span>
+                  <span className="text-navy-700">
+                    {' '}
+                    · {credit.source} · {credit.license}
+                  </span>
+                </li>
               ))}
             </ul>
-          </div>
-          <p className="text-sm text-ink-300">
-            Thread Factory: Pabrik Rebutan v{APP_VERSION}
-          </p>
-        </section>
-      </div>
+            <p className="text-sm">{ICON_NOTE}</p>
+            <p className="text-sm">{GENERATOR_NOTE}</p>
+            <div>
+              <h3 className="font-bold">Tim</h3>
+              <ul className="mt-1 list-disc pl-6 text-sm">
+                {TEAM_MEMBERS.map((member) => (
+                  <li key={member}>{member}</li>
+                ))}
+              </ul>
+            </div>
+            <p className="text-sm text-navy-700">
+              Thread Factory: Pabrik Rebutan v{APP_VERSION}
+            </p>
+          </section>
+        </CatatanPanel>
+      </CatatanBoard>
     </main>
   );
 }

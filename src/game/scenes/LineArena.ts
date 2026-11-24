@@ -82,7 +82,13 @@ export class LineArena {
     this.capacity = level.areas?.[layout.hall.id] ?? 0;
 
     this.rect(scene, layout.hall.zone, HALL.dropReady, 0.06, DEPTH.floor + 1);
-    this.rect(scene, layout.storage, HALL.zoneFill, HALL.zoneFillAlpha, DEPTH.track);
+    this.rect(
+      scene,
+      layout.storage,
+      HALL.zoneFill,
+      HALL.zoneFillAlpha,
+      DEPTH.track,
+    );
     this.text(
       scene,
       layout.storage.x + layout.storage.width / 2,
@@ -118,7 +124,13 @@ export class LineArena {
         );
         this.text(scene, x, lane.y, lineCheckpointLabel(instruction), 9);
       });
-      const frame = this.rect(scene, lane.label, HALL.zoneFill, 0.8, DEPTH.slot);
+      const frame = this.rect(
+        scene,
+        lane.label,
+        HALL.zoneFill,
+        0.8,
+        DEPTH.slot,
+      );
       const text = this.text(scene, lane.label.x + 6, lane.label.y + 4, '', 10)
         .setOrigin(0, 0)
         .setWordWrapWidth(lane.label.width - 10);
@@ -154,13 +166,26 @@ export class LineArena {
       const mid = (entry.x + exit.x) / 2 + GATE_OFFSET[kind];
       this.track(
         scene.add
-          .rectangle(mid, bandCenter, exit.x - entry.x, bandHeight, 0xffffff, 0.08)
+          .rectangle(
+            mid,
+            bandCenter,
+            exit.x - entry.x,
+            bandHeight,
+            0xffffff,
+            0.08,
+          )
           .setDepth(DEPTH.segment),
       );
       for (const gate of [entry, exit]) {
         const bar = this.track(
           scene.add
-            .rectangle(gate.x + GATE_OFFSET[kind], bandCenter, 6, bandHeight, DOOR_STYLE.free.color)
+            .rectangle(
+              gate.x + GATE_OFFSET[kind],
+              bandCenter,
+              6,
+              bandHeight,
+              DOOR_STYLE.free.color,
+            )
             .setDepth(DEPTH.gate),
         );
         this.gateBars.push({ gate, bar });
@@ -169,21 +194,49 @@ export class LineArena {
 
     // Papan Stok dan tautan READ/WRITE.
     const board = layout.board;
-    this.rect(scene, board, BOARD_FILL, 1, DEPTH.slot).setStrokeStyle(3, CHECKPOINT_STROKE);
-    this.boardText = this.text(scene, board.x + board.width / 2, board.y + board.height / 2, '', 20);
+    this.rect(scene, board, BOARD_FILL, 1, DEPTH.slot).setStrokeStyle(
+      3,
+      CHECKPOINT_STROKE,
+    );
+    this.boardText = this.text(
+      scene,
+      board.x + board.width / 2,
+      board.y + board.height / 2,
+      '',
+      20,
+    );
     for (const link of layout.boardLinks) {
       const x = layout.checkpointX[link.checkpoint];
       if (x === undefined) continue;
       this.track(
         scene.add
-          .rectangle(x, (bandBottom + board.y) / 2, 3, board.y - bandBottom, BOARD_LINK, 0.7)
+          .rectangle(
+            x,
+            (bandBottom + board.y) / 2,
+            3,
+            board.y - bandBottom,
+            BOARD_LINK,
+            0.7,
+          )
           .setDepth(DEPTH.track),
       );
-      this.text(scene, x + 22, bandBottom + 10, link.direction === 'read' ? 'baca' : 'tulis', 10);
+      this.text(
+        scene,
+        x + 22,
+        bandBottom + 10,
+        link.direction === 'read' ? 'baca' : 'tulis',
+        10,
+      );
     }
 
     // Panel status mutex dan aula.
-    this.mutexPanel = this.rect(scene, layout.mutexPanel, COLORS.tile, 1, DEPTH.slot);
+    this.mutexPanel = this.rect(
+      scene,
+      layout.mutexPanel,
+      COLORS.tile,
+      1,
+      DEPTH.slot,
+    );
     this.mutexText = this.text(
       scene,
       layout.mutexPanel.x + layout.mutexPanel.width / 2,
@@ -191,7 +244,13 @@ export class LineArena {
       '',
       11,
     ).setWordWrapWidth(layout.mutexPanel.width - 10);
-    this.areaPanel = this.rect(scene, layout.areaPanel, COLORS.tile, 1, DEPTH.slot);
+    this.areaPanel = this.rect(
+      scene,
+      layout.areaPanel,
+      COLORS.tile,
+      1,
+      DEPTH.slot,
+    );
     this.areaText = this.text(
       scene,
       layout.areaPanel.x + layout.areaPanel.width / 2,
@@ -203,7 +262,13 @@ export class LineArena {
     // Kartu Pengepak: lampu, status, baterai.
     const card = layout.packer.card;
     this.rect(scene, card, HALL.zoneFill, HALL.zoneFillAlpha, DEPTH.track);
-    this.text(scene, card.x + 70, card.y + 10, 'Pengepak · menunggu sinyal', 10);
+    this.text(
+      scene,
+      card.x + 70,
+      card.y + 10,
+      'Pengepak · menunggu sinyal',
+      10,
+    );
     const { lamp, battery } = layout.packer;
     this.lamp = this.track(
       scene.add
@@ -211,8 +276,17 @@ export class LineArena {
         .setStrokeStyle(2, DESK.lampStroke)
         .setDepth(DEPTH.gate),
     );
-    this.lampText = this.text(scene, lamp.x + 18, lamp.y, '', 10).setOrigin(0, 0.5);
-    this.packerText = this.text(scene, card.x + card.width - 70, lamp.y, '', 10);
+    this.lampText = this.text(scene, lamp.x + 18, lamp.y, '', 10).setOrigin(
+      0,
+      0.5,
+    );
+    this.packerText = this.text(
+      scene,
+      card.x + card.width - 70,
+      lamp.y,
+      '',
+      10,
+    );
     this.battery = new BatteryMeter(scene, battery.x, battery.y);
 
     this.update(snapshot, tools);
@@ -224,7 +298,9 @@ export class LineArena {
     events: readonly SimEvent[] = [],
     durationMs: number = this.durationMs,
   ): void {
-    if (events.some((e) => e.type === 'INSTRUCTION' && e.op === 'COND_SIGNAL')) {
+    if (
+      events.some((e) => e.type === 'INSTRUCTION' && e.op === 'COND_SIGNAL')
+    ) {
       this.signaled = true;
     }
     const names = new Map(snapshot.threads.map((t) => [t.id, t.label]));
@@ -239,12 +315,18 @@ export class LineArena {
       if (card !== undefined) {
         card.frame.setStrokeStyle(2, STATE_STYLE[thread.state].color);
         card.text.setText(
-          [thread.label, statusLabel(thread), robotDetail(thread, card.totalRounds)].join('\n'),
+          [
+            thread.label,
+            statusLabel(thread),
+            robotDetail(thread, card.totalRounds),
+          ].join('\n'),
         );
       }
     });
 
-    const mutex = snapshot.mutexes.find((m) => m.id === this.layout.tools.mutexId);
+    const mutex = snapshot.mutexes.find(
+      (m) => m.id === this.layout.tools.mutexId,
+    );
     const locked = mutex?.owner !== null && mutex?.owner !== undefined;
     const lockStyle = locked ? DOOR_STYLE.locked : DOOR_STYLE.free;
     this.mutexPanel.setStrokeStyle(3, lockStyle.color);
@@ -255,15 +337,24 @@ export class LineArena {
     }
     this.mutexText.setText(mutexLines.join('\n'));
 
-    const semaphore = snapshot.semaphores.find((s) => s.id === this.layout.tools.semaphoreId);
+    const semaphore = snapshot.semaphores.find(
+      (s) => s.id === this.layout.tools.semaphoreId,
+    );
     const gated = tools.some((tool) => tool.kind === 'semaphore');
     const occupancy = snapshot.areaOccupancy[this.layout.hall.id] ?? 0;
     const overload = occupancy > this.capacity;
-    this.areaPanel.setStrokeStyle(3, overload ? HALL.overloadColor : HALL.zoneStroke);
+    this.areaPanel.setStrokeStyle(
+      3,
+      overload ? HALL.overloadColor : HALL.zoneStroke,
+    );
     this.areaText.setText(
       [
-        overload ? `BENTROK · ${occupancy}/${this.capacity}` : `Aula Mesin · ${occupancy}/${this.capacity}`,
-        gated ? `Kartu sisa ${semaphore?.value ?? 0}` : 'Kartu Akses belum dipasang',
+        overload
+          ? `BENTROK · ${occupancy}/${this.capacity}`
+          : `Aula Mesin · ${occupancy}/${this.capacity}`,
+        gated
+          ? `Kartu sisa ${semaphore?.value ?? 0}`
+          : 'Kartu Akses belum dipasang',
       ].join('\n'),
     );
 
@@ -278,12 +369,17 @@ export class LineArena {
     }
 
     this.boardText.setText(
-      ['Papan Stok', ...Object.entries(snapshot.sharedVars).map(([k, v]) => `${k}: ${v}`)].join('\n'),
+      [
+        'Papan Stok',
+        ...Object.entries(snapshot.sharedVars).map(([k, v]) => `${k}: ${v}`),
+      ].join('\n'),
     );
 
     this.lamp.setFillStyle(this.signaled ? DESK.lampGreen : DESK.lampRed);
     this.lampText.setText(this.signaled ? 'HIJAU' : 'MERAH');
-    const packer = snapshot.threads.find((t) => t.id === this.layout.packer.threadId);
+    const packer = snapshot.threads.find(
+      (t) => t.id === this.layout.packer.threadId,
+    );
     if (packer !== undefined) {
       const sleeping =
         packer.state === 'WAITING' &&
@@ -317,7 +413,14 @@ export class LineArena {
   ): GameObjects.Rectangle {
     return this.track(
       scene.add
-        .rectangle(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height, color, alpha)
+        .rectangle(
+          rect.x + rect.width / 2,
+          rect.y + rect.height / 2,
+          rect.width,
+          rect.height,
+          color,
+          alpha,
+        )
         .setStrokeStyle(HALL.zoneStrokeWidth, HALL.zoneStroke)
         .setDepth(depth),
     );
@@ -332,7 +435,11 @@ export class LineArena {
   ): GameObjects.Text {
     return this.track(
       scene.add
-        .text(x, y, content, { ...TEXT_STYLE, fontSize: `${size}px`, color: COLORS.text })
+        .text(x, y, content, {
+          ...TEXT_STYLE,
+          fontSize: `${size}px`,
+          color: COLORS.text,
+        })
         .setOrigin(0.5)
         .setDepth(DEPTH.robotLabel),
     );

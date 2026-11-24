@@ -29,7 +29,7 @@ export interface RobotViewOptions {
   totalRounds: number;
   /** Nomor frame sprite robot pada spritesheet TINY_FACTORY (lihat ROBOT_FRAMES). */
   spriteFrame: number;
-    /** Label satu baris saja (arena ramai seperti Level 1-5); detail ada di kartu stasiun. */
+  /** Label satu baris saja (arena ramai seperti Level 1-5); detail ada di kartu stasiun. */
   compactLabel?: boolean;
 }
 
@@ -119,7 +119,7 @@ export class RobotView {
     this.box.setFillStyle(style.color);
     this.applyFx(thread.state);
 
-       this.label.setText(
+    this.label.setText(
       robotLabelLines(
         thread,
         totalRounds,

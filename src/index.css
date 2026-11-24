@@ -96,3 +96,51 @@
     opacity: 1;
   }
 }
+
+/* Slider volume bergaya komik (layar Pengaturan). Isi kuning mengikuti --fill. */
+.comic-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1.5rem;
+  border: 3px solid #0b1f3a;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    #ffc93c var(--fill, 0%),
+    #4a5160 var(--fill, 0%)
+  );
+  box-shadow: 3px 3px 0 #0b1f3a;
+}
+.comic-range:focus-visible {
+  outline: 2px solid #0b1f3a;
+  outline-offset: 3px;
+}
+.comic-range::-webkit-slider-runnable-track {
+  height: 18px;
+  background: transparent;
+}
+.comic-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  margin-top: -5px;
+  border: 3px solid #0b1f3a;
+  border-radius: 9999px;
+  background: #f5b50f;
+  cursor: pointer;
+}
+.comic-range::-moz-range-track {
+  height: 18px;
+  background: transparent;
+}
+.comic-range::-moz-range-thumb {
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #0b1f3a;
+  border-radius: 9999px;
+  background: #f5b50f;
+  cursor: pointer;
+}

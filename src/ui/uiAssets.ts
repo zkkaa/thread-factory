@@ -14,4 +14,9 @@ export const UI_ASSETS = {
   pedestal: 'assets/ui/pedestal.png',
   /** Robot kecil pemandu di Peta Level, PNG transparan. */
   robotGuide: 'assets/ui/robot-guide.png',
+  /** Papan catatan (Pengaturan, Panduan): latar, papan klip kosong, Pak Mandor mengintip. */
+  catatanBackground: 'assets/ui/catatan/bg-catatan.jpg',
+  catatanBoard: 'assets/ui/catatan/papan-klip.png',
+  mandorIntip: 'assets/ui/catatan/mandor-intip.png',
+  catatanKuning: 'assets/ui/catatan/catatan-kuning.png',
 } as const;

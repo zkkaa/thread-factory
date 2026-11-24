@@ -73,9 +73,9 @@ describe('rankEntries', () => {
 describe('ScoreboardStore.record', () => {
   it('mencatat hasil dan mengembalikan true', () => {
     const { store } = makeStore();
-    expect(store.record('1-1', 10, { stars: 2, ticks: 40, waitTicks: 12 })).toBe(
-      true,
-    );
+    expect(
+      store.record('1-1', 10, { stars: 2, ticks: 40, waitTicks: 12 }),
+    ).toBe(true);
     const top = store.top('1-1', 10);
     expect(top).toHaveLength(1);
     expect(top[0]).toMatchObject({ stars: 2, ticks: 40, waitTicks: 12 });

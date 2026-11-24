@@ -17,7 +17,12 @@ const DATA: ScoreboardData = {
       { stars: 1, ticks: 70, waitTicks: 30, date: '2026-11-15T08:00:00.000Z' },
     ],
     '1-1|5': [
-      { stars: null, ticks: 50, waitTicks: 12, date: '2026-11-14T08:00:00.000Z' },
+      {
+        stars: null,
+        ticks: 50,
+        waitTicks: 12,
+        date: '2026-11-14T08:00:00.000Z',
+      },
     ],
     '9-9|1': [
       { stars: 1, ticks: 1, waitTicks: 1, date: '2026-11-14T08:00:00.000Z' },

@@ -157,7 +157,13 @@ export class CombinedArena {
     );
     this.dropRing = this.track(
       scene.add
-        .circle(area.door.x, area.door.y, COMBINED.dropRadius, HALL.dropReady, 0)
+        .circle(
+          area.door.x,
+          area.door.y,
+          COMBINED.dropRadius,
+          HALL.dropReady,
+          0,
+        )
         .setStrokeStyle(HALL.dropStrokeWidth, HALL.dropReady)
         .setDepth(DEPTH.robotFx)
         .setVisible(false),

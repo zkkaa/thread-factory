@@ -61,9 +61,9 @@ export const level2_3: LevelDefinition = {
     },
     {
       text:
-    'Kalau semua teknisi mengambil kunci kirinya bersamaan, masing-masing menunggu kunci kanan yang dipegang tetangganya, dan tidak ada yang bisa maju. ' +
-    'Kalau mereka macet, kamu punya dua jalan: cegah macet dengan Kartu Akses di sekeliling pekerjaan, ' +
-    'atau biarkan macet lalu tekan "Rampas kunci" untuk memaksa satu teknisi melepas kuncinya (pekerjaannya diulang dari awal).',
+        'Kalau semua teknisi mengambil kunci kirinya bersamaan, masing-masing menunggu kunci kanan yang dipegang tetangganya, dan tidak ada yang bisa maju. ' +
+        'Kalau mereka macet, kamu punya dua jalan: cegah macet dengan Kartu Akses di sekeliling pekerjaan, ' +
+        'atau biarkan macet lalu tekan "Rampas kunci" untuk memaksa satu teknisi melepas kuncinya (pekerjaannya diulang dari awal).',
       mood: 'netral',
     },
   ],
@@ -83,11 +83,11 @@ export const level2_3: LevelDefinition = {
   ],
   explanation: {
     pass:
-    'Macet total (deadlock) terjadi kalau empat hal ini ada bersamaan: kunci hanya boleh dipegang satu orang, ' +
-    'orang yang sudah memegang kunci tetap menunggu kunci lain, kunci tidak bisa direbut paksa, ' +
-    'dan mereka saling menunggu melingkar (circular wait). ' +
-    'Dengan membatasi teknisi jadi 4, lingkaran tunggu putus karena selalu ada satu teknisi yang bisa mendapat dua kunci. ' +
-    'Merampas kunci memutus syarat "tidak bisa direbut", tetapi pekerjaan yang sudah berjalan harus diulang.',
+      'Macet total (deadlock) terjadi kalau empat hal ini ada bersamaan: kunci hanya boleh dipegang satu orang, ' +
+      'orang yang sudah memegang kunci tetap menunggu kunci lain, kunci tidak bisa direbut paksa, ' +
+      'dan mereka saling menunggu melingkar (circular wait). ' +
+      'Dengan membatasi teknisi jadi 4, lingkaran tunggu putus karena selalu ada satu teknisi yang bisa mendapat dua kunci. ' +
+      'Merampas kunci memutus syarat "tidak bisa direbut", tetapi pekerjaan yang sudah berjalan harus diulang.',
     fail: 'Semua teknisi memegang satu kunci dan menunggu kunci tetangganya: itu circular wait, jadi tidak ada yang bisa maju. Ini deadlock. Menunggu lebih lama tidak akan membantu; salah satu syarat deadlock harus diputus, misalnya dengan membatasi jumlah teknisi atau dengan merampas kunci.',
   },
   resultTitle: {

@@ -19,7 +19,13 @@ export interface ResultView {
   /** Utilisasi core untuk level multicore (null bila single core). */
   coreUtilization: string | null;
   /** Angka kunci untuk bar besar, mis. "Stok: 8 ≠ 10". Hanya untuk tampilan. */
-  keyFigure: { label: string; actual: string; target: string; match: boolean; display?: string; };
+  keyFigure: {
+    label: string;
+    actual: string;
+    target: string;
+    match: boolean;
+    display?: string;
+  };
 }
 
 const DEFAULT_TITLES = {
@@ -69,7 +75,8 @@ function batteryQuote(
   timingFail: boolean,
 ): string {
   if (!completed) return 'Simulasi berhenti sebelum semua robot selesai.';
-  if (ok) return `Pengepak tidur sampai lampu menyala, baterai masih ${percent}%.`;
+  if (ok)
+    return `Pengepak tidur sampai lampu menyala, baterai masih ${percent}%.`;
   if (timingFail) return 'Lampu menyala sebelum barang cukup.';
   if (busyWait > 0) {
     return `Mengecek ${busyWait} kali sia-sia, baterai tinggal ${percent}%.`;
@@ -176,11 +183,11 @@ export function deriveResultView(
     };
   } else if (timingFail) {
     keyFigure = {
-    label: 'Lampu',
-    actual: 'terlalu cepat',
-    target: 'tepat',
-    match: false,
-    display: 'Terlalu cepat',
+      label: 'Lampu',
+      actual: 'terlalu cepat',
+      target: 'tepat',
+      match: false,
+      display: 'Terlalu cepat',
     };
   } else if (battery) {
     keyFigure = {
@@ -206,15 +213,15 @@ export function deriveResultView(
   let quote: string;
   if (verdictMode) {
     quote = result.message;
-  }else if (area !== null) {
+  } else if (area !== null) {
     quote =
-    starQuote(level, result) ?? areaQuote(result.ok, area.name, overload);
-} else if (battery) {
+      starQuote(level, result) ?? areaQuote(result.ok, area.name, overload);
+  } else if (battery) {
     quote = batteryQuote(result.ok, completed, busyWait, percent, timingFail);
   } else if (result.ok) {
-  quote =
-    starQuote(level, result) ??
-    `Hasilnya ${actualText}, sesuai target ${target}.`;
+    quote =
+      starQuote(level, result) ??
+      `Hasilnya ${actualText}, sesuai target ${target}.`;
   } else {
     quote = `Seharusnya ${target}, hasilnya ${actualText}.`;
   }

@@ -38,11 +38,11 @@ export const level1_2: LevelDefinition = {
   ],
   hints: [
     'Jalankan tanpa pintu dulu. Karena ada dua core, kedua robot bisa membaca stok ' +
-    'hampir bersamaan. Lihat hasil akhirnya.',
+      'hampir bersamaan. Lihat hasil akhirnya.',
     'Pintu besar memang aman, tapi merakit (WORK) tidak menyentuh Papan Stok. ' +
       'Perlukah robot lain menunggu saat robot pertama hanya merakit?',
     'Pasang pintu masuk sebelum READ dan pintu keluar sesudah WRITE. Jadi satu ' +
-    'robot bisa merakit di luar sementara robot lain mengurus stok.',
+      'robot bisa merakit di luar sementara robot lain mengurus stok.',
   ],
   concepts: ['Ukuran kunci (granularitas lock)', 'Aman versus cepat'],
   explanation: {
@@ -99,8 +99,9 @@ export const level1_2: LevelDefinition = {
     stars: { fast: 45, lowWait: 0, fastest: 42 },
   },
   resultQuote: {
-  stars1: 'Datanya benar, tapi pabrik masih lambat. Coba pintu yang lebih kecil!',
-  stars2: 'Lumayan cepat! Masih ada pintu yang lebih pas.',
-  stars3: 'Sempurna! Pintunya hanya menutup bagian yang perlu.',
+    stars1:
+      'Datanya benar, tapi pabrik masih lambat. Coba pintu yang lebih kecil!',
+    stars2: 'Lumayan cepat! Masih ada pintu yang lebih pas.',
+    stars3: 'Sempurna! Pintunya hanya menutup bagian yang perlu.',
   },
 };

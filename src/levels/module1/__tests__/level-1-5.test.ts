@@ -126,7 +126,7 @@ describe('Level 1-5: alur A sampai E (T-094, T-095)', () => {
       console.log(`kartu ${value}: tick ${snapshot.tick}, tunggu ${totalWait}`);
     }
   });
-    it('bintang: kartu 2 mendapat 3 bintang, kartu 1 hanya 1 bintang', () => {
+  it('bintang: kartu 2 mendapat 3 bintang, kartu 1 hanya 1 bintang', () => {
     const two = play(full(2));
     expect(two.result.stars).toBe(3);
 
