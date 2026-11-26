@@ -153,6 +153,7 @@ export function AppShell({
       <ModeSelectScreen
         navigation={navigation}
         context={unlockContext}
+        reduceMotion={settings.reduceMotion}
         getLevelTitle={(levelId) => findLevelById(levelId)?.title}
       />
     );
