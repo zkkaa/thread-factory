@@ -5,6 +5,8 @@ import { createMemoryStorage, getBrowserStorage } from './progress/storage';
 import { AppShell } from './ui/AppShell';
 import { createBrowserAudioPlayer } from './ui/audio/audioPlayer';
 import { SoundContext } from './ui/audio/soundContext';
+import { useBootPreload } from './ui/hooks/useBootPreload';
+import { BootScreen } from './ui/screens/BootScreen';
 
 // Satu controller dan satu pasang store untuk seluruh aplikasi, dibuat di luar
 // komponen supaya tidak terbuat ulang saat React me-render (termasuk
@@ -17,6 +19,9 @@ const settingsStore = new SettingsStore(storage);
 const audio = createBrowserAudioPlayer();
 
 function App() {
+  const boot = useBootPreload();
+  if (!boot.ready) return <BootScreen progress={boot.progress} />;
+
   return (
     <SoundContext.Provider value={audio}>
       <AppShell
