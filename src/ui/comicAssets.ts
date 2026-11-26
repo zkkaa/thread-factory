@@ -1,6 +1,3 @@
-// Jalur aset, tema, dan kelas gaya untuk layar komik Sandbox dan Bandingkan.
-// Semua nama berkas ada di satu tempat agar mudah dicek oleh tes.
-
 const BASE_URL: string = import.meta.env.BASE_URL;
 
 export function assetUrl(path: string): string {
@@ -53,6 +50,19 @@ const TILTS = ['-rotate-2', 'rotate-1', '-rotate-1', 'rotate-2', '-rotate-1'];
 export function panelTilt(index: number): string {
   const n = TILTS.length;
   return TILTS[((index % n) + n) % n] ?? '';
+}
+
+// Jumlah kolom grid panel. Harus sama dengan kelas grid-cols-5 di ComicLevelBoard.
+export const GRID_COLUMNS = 5;
+
+// Grup setelah yang pertama (mis. Modul 2) yang tidak memenuhi satu baris
+// digeser satu kolom ke kanan. Kolom kosong di kirinya dipakai Pak Mandor.
+export function groupColumnOffset(
+  groupIndex: number,
+  itemCount: number,
+  columns: number = GRID_COLUMNS,
+): number {
+  return groupIndex > 0 && itemCount < columns ? 1 : 0;
 }
 
 export interface ComicTheme {

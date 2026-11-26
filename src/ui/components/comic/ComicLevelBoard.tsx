@@ -2,6 +2,7 @@ import {
   COMIC_EFFECTS,
   COMIC_SHADOW,
   TEXT_OUTLINE,
+  groupColumnOffset,
   type ComicTheme,
 } from '../../comicAssets';
 import { ComicImage } from './ComicImage';
@@ -73,24 +74,26 @@ export function ComicLevelBoard({
     <>
       <ComicBackdrop background={theme.background} />
       <div className="relative z-10 flex flex-1 gap-6">
-        <aside className="flex w-56 shrink-0 flex-col justify-end gap-3 self-stretch">
+        {/* Gelembung ada di kolom kiri; gambar Mandor boleh melebar ke kanan
+            sampai ke kolom kosong di baris Modul 2 (kartunya bergeser). */}
+        <aside className="relative z-0 flex w-56 shrink-0 flex-col justify-end gap-3 self-stretch">
           <p
             className={`relative rounded-3xl border-[3px] border-navy-900 bg-cream-50 px-4 py-3 text-sm font-bold leading-snug text-navy-900 ${COMIC_SHADOW.md}`}
           >
             {theme.bubble}
             <span
               aria-hidden="true"
-              className="absolute -bottom-2.5 left-10 h-4 w-4 rotate-45 border-b-[3px] border-r-[3px] border-navy-900 bg-cream-50"
+              className="absolute -bottom-2.5 right-10 h-4 w-4 rotate-45 border-b-[3px] border-r-[3px] border-navy-900 bg-cream-50"
             />
           </p>
           <ComicImage
             src={theme.mandor}
             alt="Pak Mandor"
-            className="-mb-6 max-h-[46vh] w-full object-contain object-bottom"
+            className="pointer-events-none -mb-6 max-h-[42vh] w-[clamp(22rem,32vw,34rem)] max-w-none object-contain object-bottom"
           />
         </aside>
 
-        <div className="flex flex-1 flex-col gap-5">
+        <div className="relative z-10 flex flex-1 flex-col gap-5">
           <div className="flex items-center gap-4">
             <h1
               className={`-skew-x-6 border-[3px] border-navy-900 px-6 py-1.5 ${theme.accent} ${COMIC_SHADOW.lg}`}
@@ -113,7 +116,7 @@ export function ComicLevelBoard({
             aria-label={`Mode ${theme.title}`}
             className="flex flex-col gap-6"
           >
-            {groups.map((group) => (
+            {groups.map((group, groupIndex) => (
               <section
                 key={group.key}
                 aria-label={group.heading}
@@ -127,6 +130,14 @@ export function ComicLevelBoard({
                   </span>
                 </h2>
                 <div className="grid grid-cols-5 gap-5">
+                  {Array.from(
+                    {
+                      length: groupColumnOffset(groupIndex, group.items.length),
+                    },
+                    (_, i) => (
+                      <div key={`gap-${i}`} aria-hidden="true" />
+                    ),
+                  )}
                   {group.items.map((item, index) => (
                     <ComicPanel
                       key={item.levelId}
