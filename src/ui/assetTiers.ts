@@ -82,6 +82,5 @@ export const TIER_BACKGROUND: readonly string[] = [
 /** Sengaja tidak dimuat lebih awal (belum dipakai kode). */
 export const NOT_PRELOADED: readonly string[] = [
   'ui/fx-komik.png',
-  'ui/komik/efek/burst-kuning.png',
   'ui/komik/efek/burst-oranye.png',
 ];
