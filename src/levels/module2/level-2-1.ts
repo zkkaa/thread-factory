@@ -58,23 +58,26 @@ export const level2_1: LevelDefinition = {
     {
       mood: 'netral',
       text:
-        'Selamat datang di ban berjalan, Mandor! Dua perakit menaruh barang di satu ujung ban, ' +
-        'dua pengepak mengambilnya di ujung lain. Ban ini hanya muat 3 barang, ' +
+      'Selamat datang di Module 2, Mandor! Dua perakit menaruh barang di satu Rak Penyimpanan, ' +
+        'dua pengepak mengambilnya di ujung lain. Rak penyimpanan ini hanya muat 3 barang, ' +
         'sedangkan total ada 8 barang yang harus sampai ke pengepak.',
     },
     {
       mood: 'sedih',
       text:
-        'Saat ini belum ada aturan, jadi terjadi kekacauan. Kalau perakit terlalu cepat, ban penuh ' +
-        'dan barang jatuh. Kalau ban masih kosong, pengepak meraih angin. ' +
-        'Misimu: semua 8 barang sampai tanpa ada yang jatuh atau terambil dari ban kosong.',
+        'Sekarang belum ada aturan, jadi kacau. Pengepak bisa meraih rak penyimpanan yang kosong ' +
+        '(underflow). Perakit yang terlalu cepat membuat rak penyimpanan penuh dan barang jatuh ' +
+        '(overflow). Misimu: semua 8 barang sampai ke pengepak tanpa ada yang jatuh ' +
+        'atau diambil saat rak kosong. Pada seed 10, bintang 2 jika selesai dalam 24 ' +
+        'tick, dan bintang 3 jika total waktu tunggu semua robot maksimal 12 tick.',
     },
     {
       mood: 'berpikir',
       text:
-        'Di toolbox ada dua penjaga. Penjaga Slot menghitung ruang kosong di ban, dan membuat ' +
-        'perakit menunggu kalau ban penuh. Penjaga Barang menghitung barang yang siap diambil, ' +
-        'dan membuat pengepak menunggu kalau ban kosong. Pasang keduanya, lalu tekan Run!',
+        'Alatmu dua penghitung, seperti papan "tempat kosong" dan "barang siap" di ' +
+        'gudang. Penjaga Slot untuk perakit: kalau tidak ada tempat kosong, tunggu. ' +
+        'Penjaga Barang untuk pengepak: kalau belum ada barang, tunggu. Aktifkan ' +
+        'keduanya, lalu tekan Run.',
     },
   ],
   hints: [

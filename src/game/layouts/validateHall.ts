@@ -1,156 +1,92 @@
 import type { LevelDefinition } from '../../levels/types';
-import { ARENA, HALL, HUD_SAFE, TOKEN_PANEL } from '../theme';
-import type { HallLayout, Point, Rect } from './types';
+import { ARENA, SLOT_STYLE } from '../theme';
+import type { HallLayout } from './hallLayoutTypes';
+import type { Point } from './types';
 
-const rectInArena = (rect: Rect): boolean =>
-  rect.x >= 0 &&
-  rect.y >= 0 &&
-  rect.x + rect.width <= ARENA.width &&
-  rect.y + rect.height <= ARENA.height;
+const inArena = (p: Point): boolean =>
+  p.x >= 0 && p.x <= ARENA.width && p.y >= 0 && p.y <= ARENA.height;
 
-/** Di dalam area yang tidak tertutup HUD (lihat HUD_SAFE di theme.ts). */
-const rectInSafe = (rect: Rect): boolean =>
-  rect.x >= HUD_SAFE.x &&
-  rect.y >= HUD_SAFE.y &&
-  rect.x + rect.width <= HUD_SAFE.x + HUD_SAFE.width &&
-  rect.y + rect.height <= HUD_SAFE.y + HUD_SAFE.height;
-
-const inRect = (p: Point, rect: Rect): boolean =>
-  p.x >= rect.x &&
-  p.x <= rect.x + rect.width &&
-  p.y >= rect.y &&
-  p.y <= rect.y + rect.height;
-
-const overlaps = (a: Rect, b: Rect): boolean =>
-  a.x < b.x + b.width &&
-  b.x < a.x + a.width &&
-  a.y < b.y + b.height &&
-  b.y < a.y + a.height;
-
-/** Jarak terkecil antara dua titik mana pun (Infinity bila titiknya kurang dari dua). */
-function smallestGap(points: readonly Point[]): number {
-  let smallest = Infinity;
-  for (let i = 0; i < points.length; i += 1) {
-    for (let j = i + 1; j < points.length; j += 1) {
-      const a = points[i];
-      const b = points[j];
-      if (a === undefined || b === undefined) continue;
-      smallest = Math.min(smallest, Math.hypot(a.x - b.x, a.y - b.y));
-    }
-  }
-  return smallest;
-}
-
-/** Memeriksa layout aula terhadap level. Mengembalikan daftar masalah (kosong = sah). */
+/**
+ * Memeriksa layout aula terhadap level. Mengembalikan daftar masalah
+ * (kosong = sah). Dipanggil dari validateLayout bila layout.kind === 'hall'.
+ */
 export function validateHallLayout(
   layout: HallLayout,
   level: LevelDefinition,
 ): string[] {
   const errors: string[] = [];
   const robots = level.threads.length;
-  const program = level.threads[0]?.program ?? [];
+  const n = level.threads[0]?.program.length ?? 0;
 
   if (layout.id !== level.layoutId) {
     errors.push(`id layout "${layout.id}" != layoutId "${level.layoutId}"`);
   }
+  if (layout.slots.length !== n + 1) {
+    errors.push(`slot ${layout.slots.length}, seharusnya ${n + 1}`);
+  }
+  if (!layout.slots.every(inArena)) errors.push('slot di luar ARENA');
 
-  const capacity = level.areas?.[layout.area];
-  if (capacity === undefined) {
-    errors.push(`level tidak punya area "${layout.area}"`);
-  } else if (layout.machines.length !== capacity) {
-    errors.push(`mesin ${layout.machines.length}, kapasitas area ${capacity}`);
-  }
-
-  if (layout.workSpots.length !== robots) {
-    errors.push(`titik kerja ${layout.workSpots.length}, robot ${robots}`);
-  }
-  if (layout.doneSpots.length !== robots) {
-    errors.push(`titik selesai ${layout.doneSpots.length}, robot ${robots}`);
-  }
-  if (layout.queueSpots.length < robots) {
-    errors.push(`titik antrean ${layout.queueSpots.length}, minimal ${robots}`);
-  }
-  const seatsNeeded = robots - layout.machines.length;
-  if (layout.overflowSpots.length < seatsNeeded) {
-    errors.push(
-      `titik luapan ${layout.overflowSpots.length}, minimal ${seatsNeeded}`,
-    );
-  }
-
-  const first = program[layout.gate.start];
-  const last = program[layout.gate.end];
-  const gateOk =
-    first?.op === 'ENTER_AREA' &&
-    first.area === layout.area &&
-    last?.op === 'LEAVE_AREA' &&
-    last.area === layout.area;
-  if (!gateOk) {
-    errors.push('gerbang harus dari ENTER_AREA sampai LEAVE_AREA');
-  }
-
-  const zones: [string, Rect][] = [
-    ['kerja', layout.workZone],
-    ['antrean', layout.queueZone],
-    ['aula', layout.hall],
-    ['selesai', layout.doneZone],
-  ];
-  for (const [name, rect] of zones) {
-    if (!rectInArena(rect)) errors.push(`zona ${name} di luar ARENA`);
-    if (!rectInSafe(rect)) errors.push(`zona ${name} di luar area aman HUD`);
-  }
-  for (let i = 0; i < zones.length; i += 1) {
-    for (let j = i + 1; j < zones.length; j += 1) {
-      const a = zones[i];
-      const b = zones[j];
+  // Slot yang terlalu dekat membuat lepas-seret ambigu.
+  for (let i = 0; i < layout.slots.length; i++) {
+    for (let j = i + 1; j < layout.slots.length; j++) {
+      const a = layout.slots[i];
+      const b = layout.slots[j];
       if (a === undefined || b === undefined) continue;
-      if (overlaps(a[1], b[1])) {
-        errors.push(`zona ${a[0]} dan zona ${b[0]} bertumpuk`);
+      if (Math.hypot(a.x - b.x, a.y - b.y) < SLOT_STYLE.hitRadius) {
+        errors.push(`slot ${i} dan ${j} terlalu dekat`);
       }
     }
   }
 
-  const groups: [string, readonly Point[], Rect][] = [
-    ['kerja', layout.workSpots, layout.workZone],
-    ['antrean', layout.queueSpots, layout.queueZone],
-    ['mesin', layout.machines, layout.hall],
-    ['luapan', layout.overflowSpots, layout.hall],
-    ['selesai', layout.doneSpots, layout.doneZone],
-  ];
-  for (const [name, spots, rect] of groups) {
-    if (spots.some((p) => !inRect(p, rect))) {
-      errors.push(`titik ${name} di luar zonanya`);
+  if (layout.prepSpots.length < robots) {
+    errors.push(`prepSpots ${layout.prepSpots.length}, robot ${robots}`);
+  }
+  if (!layout.prepSpots.every(inArena)) errors.push('prepSpots di luar ARENA');
+
+  // Tiap robot harus ada di tepat satu lajur.
+  const seen = new Map<number, number>();
+  for (const lane of layout.lanes) {
+    for (const robot of lane.robots) {
+      seen.set(robot, (seen.get(robot) ?? 0) + 1);
+    }
+    if (lane.queueSpots.length < lane.robots.length) {
+      errors.push(
+        `lajur y=${lane.y}: antrean ${lane.queueSpots.length}, robot ${lane.robots.length}`,
+      );
+    }
+    if (!lane.queueSpots.every(inArena) || !inArena(lane.turn)) {
+      errors.push(`lajur y=${lane.y} di luar ARENA`);
+    }
+  }
+  for (let robot = 0; robot < robots; robot++) {
+    if (seen.get(robot) !== 1) {
+      errors.push(`robot ${robot} harus ada di tepat satu lajur`);
     }
   }
 
-  const gap = HALL.minSpotGap;
-  const spacing: [string, readonly Point[]][] = [
-    ['kerja', layout.workSpots],
-    ['antrean', layout.queueSpots],
-    ['aula', [...layout.machines, ...layout.overflowSpots]],
-    ['selesai', layout.doneSpots],
-  ];
-  for (const [name, spots] of spacing) {
-    if (smallestGap(spots) < gap) {
-      errors.push(`titik ${name} terlalu rapat (minimal ${gap} px)`);
-    }
+  const capacity = Object.values(level.areas ?? {})[0];
+  const needed = Math.max(robots, capacity ?? 0);
+  if (capacity === undefined) {
+    errors.push('level tidak punya area berkapasitas');
   }
-
-  const { door, hall } = layout;
-  if (door.x !== hall.x || door.y <= hall.y || door.y >= hall.y + hall.height) {
-    errors.push('pintu aula harus di tepi kiri aula');
+  if (layout.areaSpots.length < needed) {
+    errors.push(`areaSpots ${layout.areaSpots.length} < ${needed}`);
   }
+  if (!layout.areaSpots.every(inArena)) errors.push('areaSpots di luar ARENA');
 
-  const rack: Rect = {
-    x: layout.tokenRack.x - TOKEN_PANEL.width / 2,
-    y: layout.tokenRack.y - TOKEN_PANEL.height / 2,
-    width: TOKEN_PANEL.width,
-    height: TOKEN_PANEL.height,
-  };
-  if (!rectInArena(rack)) errors.push('rak kartu di luar ARENA');
-  if (!rectInSafe(rack)) errors.push('rak kartu di luar area aman HUD');
-  for (const [name, rect] of zones) {
-    if (overlaps(rack, rect)) errors.push(`rak kartu menimpa zona ${name}`);
+  for (const [name, point] of [
+    ['exitSpot', layout.exitSpot],
+    ['gate', layout.gate],
+    ['merge', layout.merge],
+  ] as const) {
+    if (!inArena(point)) errors.push(`${name} di luar ARENA`);
   }
-
+  const { x, y, width, height } = layout.areaBox;
+  if (!inArena({ x, y }) || !inArena({ x: x + width, y: y + height })) {
+    errors.push('areaBox di luar ARENA');
+  }
+  if (layout.art.gate.lamps.length !== 3) {
+    errors.push('gerbang butuh tepat 3 titik lampu');
+  }
   return errors;
 }
