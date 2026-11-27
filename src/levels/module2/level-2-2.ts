@@ -133,7 +133,7 @@ export const level2_2: LevelDefinition = {
   layoutId: '2-2',
   resultMode: 'verdict',
   threads: LEVEL_2_2_THREADS,
-  sharedVars: { [MARKER]: 0 },
+sharedVars: { [MARKER]: 0 },
   resources: [
     { kind: 'board', id: LEVEL_2_2_BOARD, label: 'Papan Pengumuman' },
     {
@@ -156,6 +156,6 @@ export const level2_2: LevelDefinition = {
     invariant,
     // Diukur dari kebijakan fair pada seed 1..50: tick maks 90, total tunggu
     // maks 162. Diberi margin kecil di atasnya.
-    stars: { fast: 100, lowWait: 170 },
+    stars: { fast: 92, lowWait: 165 },
   },
 };
