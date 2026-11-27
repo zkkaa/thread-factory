@@ -48,7 +48,8 @@ export const LEVEL_2_1_THREADS: ThreadDef[] = [
  * semaphore empty dan full.
  * Alat pemain: dua penjaga semaphorePair (Penjaga Slot dan Penjaga Barang),
  * lihat ui/beltTool.ts.
- * Kriteria bintang (goal.stars) tampil di chip Misi, jadi tidak ditulis di dialog.
+ * Kriteria bintang (goal.stars) tampil di chip Misi dan disebut di intro
+ * halaman 2; bila angkanya diubah, ubah keduanya.
  */
 export const level2_1: LevelDefinition = {
   id: '2-1',
@@ -58,33 +59,33 @@ export const level2_1: LevelDefinition = {
     {
       mood: 'netral',
       text:
-      'Selamat datang di Module 2, Mandor! Dua perakit menaruh barang di satu Rak Penyimpanan, ' +
-        'dua pengepak mengambilnya di ujung lain. Rak penyimpanan ini hanya muat 3 barang, ' +
-        'sedangkan total ada 8 barang yang harus sampai ke pengepak.',
+        'Selamat datang di Modul 2, Mandor! Dua perakit di kiri menaruh barang ke ban berjalan, ' +
+        'dan dua pengepak di kanan mengambilnya dari ujung satunya. ' +
+        'Ban ini hanya muat 3 barang, sedangkan total ada 8 barang yang harus sampai ke pengepak.',
     },
     {
       mood: 'sedih',
       text:
-        'Sekarang belum ada aturan, jadi kacau. Pengepak bisa meraih rak penyimpanan yang kosong ' +
-        '(underflow). Perakit yang terlalu cepat membuat rak penyimpanan penuh dan barang jatuh ' +
-        '(overflow). Misimu: semua 8 barang sampai ke pengepak tanpa ada yang jatuh ' +
-        'atau diambil saat rak kosong. Pada seed 10, bintang 2 jika selesai dalam 24 ' +
-        'tick, dan bintang 3 jika total waktu tunggu semua robot maksimal 12 tick.',
+        'Sekarang belum ada aturan, jadi kacau. Kalau perakit terlalu cepat, ban penuh dan barang ' +
+        'jatuh (overflow). Kalau pengepak terlalu cepat, tangannya meraih ban kosong (underflow). ' +
+        'Misimu: 8 barang sampai ke pengepak, tidak ada yang jatuh, dan tidak ada yang meraih kosong. ' +
+        'Pada seed 10, bintang 2 jika selesai dalam 24 tick, dan bintang 3 jika total waktu tunggu ' +
+        'semua robot maksimal 12 tick.',
     },
     {
       mood: 'berpikir',
       text:
-        'Alatmu dua penghitung, seperti papan "tempat kosong" dan "barang siap" di ' +
-        'gudang. Penjaga Slot untuk perakit: kalau tidak ada tempat kosong, tunggu. ' +
-        'Penjaga Barang untuk pengepak: kalau belum ada barang, tunggu. Aktifkan ' +
-        'keduanya, lalu tekan Run.',
+        'Alatmu dua penghitung, seperti papan di gudang. Penjaga Slot untuk perakit: menghitung ' +
+        'tempat kosong di ban, dan kalau sudah habis, perakit menunggu. Penjaga Barang untuk ' +
+        'pengepak: menghitung barang yang siap diambil, dan kalau nol, pengepak menunggu. ' +
+        'Pasang keduanya, lalu tekan Run.',
     },
   ],
   hints: [
-    'Ada dua masalah: barang jatuh karena ban penuh, dan pengepak mengambil dari ban kosong. Perhatikan kapan masing-masing robot seharusnya menunggu.',
-    'Perakit harus menunggu kalau ban penuh. Pengepak harus menunggu kalau belum ada barang yang bisa diambil.',
-    'Penjaga Slot mulai dari 3 karena ban punya 3 ruang kosong. Penjaga Barang mulai dari 0 karena belum ada barang di ban.',
-    'Perakit menunggu dulu sampai ada ruang kosong, baru menaruh barang. Lalu ia memberi kabar ke pengepak bahwa barang sudah ada. Pengepak melakukan hal yang sama, dengan arah sebaliknya. Urutannya tidak boleh terbalik.',
+    'Ada dua masalah: barang jatuh karena ban penuh, dan pengepak meraih ban kosong. Tanyakan pada tiap robot: kapan ia seharusnya berhenti dan menunggu?',
+    'Perakit harus menunggu kalau ban penuh. Pengepak harus menunggu kalau belum ada barang di ban.',
+    'Penjaga Slot mulai dari 3 karena ban punya 3 tempat kosong. Penjaga Barang mulai dari 0 karena ban masih kosong.',
+    'Perakit menunggu dulu sampai ada tempat kosong, baru menaruh barang, lalu memberi kabar bahwa barang sudah ada. Pengepak melakukan hal yang sama dengan arah sebaliknya: menunggu barang, mengambil, lalu memberi kabar bahwa ada tempat kosong. Urutannya tidak boleh terbalik.',
   ],
   concepts: [
     'Producer-Consumer',
@@ -94,16 +95,16 @@ export const level2_1: LevelDefinition = {
   ],
   explanation: {
     pass:
-      'Ban aman! Tidak ada barang yang jatuh (overflow) atau terambil dari ban kosong (underflow). ' +
-      'Penjaga Slot membuat perakit menunggu saat ban penuh, dan Penjaga Barang membuat pengepak ' +
-      'menunggu saat ban kosong. Robot yang menunggu berhenti dulu, tidak terus mengecek ban. ' +
-      'Alat penghitung seperti ini disebut semaphore, dan pola kerja perakit-pengepak ini disebut ' +
-      'producer-consumer. Catatan: di pabrik sungguhan, ban juga butuh mutex supaya tidak disentuh ' +
-      'dua robot sekaligus. Di simulasi ini menaruh dan mengambil selesai dalam satu tick, ' +
-      'jadi dua semaphore sudah cukup.',
+      'Ban aman! Tidak ada barang yang jatuh (overflow) dan tidak ada yang diambil dari ban kosong ' +
+      '(underflow). Penjaga Slot membuat perakit menunggu saat ban penuh, dan Penjaga Barang ' +
+      'membuat pengepak menunggu saat ban kosong. Robot yang menunggu benar-benar berhenti, ' +
+      'tidak sibuk mengecek ban. Penghitung seperti ini disebut semaphore, dan pola perakit ' +
+      'dan pengepak berbagi ban disebut producer-consumer. Catatan: di pabrik sungguhan ban juga ' +
+      'butuh mutex agar tidak disentuh dua robot sekaligus. Di simulasi ini menaruh dan mengambil ' +
+      'selesai dalam satu tick, jadi dua semaphore sudah cukup.',
     fail:
-      'Ban belum aman. Barang masih bisa jatuh karena ban penuh, atau pengepak masih meraih ban ' +
-      'kosong, atau robot saling menunggu sampai pekerjaan berhenti. Periksa apakah Penjaga Slot ' +
+      'Ban belum aman. Mungkin barang masih jatuh karena ban penuh, pengepak masih meraih ban ' +
+      'kosong, atau robot saling menunggu sampai pekerjaan berhenti. Cek apakah Penjaga Slot ' +
       'dan Penjaga Barang sudah terpasang dua-duanya.',
   },
   resultTitle: {

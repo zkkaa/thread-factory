@@ -409,6 +409,13 @@ export const BELT = {
   fallDistance: 70,
   minFxMs: 300,
   fxFontSize: '16px',
+    /** Panah arah aliran (producer ke consumer) di bawah slot. */
+  arrowColor: 0x93a4c8,
+  arrowAlpha: 0.6,
+  arrowSize: 7,
+  arrowGap: 36,
+  /** Jarak baris panah di atas area statistik. */
+  arrowInset: 8,
 } as const;
 // ---------------------------------------------------------------------------
 // Arena meja bundar (Level 2-3, T-101)

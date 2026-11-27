@@ -3,6 +3,7 @@ import { batteryLevel } from '../engine/metrics';
 import type { Snapshot } from '../engine/types';
 import type { LevelDefinition } from '../levels/types';
 import { areaOf } from './areaMode';
+import { totalTakenItems } from './beltInfo';
 
 export interface ResultView {
   ok: boolean;
@@ -57,6 +58,32 @@ function areaQuote(ok: boolean, areaName: string, overload: number): string {
 }
 
 /**
+ * Kalimat gelembung Pak Mandor untuk level berban (mis. Level 2-1). Penyebab
+ * kegagalan disebut menurut kasusnya: barang jatuh, tangan kosong, atau macet.
+ */
+function beltQuote(
+  ok: boolean,
+  completed: boolean,
+  taken: number,
+  total: number,
+  overflow: number,
+  underflow: number,
+): string {
+  if (ok) return `${total} barang sampai, tidak ada yang jatuh.`;
+  if (overflow > 0 && underflow > 0) {
+    return `Barang jatuh ${overflow} kali dan pengepak meraih ban kosong ${underflow} kali.`;
+  }
+  if (overflow > 0) {
+    return `Ada ${overflow} barang jatuh karena ban penuh.`;
+  }
+  if (underflow > 0) {
+    return `Pengepak meraih ban kosong ${underflow} kali.`;
+  }
+  const progress = `Baru ${taken} dari ${total} barang sampai.`;
+  return completed ? progress : `${progress} Robot saling menunggu.`;
+}
+
+/**
  * Level berbaterai = ada thread yang memakai busy waiting (SPIN_UNTIL) pada
  * program aslinya (mis. Level 1-4). Dibaca dari data, bukan dari id level.
  */
@@ -108,6 +135,13 @@ export function deriveResultView(
   const busyWait = result.metrics.busyWaitTicks;
   const percent = Math.round(batteryLevel(busyWait) * 100);
   const completed = snapshot.threads.every((t) => t.state === 'TERMINATED');
+  // Level berban (Level 2-1): variabel target hanya placeholder, jadi yang
+  // ditampilkan adalah isi ban dari snapshot.
+  const beltTotal = area === null && !battery ? totalTakenItems(level) : null;
+  const belt = beltTotal !== null;
+  const beltTaken = snapshot.buffers.reduce((sum, b) => sum + b.totalTaken, 0);
+  const overflow = snapshot.overflowCount;
+  const underflow = snapshot.underflowCount;
   // Level berbaterai yang gagal padahal selesai dan tanpa busy waiting:
   // masalahnya waktu sinyal (Pengepak dibangunkan sebelum barang cukup).
   const timingFail = battery && completed && !result.ok && busyWait === 0;
@@ -150,6 +184,13 @@ export function deriveResultView(
     cards = [
       { label: 'Tick boros (busy waiting)', value: String(busyWait) },
       { label: 'Baterai tersisa', value: `${percent}%` },
+      tickCard,
+      waitCard,
+    ];
+  } else if (belt) {
+    cards = [
+      { label: 'Barang jatuh (overflow)', value: String(overflow) },
+      { label: 'Tangan kosong (underflow)', value: String(underflow) },
       tickCard,
       waitCard,
     ];
@@ -201,6 +242,17 @@ export function deriveResultView(
           ? 'Habis'
           : `${percent}% (boros)`,
     };
+  } else if (belt) {
+    // match mengikuti hasil penilaian (bukan jumlah saja): 8 / 8 tetap merah
+    // bila ada barang jatuh. Bentuk "x / y" dipakai agar tidak ada simbol "="
+    // yang menyesatkan pada kasus itu.
+    keyFigure = {
+      label: 'Barang sampai',
+      actual: String(beltTaken),
+      target: String(beltTotal),
+      match: result.ok,
+      display: `${beltTaken} / ${beltTotal}`,
+    };
   } else {
     keyFigure = {
       label: capitalize(variable),
@@ -218,6 +270,17 @@ export function deriveResultView(
       starQuote(level, result) ?? areaQuote(result.ok, area.name, overload);
   } else if (battery) {
     quote = batteryQuote(result.ok, completed, busyWait, percent, timingFail);
+  } else if (belt) {
+    quote =
+      starQuote(level, result) ??
+      beltQuote(
+        result.ok,
+        completed,
+        beltTaken,
+        beltTotal,
+        overflow,
+        underflow,
+      );
   } else if (result.ok) {
     quote =
       starQuote(level, result) ??
@@ -231,6 +294,8 @@ export function deriveResultView(
     correctLabel = `Benar: tidak ada bentrok di ${area.name}`;
   } else if (battery) {
     correctLabel = 'Benar: barang lengkap dan baterai hemat';
+  } else if (belt) {
+    correctLabel = 'Benar: semua barang sampai, tidak ada yang jatuh atau meraih kosong';
   }
 
   if (verdictMode) correctLabel = 'Benar: semua robot selesai tanpa masalah';
