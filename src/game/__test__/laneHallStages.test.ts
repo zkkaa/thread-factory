@@ -15,9 +15,9 @@ import {
   stageOf,
   type HallStage,
   type SpotRef,
-} from '../hallStages';
-import { layout1_3 } from '../layouts/level-1-3.layout';
-import { validateHallLayout } from '../layouts/validateHall';
+} from '../laneHallStages';
+import { layout1_3Lanes } from '../layouts/level-1-3.lanes.layout';
+import { validateLaneHallLayout } from '../layouts/validateLaneHall';
 
 const ORIGINAL = level1_3.threads[0]?.program ?? [];
 const THREADS = level1_3.threads.map((t) => ({ id: t.id }));
@@ -39,31 +39,31 @@ function marksWith(tools: PlacedSemaphoreTool[]) {
   return marks;
 }
 
-describe('validateHallLayout', () => {
+describe('validateLaneHallLayout', () => {
   it('layout 1-3 sah terhadap level 1-3', () => {
-    expect(validateHallLayout(layout1_3, level1_3)).toEqual([]);
+    expect(validateLaneHallLayout(layout1_3Lanes, level1_3)).toEqual([]);
   });
 
   it('melaporkan jumlah slot yang salah', () => {
-    const rusak = { ...layout1_3, slots: layout1_3.slots.slice(0, 3) };
-    expect(validateHallLayout(rusak, level1_3)).not.toEqual([]);
+    const rusak = { ...layout1_3Lanes, slots: layout1_3Lanes.slots.slice(0, 3) };
+    expect(validateLaneHallLayout(rusak, level1_3)).not.toEqual([]);
   });
 
   it('melaporkan robot yang tidak punya lajur', () => {
-    const lanes = layout1_3.lanes.map((lane, i) =>
+    const lanes = layout1_3Lanes.lanes.map((lane, i) =>
       i === 1 ? { ...lane, robots: [4, 5, 6] } : lane,
     );
-    const errors = validateHallLayout({ ...layout1_3, lanes }, level1_3);
+    const errors = validateLaneHallLayout({ ...layout1_3Lanes, lanes }, level1_3);
     expect(errors.some((e) => e.includes('robot 7'))).toBe(true);
   });
 });
 
 describe('laneOf', () => {
   it('robot 0 sampai 3 di lajur atas, 4 sampai 7 di lajur bawah', () => {
-    expect(laneOf(layout1_3, 0)).toBe(0);
-    expect(laneOf(layout1_3, 3)).toBe(0);
-    expect(laneOf(layout1_3, 4)).toBe(1);
-    expect(laneOf(layout1_3, 7)).toBe(1);
+    expect(laneOf(layout1_3Lanes, 0)).toBe(0);
+    expect(laneOf(layout1_3Lanes, 3)).toBe(0);
+    expect(laneOf(layout1_3Lanes, 4)).toBe(1);
+    expect(laneOf(layout1_3Lanes, 7)).toBe(1);
   });
 });
 
@@ -99,7 +99,7 @@ describe('assignSpots', () => {
 
   it('antrean per lajur mengikuti urutan FIFO semaphore', () => {
     const result = assignSpots(
-      layout1_3,
+      layout1_3Lanes,
       THREADS,
       stages([
         ['R1', 'queue'],
@@ -119,7 +119,7 @@ describe('assignSpots', () => {
       ['R2', { stage: 'area', index: 2, lane: 0 }],
     ]);
     const result = assignSpots(
-      layout1_3,
+      layout1_3Lanes,
       THREADS,
       stages([
         ['R1', 'area'],
@@ -134,7 +134,7 @@ describe('assignSpots', () => {
 
   it('pijakan dipakai untuk rakit dan selesai', () => {
     const result = assignSpots(
-      layout1_3,
+      layout1_3Lanes,
       THREADS,
       stages([
         ['R4', 'prep'],
@@ -145,15 +145,15 @@ describe('assignSpots', () => {
     );
     expect(result.get('R4')).toEqual({ stage: 'prep', index: 3, lane: 0 });
     expect(result.get('R6')).toEqual({ stage: 'done', index: 5, lane: 1 });
-    const point = spotPoint(layout1_3, result.get('R6') as SpotRef);
-    expect(point).toEqual(layout1_3.prepSpots[5]);
+    const point = spotPoint(layout1_3Lanes, result.get('R6') as SpotRef);
+    expect(point).toEqual(layout1_3Lanes.prepSpots[5]);
   });
 });
 
 describe('spotPoint', () => {
   it('memotong indeks antrean ke tempat terakhir lajurnya', () => {
-    const point = spotPoint(layout1_3, { stage: 'queue', index: 99, lane: 1 });
-    expect(point).toEqual(layout1_3.lanes[1]?.queueSpots[3]);
+    const point = spotPoint(layout1_3Lanes, { stage: 'queue', index: 99, lane: 1 });
+    expect(point).toEqual(layout1_3Lanes.lanes[1]?.queueSpots[3]);
   });
 });
 
@@ -161,7 +161,7 @@ describe('routeBetween dan isRespawn', () => {
   const dest = { x: 1, y: 2 };
 
   it('pijakan ke antrean lewat sumbu tegak ke lajurnya', () => {
-    const route = routeBetween(layout1_3, 0, 'prep', 'queue', dest);
+    const route = routeBetween(layout1_3Lanes, 0, 'prep', 'queue', dest);
     expect(route).toEqual([
       { x: 463, y: 207 },
       { x: 463, y: 284 },
@@ -170,23 +170,23 @@ describe('routeBetween dan isRespawn', () => {
   });
 
   it('antrean ke area lewat gerbang, belok, dan titik gabung (lajur bawah)', () => {
-    const route = routeBetween(layout1_3, 5, 'queue', 'area', dest);
+    const route = routeBetween(layout1_3Lanes, 5, 'queue', 'area', dest);
     expect(route).toEqual([
       { x: 800, y: 423 },
       { x: 940, y: 423 },
-      layout1_3.merge,
+      layout1_3Lanes.merge,
       dest,
     ]);
   });
 
   it('area ke pintu keluar langsung', () => {
-    expect(routeBetween(layout1_3, 0, 'area', 'exit', dest)).toEqual([dest]);
+    expect(routeBetween(layout1_3Lanes, 0, 'area', 'exit', dest)).toEqual([dest]);
   });
 
   it('keluar lalu kembali ke pijakan adalah respawn tanpa jalur', () => {
     expect(isRespawn('exit', 'prep')).toBe(true);
     expect(isRespawn('area', 'done')).toBe(true);
     expect(isRespawn('queue', 'area')).toBe(false);
-    expect(routeBetween(layout1_3, 0, 'area', 'prep', dest)).toEqual([dest]);
+    expect(routeBetween(layout1_3Lanes, 0, 'area', 'prep', dest)).toEqual([dest]);
   });
 });

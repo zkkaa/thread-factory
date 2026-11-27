@@ -1,7 +1,6 @@
 import type { InstructionOrigin } from '../engine/tools';
 import type { Instruction, ThreadId, ThreadSnapshot } from '../engine/types';
-import type { HallLayout } from './layouts/hallLayoutTypes';
-import type { Point } from './layouts/types';
+import type { LaneHallLayout, Point } from './layouts/types';
 
 /**
  * Logika murni arena aula (Level 1-3): robot ada di tahap mana, berdiri di
@@ -67,7 +66,7 @@ export function stageOf(
 }
 
 /** Lajur milik robot ke-`order`; 0 bila tidak terdaftar. */
-export function laneOf(layout: HallLayout, order: number): number {
+export function laneOf(layout: LaneHallLayout, order: number): number {
   const lane = layout.lanes.findIndex((l) => l.robots.includes(order));
   return lane < 0 ? 0 : lane;
 }
@@ -88,7 +87,7 @@ export interface SpotRef {
  *   mengisi tempat kosong terkecil. `previous` = hasil pemanggilan sebelumnya.
  */
 export function assignSpots(
-  layout: HallLayout,
+  layout: LaneHallLayout,
   threads: readonly Pick<ThreadSnapshot, 'id'>[],
   stages: ReadonlyMap<ThreadId, HallStage>,
   semaphoreQueue: readonly ThreadId[],
@@ -145,7 +144,7 @@ export function assignSpots(
 }
 
 /** Titik kanvas sebuah tempat; indeks di luar daftar dipotong ke tempat terakhir. */
-export function spotPoint(layout: HallLayout, ref: SpotRef): Point {
+export function spotPoint(layout: LaneHallLayout, ref: SpotRef): Point {
   let list: readonly Point[];
   switch (ref.stage) {
     case 'prep':
@@ -183,7 +182,7 @@ export function isRespawn(from: HallStage, to: HallStage): boolean {
  * gerbang, belok, bergabung. Perpindahan respawn mengembalikan hanya `dest`.
  */
 export function routeBetween(
-  layout: HallLayout,
+  layout: LaneHallLayout,
   order: number,
   from: HallStage,
   to: HallStage,

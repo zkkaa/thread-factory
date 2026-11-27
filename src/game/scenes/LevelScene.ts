@@ -264,7 +264,10 @@ export class LevelScene extends Scene {
         state.tools,
       );
     }
-
+    if (layout.kind === 'laneHall') {
+      this.showNotice('Arena aula dua lajur belum tersambung');
+      return;
+    }
     const road = buildRoad(layout.road);
     const path = road.path;
     const nameOf = this.nameOf(snapshot);

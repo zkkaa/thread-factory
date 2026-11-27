@@ -1,4 +1,4 @@
-import type { HallLayout } from './hallLayoutTypes';
+import type { LaneHallLayout } from './types';
 
 /**
  * Aula Level 1-3, diukur dari background `world/bg-level-1-3.jpg` (1280x720).
@@ -11,8 +11,8 @@ import type { HallLayout } from './hallLayoutTypes';
  *  0 sebelum WORK (di sumbu tegak), 1 sebelum ENTER_AREA (gerbang),
  *  2 dan 3 di dalam Area Kerja, 4 sesudah LEAVE_AREA (depan EXIT).
  */
-export const layout1_3: HallLayout = {
-  kind: 'hall',
+export const layout1_3Lanes: LaneHallLayout = {
+  kind: 'laneHall',
   id: '1-3',
   slots: [
     { x: 463, y: 355 },
