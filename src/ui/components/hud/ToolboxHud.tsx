@@ -22,6 +22,8 @@ import { useGatePlacement } from '../../hooks/useGatePlacement';
 import { mutexToolId, replaceTool } from '../../toolSpans';
 import { BeltToolbox } from './BeltToolbox';
 import { ConditionToolbox } from './ConditionToolbox';
+import { findRwSetup } from '../../rwTool';
+import { RwToolbox } from './RwToolbox';
 import { GateDragChip } from './GateDragChip';
 import { ToolboxDock, type DockTab } from './ToolboxDock';
 
@@ -64,11 +66,12 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
   const hasCondition =
     level.availableTools.includes('condition') &&
     findConditionSetup(level) !== null;
-  const hasBelt = findBeltSetup(level) !== null;
+   const hasBelt = findBeltSetup(level) !== null;
+    const hasRw = findRwSetup(level) !== null;
 
-  if (!hasMutex && !hasSemaphore && !hasCondition && !hasBelt) {
-    return null;
-  }
+    if (!hasMutex && !hasSemaphore && !hasCondition && !hasBelt && !hasRw) {
+      return null;
+    }
 
   const guardedIds = level.threads
     .filter((thread) => thread.program.length === first.program.length)
@@ -121,7 +124,13 @@ export function ToolboxHud({ controller, state }: ToolboxHudProps) {
       content: <ConditionToolbox controller={controller} state={state} />,
     });
   }
-
+    if (hasRw) {
+    tabs.push({
+      id: 'rwlock',
+      label: 'Kunci Papan',
+      content: <RwToolbox controller={controller} state={state} />,
+    });
+  }
   return <ToolboxDock tabs={tabs} />;
 }
 
