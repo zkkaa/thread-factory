@@ -120,6 +120,7 @@ function starQuote(level: LevelDefinition, result: LevelResult): string | null {
   if (result.stars === 1) return custom.stars1 ?? null;
   return null;
 }
+
 /** Mengubah hasil penilaian controller menjadi data tampilan. Tidak menilai ulang. */
 export function deriveResultView(
   level: LevelDefinition,
@@ -149,7 +150,7 @@ export function deriveResultView(
     (a, b) => a + b,
     0,
   );
-  // BARU: fastest opsional; bila ada, ★★★ dinilai dari tick (sama dengan evaluateLevel).
+  // fastest opsional; bila ada, ★★★ dinilai dari tick (sama dengan evaluateLevel).
   const { fast, lowWait, fastest } = level.goal.stars;
   const efficient = result.ok && result.metrics.tick <= fast;
   const frugal =
@@ -159,6 +160,10 @@ export function deriveResultView(
       : totalWait <= lowWait);
   const titles = level.resultTitle ?? DEFAULT_TITLES;
   const verdictMode = level.resultMode === 'verdict';
+  // Lulus lewat perampasan kunci (preemption): macet sempat terjadi lalu
+  // dipulihkan. Dibaca dari snapshot, jadi berlaku untuk level mana pun.
+  const preemptions = snapshot.preemptions ?? 0;
+  const rescued = result.ok && preemptions > 0;
 
   const tickCard = { label: 'Total tick', value: String(result.metrics.tick) };
   const waitCard = { label: 'Waktu tunggu', value: String(totalWait) };
@@ -208,11 +213,18 @@ export function deriveResultView(
 
   let keyFigure: ResultView['keyFigure'];
   if (verdictMode) {
+    // Bukan "aman = aman": level vonis tidak punya angka untuk dibandingkan,
+    // jadi `display` menyebut keadaannya langsung.
     keyFigure = {
-      label: 'Hasil',
+      label: 'Status',
       actual: result.ok ? 'aman' : 'bermasalah',
       target: 'aman',
       match: result.ok,
+      display: !result.ok
+        ? 'Macet'
+        : rescued
+          ? `Pulih (${preemptions}× rampas kunci)`
+          : 'Tanpa deadlock',
     };
   } else if (area !== null) {
     keyFigure = {
@@ -295,17 +307,23 @@ export function deriveResultView(
   } else if (battery) {
     correctLabel = 'Benar: barang lengkap dan baterai hemat';
   } else if (belt) {
-    correctLabel = 'Benar: semua barang sampai, tidak ada yang jatuh atau meraih kosong';
+    correctLabel =
+      'Benar: semua barang sampai, tidak ada yang jatuh atau meraih kosong';
   }
 
   if (verdictMode) correctLabel = 'Benar: semua robot selesai tanpa masalah';
 
   let title = titles.fail;
-  if (result.ok) title = titles.pass;
-  else if (timingFail) title = TIMING_FAIL_TITLE;
+  if (result.ok) {
+    // Judul `rescued` dipakai bila lulus lewat perampasan kunci dan level punya.
+    title =
+      (rescued ? level.resultTitle?.rescued : undefined) ?? titles.pass;
+  } else if (timingFail) {
+    title = TIMING_FAIL_TITLE;
+  }
 
-  // BARU: pesan dipilih dari bintang. ★★★ atau tidak dinilai (seed bukan
-  // tutorial) memakai `pass`; ★ dan ★★ memakai `partial` bila level punya.
+  // Pesan dipilih dari bintang. ★★★ atau tidak dinilai (seed bukan tutorial)
+  // memakai `pass`; ★ dan ★★ memakai `partial` bila level punya.
   let explanation: string | null = null;
   if (timingFail) {
     explanation = TIMING_FAIL_EXPLANATION;
@@ -316,7 +334,7 @@ export function deriveResultView(
     else explanation = partial ?? pass;
   }
 
-  // BARU: label kriteria ★★★ mengikuti jenis ambangnya.
+  // Label kriteria ★★★ mengikuti jenis ambangnya.
   const thirdLabel =
     fastest !== undefined
       ? `Hemat: selesai dalam ${fastest} tick atau kurang (tick: ${result.metrics.tick})`
