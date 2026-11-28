@@ -86,12 +86,22 @@ export const level2_3: LevelDefinition = {
       'Macet total (deadlock) terjadi kalau empat hal ini ada bersamaan: kunci hanya boleh dipegang satu orang, ' +
       'orang yang sudah memegang kunci tetap menunggu kunci lain, kunci tidak bisa direbut paksa, ' +
       'dan mereka saling menunggu melingkar (circular wait). ' +
-      'Dengan membatasi teknisi jadi 4, lingkaran tunggu putus karena selalu ada satu teknisi yang bisa mendapat dua kunci. ' +
-      'Merampas kunci memutus syarat "tidak bisa direbut", tetapi pekerjaan yang sudah berjalan harus diulang.',
-    fail: 'Semua teknisi memegang satu kunci dan menunggu kunci tetangganya: itu circular wait, jadi tidak ada yang bisa maju. Ini deadlock. Menunggu lebih lama tidak akan membantu; salah satu syarat deadlock harus diputus, misalnya dengan membatasi jumlah teknisi atau dengan merampas kunci.',
+      'Kartu Akses yang nilainya lebih kecil dari jumlah teknisi (di sini kurang dari 5) memutus lingkaran tunggu, ' +
+      'karena selalu ada satu teknisi yang bisa mendapat dua kunci lalu melepasnya. ' +
+      'Merampas kunci memutus syarat "tidak bisa direbut", tetapi macet harus terjadi dulu dan pekerjaan korban diulang dari awal.',
+    partial:
+      'Hasilnya benar dan tidak ada teknisi yang macet selamanya, tetapi belum paling efisien. ' +
+      'Pengaman punya harga: Kartu Akses yang terlalu sedikit atau gerbang yang menutupi terlalu banyak langkah membuat teknisi mengantre, ' +
+      'dan merampas kunci membuat pekerjaan korban diulang dari awal. ' +
+      'Coba atur ulang lalu bandingkan total tick dan waktu tunggunya.',
+    fail:
+      'Semua teknisi memegang satu kunci dan menunggu kunci tetangganya: itu circular wait, jadi tidak ada yang bisa maju. Ini deadlock. ' +
+      'Menunggu lebih lama tidak akan membantu; salah satu syarat deadlock harus diputus, misalnya dengan membatasi jumlah teknisi atau dengan merampas kunci. ' +
+      'Perhatikan: Kartu Akses bernilai 5 sama saja dengan tanpa batas, karena kelima teknisi tetap bisa mengambil satu kunci bersamaan.',
   },
   resultTitle: {
     pass: 'Bagus! Tidak Ada yang Saling Tunggu!',
+    rescued: 'Deadlock Teratasi!',
     fail: 'Waduh, Semua Teknisi Macet!',
   },
   layoutId: '2-3',

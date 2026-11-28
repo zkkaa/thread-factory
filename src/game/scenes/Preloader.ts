@@ -3,6 +3,7 @@ import type { SimulationController } from '../../controller/SimulationController
 import {
   ARENA_BACKGROUND,
   ASSET_BASE_PATH,
+  HALL_ART,
   IMAGES,
   SHEETS,
   type ImageSpec,
@@ -41,6 +42,9 @@ export class Preloader extends Scene {
     for (const sheet of SHEETS) this.load.image(sheet.sourceKey, sheet.path);
     for (const image of IMAGES) this.load.image(image.sourceKey, image.path);
     this.load.image(ARENA_BACKGROUND.key, ARENA_BACKGROUND.path);
+    for (const art of Object.values(HALL_ART)) {
+    this.load.image(art.key, art.path);
+    }
   }
 
   create(): void {

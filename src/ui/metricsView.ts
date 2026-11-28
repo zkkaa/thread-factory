@@ -1,6 +1,7 @@
 import type { ControllerState } from '../controller/SimulationController';
 import { batteryLevel, computeMetrics } from '../engine/metrics';
 import { areaOf } from './areaMode';
+import { totalTakenItems } from './beltInfo';
 
 /**
  * Menyiapkan angka untuk Laci Metrik. Murni (tanpa React) supaya bisa dites.
@@ -11,6 +12,8 @@ import { areaOf } from './areaMode';
  * Level yang punya robot busy waiting (SPIN_UNTIL, mis. Level 1-4) mendapat
  * `busyWait` berisi total tick dan sisa baterai tiap robot itu; level lain
  * `busyWait` bernilai null.
+ * Level berban (mis. Level 2-1) mendapat `belt` berisi barang sampai, total,
+ * overflow, dan underflow; level lain `belt` bernilai null.
  */
 export function deriveMetrics(state: ControllerState) {
   const { level, snapshot, result } = state;
@@ -20,6 +23,7 @@ export function deriveMetrics(state: ControllerState) {
   const metrics = result?.metrics;
   const liveUtilization = computeMetrics(snapshot).coreUtilization;
   const area = areaOf(level);
+  const beltTotal = area === null ? totalTakenItems(level) : null;
   const spinners = level.threads.filter((def) =>
     def.program.some((instruction) => instruction.op === 'SPIN_UNTIL'),
   );
@@ -43,6 +47,15 @@ export function deriveMetrics(state: ControllerState) {
             occupancy: snapshot.areaOccupancy[area.name] ?? 0,
             overloadTicks: snapshot.overloadTicks,
             utilization: `${Math.round(snapshot.areaUtilization * 100)}%`,
+          },
+    belt:
+      beltTotal === null
+        ? null
+        : {
+            taken: snapshot.buffers.reduce((sum, b) => sum + b.totalTaken, 0),
+            total: beltTotal,
+            overflow: snapshot.overflowCount,
+            underflow: snapshot.underflowCount,
           },
     busyWait:
       spinners.length === 0

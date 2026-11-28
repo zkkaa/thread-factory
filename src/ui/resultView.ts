@@ -3,6 +3,7 @@ import { batteryLevel } from '../engine/metrics';
 import type { Snapshot } from '../engine/types';
 import type { LevelDefinition } from '../levels/types';
 import { areaOf } from './areaMode';
+import { totalTakenItems } from './beltInfo';
 
 export interface ResultView {
   ok: boolean;
@@ -57,6 +58,32 @@ function areaQuote(ok: boolean, areaName: string, overload: number): string {
 }
 
 /**
+ * Kalimat gelembung Pak Mandor untuk level berban (mis. Level 2-1). Penyebab
+ * kegagalan disebut menurut kasusnya: barang jatuh, tangan kosong, atau macet.
+ */
+function beltQuote(
+  ok: boolean,
+  completed: boolean,
+  taken: number,
+  total: number,
+  overflow: number,
+  underflow: number,
+): string {
+  if (ok) return `${total} barang sampai, tidak ada yang jatuh.`;
+  if (overflow > 0 && underflow > 0) {
+    return `Barang jatuh ${overflow} kali dan pengepak meraih ban kosong ${underflow} kali.`;
+  }
+  if (overflow > 0) {
+    return `Ada ${overflow} barang jatuh karena ban penuh.`;
+  }
+  if (underflow > 0) {
+    return `Pengepak meraih ban kosong ${underflow} kali.`;
+  }
+  const progress = `Baru ${taken} dari ${total} barang sampai.`;
+  return completed ? progress : `${progress} Robot saling menunggu.`;
+}
+
+/**
  * Level berbaterai = ada thread yang memakai busy waiting (SPIN_UNTIL) pada
  * program aslinya (mis. Level 1-4). Dibaca dari data, bukan dari id level.
  */
@@ -93,6 +120,7 @@ function starQuote(level: LevelDefinition, result: LevelResult): string | null {
   if (result.stars === 1) return custom.stars1 ?? null;
   return null;
 }
+
 /** Mengubah hasil penilaian controller menjadi data tampilan. Tidak menilai ulang. */
 export function deriveResultView(
   level: LevelDefinition,
@@ -108,6 +136,13 @@ export function deriveResultView(
   const busyWait = result.metrics.busyWaitTicks;
   const percent = Math.round(batteryLevel(busyWait) * 100);
   const completed = snapshot.threads.every((t) => t.state === 'TERMINATED');
+  // Level berban (Level 2-1): variabel target hanya placeholder, jadi yang
+  // ditampilkan adalah isi ban dari snapshot.
+  const beltTotal = area === null && !battery ? totalTakenItems(level) : null;
+  const belt = beltTotal !== null;
+  const beltTaken = snapshot.buffers.reduce((sum, b) => sum + b.totalTaken, 0);
+  const overflow = snapshot.overflowCount;
+  const underflow = snapshot.underflowCount;
   // Level berbaterai yang gagal padahal selesai dan tanpa busy waiting:
   // masalahnya waktu sinyal (Pengepak dibangunkan sebelum barang cukup).
   const timingFail = battery && completed && !result.ok && busyWait === 0;
@@ -115,7 +150,7 @@ export function deriveResultView(
     (a, b) => a + b,
     0,
   );
-  // BARU: fastest opsional; bila ada, ★★★ dinilai dari tick (sama dengan evaluateLevel).
+  // fastest opsional; bila ada, ★★★ dinilai dari tick (sama dengan evaluateLevel).
   const { fast, lowWait, fastest } = level.goal.stars;
   const efficient = result.ok && result.metrics.tick <= fast;
   const frugal =
@@ -125,6 +160,10 @@ export function deriveResultView(
       : totalWait <= lowWait);
   const titles = level.resultTitle ?? DEFAULT_TITLES;
   const verdictMode = level.resultMode === 'verdict';
+  // Lulus lewat perampasan kunci (preemption): macet sempat terjadi lalu
+  // dipulihkan. Dibaca dari snapshot, jadi berlaku untuk level mana pun.
+  const preemptions = snapshot.preemptions ?? 0;
+  const rescued = result.ok && preemptions > 0;
 
   const tickCard = { label: 'Total tick', value: String(result.metrics.tick) };
   const waitCard = { label: 'Waktu tunggu', value: String(totalWait) };
@@ -153,6 +192,13 @@ export function deriveResultView(
       tickCard,
       waitCard,
     ];
+  } else if (belt) {
+    cards = [
+      { label: 'Barang jatuh (overflow)', value: String(overflow) },
+      { label: 'Tangan kosong (underflow)', value: String(underflow) },
+      tickCard,
+      waitCard,
+    ];
   } else {
     cards = [
       {
@@ -167,11 +213,18 @@ export function deriveResultView(
 
   let keyFigure: ResultView['keyFigure'];
   if (verdictMode) {
+    // Bukan "aman = aman": level vonis tidak punya angka untuk dibandingkan,
+    // jadi `display` menyebut keadaannya langsung.
     keyFigure = {
-      label: 'Hasil',
+      label: 'Status',
       actual: result.ok ? 'aman' : 'bermasalah',
       target: 'aman',
       match: result.ok,
+      display: !result.ok
+        ? 'Macet'
+        : rescued
+          ? `Pulih (${preemptions}× rampas kunci)`
+          : 'Tanpa deadlock',
     };
   } else if (area !== null) {
     keyFigure = {
@@ -201,6 +254,17 @@ export function deriveResultView(
           ? 'Habis'
           : `${percent}% (boros)`,
     };
+  } else if (belt) {
+    // match mengikuti hasil penilaian (bukan jumlah saja): 8 / 8 tetap merah
+    // bila ada barang jatuh. Bentuk "x / y" dipakai agar tidak ada simbol "="
+    // yang menyesatkan pada kasus itu.
+    keyFigure = {
+      label: 'Barang sampai',
+      actual: String(beltTaken),
+      target: String(beltTotal),
+      match: result.ok,
+      display: `${beltTaken} / ${beltTotal}`,
+    };
   } else {
     keyFigure = {
       label: capitalize(variable),
@@ -218,6 +282,17 @@ export function deriveResultView(
       starQuote(level, result) ?? areaQuote(result.ok, area.name, overload);
   } else if (battery) {
     quote = batteryQuote(result.ok, completed, busyWait, percent, timingFail);
+  } else if (belt) {
+    quote =
+      starQuote(level, result) ??
+      beltQuote(
+        result.ok,
+        completed,
+        beltTaken,
+        beltTotal,
+        overflow,
+        underflow,
+      );
   } else if (result.ok) {
     quote =
       starQuote(level, result) ??
@@ -231,16 +306,24 @@ export function deriveResultView(
     correctLabel = `Benar: tidak ada bentrok di ${area.name}`;
   } else if (battery) {
     correctLabel = 'Benar: barang lengkap dan baterai hemat';
+  } else if (belt) {
+    correctLabel =
+      'Benar: semua barang sampai, tidak ada yang jatuh atau meraih kosong';
   }
 
   if (verdictMode) correctLabel = 'Benar: semua robot selesai tanpa masalah';
 
   let title = titles.fail;
-  if (result.ok) title = titles.pass;
-  else if (timingFail) title = TIMING_FAIL_TITLE;
+  if (result.ok) {
+    // Judul `rescued` dipakai bila lulus lewat perampasan kunci dan level punya.
+    title =
+      (rescued ? level.resultTitle?.rescued : undefined) ?? titles.pass;
+  } else if (timingFail) {
+    title = TIMING_FAIL_TITLE;
+  }
 
-  // BARU: pesan dipilih dari bintang. ★★★ atau tidak dinilai (seed bukan
-  // tutorial) memakai `pass`; ★ dan ★★ memakai `partial` bila level punya.
+  // Pesan dipilih dari bintang. ★★★ atau tidak dinilai (seed bukan tutorial)
+  // memakai `pass`; ★ dan ★★ memakai `partial` bila level punya.
   let explanation: string | null = null;
   if (timingFail) {
     explanation = TIMING_FAIL_EXPLANATION;
@@ -251,7 +334,7 @@ export function deriveResultView(
     else explanation = partial ?? pass;
   }
 
-  // BARU: label kriteria ★★★ mengikuti jenis ambangnya.
+  // Label kriteria ★★★ mengikuti jenis ambangnya.
   const thirdLabel =
     fastest !== undefined
       ? `Hemat: selesai dalam ${fastest} tick atau kurang (tick: ${result.metrics.tick})`

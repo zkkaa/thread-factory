@@ -18,10 +18,13 @@ interface SlotView {
 
 /**
  * Ban berjalan berslot terbatas. Barang menumpuk dari sisi consumer (kanan).
- * Overflow tampil sebagai peti jatuh di ujung producer (kiri), underflow
- * sebagai teks "TANGAN KOSONG" di ujung consumer (kanan). Hitungan overflow
- * dan underflow selalu tampil sebagai teks; gerak dimatikan oleh "kurangi
- * animasi". View ini hanya menggambar apa yang dilaporkan engine.
+ * Panah di bawah slot menunjukkan arah aliran (kiri ke kanan). Saat barang
+ * ditaruh, peti meluncur dari ujung producer ke slotnya; saat diambil, peti
+ * meluncur keluar di ujung consumer. Overflow tampil sebagai peti jatuh di
+ * ujung producer (kiri), underflow sebagai teks "TANGAN KOSONG" di ujung
+ * consumer (kanan). Hitungan overflow dan underflow selalu tampil sebagai
+ * teks; semua gerak dimatikan oleh "kurangi animasi". View ini hanya
+ * menggambar apa yang dilaporkan engine.
  */
 export class BufferView {
   private readonly objects: GameObjects.GameObject[] = [];
@@ -36,7 +39,7 @@ export class BufferView {
 
   constructor(
     private readonly scene: Scene,
-    rect: Rect,
+    private readonly rect: Rect,
     buffer: BufferSnapshot,
   ) {
     this.bufferId = buffer.id;
@@ -73,6 +76,7 @@ export class BufferView {
         .setOrigin(0.5)
         .setDepth(DEPTH.slot),
     );
+    this.drawFlowArrows();
 
     this.spots = layoutSlots(rect, buffer, {
       padding: BELT.padding,
@@ -122,11 +126,9 @@ export class BufferView {
       labels.hasProblem ? BELT.panelProblemStroke : BELT.panelStroke,
     );
 
+    const items = Math.max(0, Math.min(buffer.items, this.slots.length));
     this.slots.forEach((slot, index) => {
-      const filled = this.spots[index]?.filled ?? false;
-      const items = Math.max(0, Math.min(buffer.items, this.slots.length));
       const isFilled = index >= this.slots.length - items;
-      void filled;
       slot.box.setFillStyle(isFilled ? BELT.slotFilled : BELT.slotEmpty);
       slot.crate?.setVisible(isFilled);
     });
@@ -134,6 +136,8 @@ export class BufferView {
     if (events === this.lastEvents) return;
     this.lastEvents = events;
     const flash = bufferFlash(events, this.bufferId);
+    if (flash.put) this.playPut(items, durationMs);
+    if (flash.taken) this.playTaken(durationMs);
     if (flash.overflow) this.playOverflow(durationMs);
     if (flash.underflow) this.playUnderflow(durationMs);
   }
@@ -152,23 +156,76 @@ export class BufferView {
     return this.scene.registry.get(REDUCE_MOTION_KEY) === true;
   }
 
+  /** Deretan panah kecil kiri ke kanan: arah barang mengalir (statis, bukan animasi). */
+  private drawFlowArrows(): void {
+    const { rect } = this;
+    const g = this.scene.add.graphics().setDepth(DEPTH.segment);
+    g.fillStyle(BELT.arrowColor, BELT.arrowAlpha);
+    const size = BELT.arrowSize;
+    const y = rect.y + rect.height - BELT.footerHeight - BELT.arrowInset;
+    const from = rect.x + BELT.padding + size;
+    const to = rect.x + rect.width - BELT.padding - size;
+    for (let x = from; x <= to; x += BELT.arrowGap) {
+      g.fillTriangle(x + size, y, x - size, y - size, x - size, y + size);
+    }
+    this.track(g);
+  }
+
+  /** Peti sementara (gambar peti, atau kotak bila tekstur belum ada). */
+  private makeCrate(
+    x: number,
+    y: number,
+    size: number,
+  ): GameObjects.Image | GameObjects.Rectangle {
+    const crate = this.scene.textures.exists(TINY_FACTORY.key)
+      ? this.scene.add
+          .image(x, y, TINY_FACTORY.key, TINY_FRAMES.crate)
+          .setDisplaySize(size, size)
+      : this.scene.add.rectangle(x, y, size, size, BELT.slotFilled);
+    return crate.setDepth(DEPTH.robotFx);
+  }
+
+  /** Peti meluncur dari ujung producer (kiri) ke slot terisi paling kiri. */
+  private playPut(items: number, durationMs: number): void {
+    const target = this.spots[this.spots.length - items];
+    const first = this.spots[0];
+    if (this.reduceMotion || target === undefined || first === undefined) {
+      return;
+    }
+    const size = target.size * 0.8;
+    const startX = this.rect.x + BELT.padding;
+    const crate = this.makeCrate(startX, target.y, size);
+    this.effects.add(crate);
+    this.scene.tweens.add({
+      targets: crate,
+      x: target.x,
+      duration: Math.max(durationMs, BELT.minFxMs),
+      onComplete: () => {
+        this.effects.delete(crate);
+        crate.destroy();
+      },
+    });
+  }
+
+  /** Peti meluncur keluar dari ujung consumer (kanan) lalu memudar. */
+  private playTaken(durationMs: number): void {
+    const last = this.spots[this.spots.length - 1];
+    if (this.reduceMotion || last === undefined) return;
+    const size = last.size * 0.8;
+    const crate = this.makeCrate(last.x, last.y, size);
+    this.fade(
+      crate,
+      { x: this.rect.x + this.rect.width + size },
+      durationMs,
+    );
+  }
+
   /** Peti jatuh dari ujung producer (kiri) keluar dari ban. */
   private playOverflow(durationMs: number): void {
     const first = this.spots[0];
     if (this.reduceMotion || first === undefined) return;
     const size = first.size * 0.8;
-    const crate = this.scene.textures.exists(TINY_FACTORY.key)
-      ? this.scene.add
-          .image(first.x, first.y, TINY_FACTORY.key, TINY_FRAMES.crate)
-          .setDisplaySize(size, size)
-      : this.scene.add.rectangle(
-          first.x,
-          first.y,
-          size,
-          size,
-          BELT.panelProblemStroke,
-        );
-    crate.setDepth(DEPTH.robotFx);
+    const crate = this.makeCrate(first.x, first.y, size);
     const label = this.scene.add
       .text(first.x, first.y - first.size, 'OVERFLOW!', {
         ...TEXT_STYLE,
@@ -198,7 +255,7 @@ export class BufferView {
 
   private fade(
     target: GameObjects.GameObject,
-    props: { y?: number },
+    props: { x?: number; y?: number },
     durationMs: number,
   ): void {
     this.effects.add(target);

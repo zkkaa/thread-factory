@@ -34,6 +34,9 @@ export const TIER_BACKGROUND: readonly string[] = [
   'ui/robot-guide.png',
   // Intro level dan potret Mandor
   'world/bg-intro-1-1.jpg',
+  'world/bg-level-1-3.jpg',
+  'world/hall-gate.png',
+  'world/hall-slots.png',
   ...EXPRESSIONS.filter((e) => e !== HOME_EXPRESSION).map((e) =>
     portrait(home, e),
   ),

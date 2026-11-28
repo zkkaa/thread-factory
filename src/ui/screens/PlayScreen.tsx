@@ -110,7 +110,7 @@ export function PlayScreen({
         });
       }}
       topLeft={
-        <div className="w-80 space-y-2">
+        <div className="-m-2 max-h-[calc(100vh-18rem)] w-84 space-y-2 overflow-y-auto p-2 [scrollbar-width:thin]">
           <div className={`${PANEL} space-y-2`}>
             {state.level !== null && (
               <h1 className="text-base font-bold">

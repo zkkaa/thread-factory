@@ -61,7 +61,7 @@ export interface LevelDefinition {
   explanation?: { pass: string; fail: string; partial?: string };
   // ...di dalam goal.stars:
   fastest?: number;
-  resultTitle?: { pass: string; fail: string };
+   resultTitle?: { pass: string; fail: string; rescued?: string };
   /**
    * Kunci tata letak arena di game/layouts/. Koordinat tidak disimpan di data
    * level (CLAUDE.md bagian 4 aturan 9).
