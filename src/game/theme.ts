@@ -549,4 +549,17 @@ export const HALL_LAMP = {
   off: 0x111827,
   stroke: 0x93a4c8,
   strokeWidth: 2,
+  /** Opasitas gerbang bayangan saat Kartu Akses belum dipasang. */
+  ghostAlpha: 0.3,
+} as const;
+
+/** Titik layout pada mode ?debug. */
+export const HALL_DEBUG = {
+  work: 0x38bdf8,
+  queue: 0xf59e0b,
+  hall: 0x22c55e,
+  done: 0xa78bfa,
+  door: 0xffffff,
+  radius: 6,
+  fontSize: '9px',
 } as const;

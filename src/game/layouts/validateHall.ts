@@ -122,7 +122,7 @@ export function validateHallLayout(
     }
   }
 
-  const gap = HALL.minSpotGap;
+  const gap = layout.minSpotGap ?? HALL.minSpotGap;
   const spacing: [string, readonly Point[]][] = [
     ['kerja', layout.workSpots],
     ['antrean', layout.queueSpots],
@@ -136,8 +136,17 @@ export function validateHallLayout(
   }
 
   const { door, hall } = layout;
-  if (door.x !== hall.x || door.y <= hall.y || door.y >= hall.y + hall.height) {
-    errors.push('pintu aula harus di tepi kiri aula');
+  const gateLamps = layout.art?.gate.lamps ?? [];
+  const gateCenterX =
+    gateLamps.length > 0
+      ? gateLamps.reduce((sum, lamp) => sum + lamp.x, 0) / gateLamps.length
+      : hall.x;
+  if (
+    door.x !== gateCenterX ||
+    door.y <= hall.y ||
+    door.y >= hall.y + hall.height
+  ) {
+    errors.push('pintu aula harus sejajar dengan gerbang');
   }
 
   const rack: Rect = {

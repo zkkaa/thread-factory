@@ -1,8 +1,17 @@
 import { GameObjects, Scene } from 'phaser';
 import { HALL_ART } from '../assetManifest';
+import { isDebugArena } from '../debugMode';
 import type { GateDropState } from '../gateDrag';
-import type { HallLayout, Rect } from '../layouts/types';
-import { ARENA, COLORS, DEPTH, HALL, HALL_LAMP, TEXT_STYLE } from '../theme';
+import type { HallLayout, Point, Rect } from '../layouts/types';
+import {
+  ARENA,
+  COLORS,
+  DEPTH,
+  HALL,
+  HALL_DEBUG,
+  HALL_LAMP,
+  TEXT_STYLE,
+} from '../theme';
 
 /** Keadaan aula pada satu tick, dihitung dari snapshot oleh HallArena. */
 export interface HallViewState {
@@ -167,14 +176,15 @@ export class HallView {
     );
 
     if (art !== undefined) {
-      // Gerbang dan lampu hanya ada bila Kartu Akses terpasang.
+      // Gerbang selalu tampil: pudar (bayangan) sebagai penanda tempat lepas
+      // Kartu Akses, penuh dan berlampu setelah Kartu Akses terpasang.
       this.track(
         scene.add
           .image(art.gate.x, art.gate.y, HALL_ART.gate.key)
           .setOrigin(0, 0)
           .setScale(art.gate.scale)
           .setDepth(DEPTH.gate)
-          .setVisible(gated),
+          .setAlpha(gated ? 1 : HALL_LAMP.ghostAlpha),
       );
       for (const p of art.gate.lamps) {
         this.lamps.push(
@@ -219,6 +229,8 @@ export class HallView {
         .setDepth(DEPTH.robotFx)
         .setVisible(false),
     );
+
+    if (isDebugArena()) this.drawDebug(scene, layout);
   }
 
   update(state: HallViewState): void {
@@ -270,7 +282,11 @@ export class HallView {
 
     if (!this.gated) {
       this.door.setFillStyle(HALL.doorFree);
-      this.doorLabel.setText('PINTU BEBAS (tanpa kartu)');
+      this.doorLabel.setText(
+        this.artMode
+          ? 'PINTU BEBAS · seret Kartu Akses ke gerbang'
+          : 'PINTU BEBAS (tanpa kartu)',
+      );
     } else if ((state.cards ?? 0) > 0) {
       this.door.setFillStyle(HALL.doorOpen);
       this.doorLabel.setText('GERBANG KARTU · BUKA');
@@ -310,6 +326,34 @@ export class HallView {
   private machineText(index: number, active: boolean): string {
     if (this.artMode) return `M${index + 1}`;
     return active ? `Mesin ${index + 1} · aktif` : `Mesin ${index + 1}`;
+  }
+
+  /** Mode ?debug: gambar semua titik layout dengan nomor agar mudah disetel. */
+  private drawDebug(scene: Scene, layout: HallLayout): void {
+    const groups: [readonly Point[], number][] = [
+      [layout.workSpots, HALL_DEBUG.work],
+      [layout.queueSpots, HALL_DEBUG.queue],
+      [[...layout.machines, ...layout.overflowSpots], HALL_DEBUG.hall],
+      [layout.doneSpots, HALL_DEBUG.done],
+      [[layout.door], HALL_DEBUG.door],
+    ];
+    const graphics = this.track(
+      scene.add.graphics().setDepth(DEPTH.tooltip),
+    );
+    for (const [points, color] of groups) {
+      graphics.lineStyle(2, color, 1);
+      points.forEach((p, index) => {
+        graphics.strokeCircle(p.x, p.y, HALL_DEBUG.radius);
+        this.track(
+          scene.add
+            .text(p.x + HALL_DEBUG.radius + 2, p.y - 6, String(index), {
+              ...TEXT_STYLE,
+              fontSize: HALL_DEBUG.fontSize,
+            })
+            .setDepth(DEPTH.tooltip),
+        );
+      });
+    }
   }
 
   private track<T extends GameObjects.GameObject>(object: T): T {

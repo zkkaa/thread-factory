@@ -64,7 +64,7 @@ describe('layout aula Level 1-3 (T-089)', () => {
       ),
     };
     expect(validateHallLayout(bad, level1_3)).toContain(
-      `titik kerja terlalu rapat (minimal ${HALL.minSpotGap} px)`,
+      `titik kerja terlalu rapat (minimal ${hall1_3.minSpotGap ?? HALL.minSpotGap} px)`,
     );
   });
 
@@ -92,15 +92,15 @@ describe('layout aula Level 1-3 (T-089)', () => {
     );
   });
 
-  it('menolak pintu yang tidak di tepi kiri aula', () => {
+  it('menolak pintu yang tidak sejajar dengan gerbang', () => {
     const bad = { ...hall1_3, door: { x: 700, y: 350 } };
     expect(validateHallLayout(bad, level1_3)).toContain(
-      'pintu aula harus di tepi kiri aula',
+      'pintu aula harus sejajar dengan gerbang',
     );
   });
 
   it('menolak rak kartu yang menimpa zona', () => {
-    const bad = { ...hall1_3, tokenRack: { x: 900, y: 300 } };
+    const bad = { ...hall1_3, tokenRack: { x: 1050, y: 350 } };
     expect(validateHallLayout(bad, level1_3)).toContain(
       'rak kartu menimpa zona aula',
     );

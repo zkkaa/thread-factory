@@ -13,8 +13,15 @@ import {
   type HallZone,
 } from '../hallSpots';
 import { hall1_3 } from '../layouts/level-1-3.hall.layout';
+import type { HallLayout } from '../layouts/types';
 
 const AREA = hall1_3.area;
+
+/** Sumbu y dua lajur antrean pada background (sama dengan layout 1-3). */
+const TOP_LANE_Y = 284;
+const BOTTOM_LANE_Y = 423;
+/** Posisi x titik antrean pada satu lajur, dari yang paling dekat gerbang. */
+const LANE_XS = [670, 630, 590, 550];
 
 /** Gerbang Kartu Akses yang menutupi ENTER_AREA sampai LEAVE_AREA. */
 function cardGate(value: number): PlacedTool {
@@ -52,6 +59,13 @@ function thread(id: string, state: ThreadState, pc: number): ThreadSnapshot {
 
 function robots(zones: HallZone[]): HallRobot[] {
   return zones.map((zone, index) => ({ id: `R${index + 1}`, index, zone }));
+}
+
+/** Delapan robot; yang tidak disebut berzona 'work'. */
+function eight(overrides: Record<number, HallZone>): HallRobot[] {
+  return robots(
+    Array.from({ length: 8 }, (_, i) => overrides[i] ?? 'work'),
+  );
 }
 
 describe('zoneOf', () => {
@@ -174,30 +188,6 @@ describe('assignHallSpots', () => {
     expect(spots.get('R4')).toEqual(hall1_3.doneSpots[3]);
   });
 
-  it('antrean: robot di pintu paling depan, lalu menurut urutan FIFO semaphore', () => {
-    const list = robots([
-      'work',
-      'queue',
-      'door',
-      'queue',
-      'work',
-      'work',
-      'work',
-      'work',
-    ]);
-    const { spots } = assignHallSpots(hall1_3, list, ['R4', 'R2'], new Map());
-    expect(spots.get('R3')).toEqual(hall1_3.queueSpots[0]);
-    expect(spots.get('R4')).toEqual(hall1_3.queueSpots[1]);
-    expect(spots.get('R2')).toEqual(hall1_3.queueSpots[2]);
-  });
-
-  it('robot mengantre yang tidak ada di urutan FIFO ditaruh di belakang', () => {
-    const list = robots(['queue', 'queue']);
-    const { spots } = assignHallSpots(hall1_3, list, ['R2'], new Map());
-    expect(spots.get('R2')).toEqual(hall1_3.queueSpots[0]);
-    expect(spots.get('R1')).toEqual(hall1_3.queueSpots[1]);
-  });
-
   it('aula: tiga robot pertama di mesin, berikutnya di tempat luapan', () => {
     const list = robots(['hall', 'hall', 'hall', 'hall', 'work']);
     const { spots, seats } = assignHallSpots(hall1_3, list, [], new Map());
@@ -225,5 +215,84 @@ describe('assignHallSpots', () => {
     expect(second.spots.get('R3')).toEqual(hall1_3.machines[2]);
     expect(second.spots.get('R4')).toEqual(hall1_3.overflowSpots[0]);
     expect(second.spots.get('R5')).toEqual(hall1_3.machines[1]);
+  });
+});
+
+describe('assignHallSpots: antrean per lajur (layout bergambar)', () => {
+  it('robot 1 sampai 4 di lajur atas, robot 5 sampai 8 di lajur bawah', () => {
+    const list = robots(Array.from({ length: 8 }, () => 'queue' as HallZone));
+    const { spots } = assignHallSpots(hall1_3, list, [], new Map());
+    for (const id of ['R1', 'R2', 'R3', 'R4']) {
+      expect(spots.get(id)?.y).toBe(TOP_LANE_Y);
+    }
+    for (const id of ['R5', 'R6', 'R7', 'R8']) {
+      expect(spots.get(id)?.y).toBe(BOTTOM_LANE_Y);
+    }
+  });
+
+  it('dalam satu lajur: robot di pintu paling depan, lalu urutan FIFO', () => {
+    // R1, R2, R3 semuanya di lajur atas (indeks 0 sampai 3).
+    const list = eight({ 0: 'queue', 1: 'queue', 2: 'door' });
+    const { spots } = assignHallSpots(hall1_3, list, ['R2', 'R1'], new Map());
+    expect(spots.get('R3')?.x).toBe(LANE_XS[0]);
+    expect(spots.get('R2')?.x).toBe(LANE_XS[1]);
+    expect(spots.get('R1')?.x).toBe(LANE_XS[2]);
+  });
+
+  it('robot mengantre yang tidak ada di urutan FIFO ditaruh di belakang', () => {
+    const list = eight({ 0: 'queue', 1: 'queue' });
+    const { spots } = assignHallSpots(hall1_3, list, ['R2'], new Map());
+    expect(spots.get('R2')?.x).toBe(LANE_XS[0]);
+    expect(spots.get('R1')?.x).toBe(LANE_XS[1]);
+  });
+
+  it('antrean lajur atas dan bawah tidak saling menggeser', () => {
+    // R1 (atas) dan R5 (bawah) masing-masing paling depan di lajurnya.
+    const list = eight({ 0: 'queue', 4: 'queue' });
+    const { spots } = assignHallSpots(hall1_3, list, [], new Map());
+    expect(spots.get('R1')).toEqual({ x: LANE_XS[0], y: TOP_LANE_Y });
+    expect(spots.get('R5')).toEqual({ x: LANE_XS[0], y: BOTTOM_LANE_Y });
+  });
+
+  it('robot tetap di lajurnya saat robot di depannya masuk aula', () => {
+    // R1 sudah masuk aula; R2 dan R3 maju, tetap di lajur atas.
+    const before = eight({ 0: 'queue', 1: 'queue', 2: 'queue' });
+    const after = eight({ 0: 'hall', 1: 'queue', 2: 'queue' });
+    const a = assignHallSpots(hall1_3, before, ['R1', 'R2', 'R3'], new Map());
+    const b = assignHallSpots(hall1_3, after, ['R2', 'R3'], a.seats);
+    expect(a.spots.get('R2')?.y).toBe(TOP_LANE_Y);
+    expect(b.spots.get('R2')?.y).toBe(TOP_LANE_Y);
+    expect(b.spots.get('R3')?.y).toBe(TOP_LANE_Y);
+    expect(b.spots.get('R2')?.x).toBe(LANE_XS[0]);
+    expect(b.spots.get('R3')?.x).toBe(LANE_XS[1]);
+  });
+});
+
+describe('assignHallSpots: antrean pada layout polos (tanpa art)', () => {
+  const plain: HallLayout = { ...hall1_3 };
+  delete plain.art;
+
+  it('semua robot berbagi satu urutan: pintu dulu, lalu FIFO', () => {
+    const list = robots([
+      'work',
+      'queue',
+      'door',
+      'queue',
+      'work',
+      'work',
+      'work',
+      'work',
+    ]);
+    const { spots } = assignHallSpots(plain, list, ['R4', 'R2'], new Map());
+    expect(spots.get('R3')).toEqual(plain.queueSpots[0]);
+    expect(spots.get('R4')).toEqual(plain.queueSpots[1]);
+    expect(spots.get('R2')).toEqual(plain.queueSpots[2]);
+  });
+
+  it('robot mengantre yang tidak ada di urutan FIFO ditaruh di belakang', () => {
+    const list = robots(['queue', 'queue']);
+    const { spots } = assignHallSpots(plain, list, ['R2'], new Map());
+    expect(spots.get('R2')).toEqual(plain.queueSpots[0]);
+    expect(spots.get('R1')).toEqual(plain.queueSpots[1]);
   });
 });

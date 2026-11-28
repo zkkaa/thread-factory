@@ -62,5 +62,11 @@ export const hall1_3: HallLayout = {
       lampRadius: 11,
     },
     machineSize: 30,
+    // Jalan pada gambar: sumbu tegak di kiri, dua lajur, belok di kanan, titik gabung.
+    route: {
+      spineX: 463,
+      lanes: LANE_YS.map((y) => ({ y, turnX: 940 })),
+      merge: { x: 978, y: 356 },
+    },
   },
 };

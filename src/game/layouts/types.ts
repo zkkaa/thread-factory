@@ -87,7 +87,7 @@ export interface HallLayout {
   /** Titik antrean; indeks 0 paling dekat pintu. */
   queueSpots: Point[];
   hall: Rect;
-  /** Pusat pintu aula, di tepi kiri `hall`. */
+  /** Titik pusat pintu; pada layout bergambar sejajar dengan pusat gerbang. */
   door: Point;
   /** Posisi mesin; jumlahnya sama dengan kapasitas area. */
   machines: Point[];
@@ -104,12 +104,20 @@ export interface HallLayout {
   minSpotGap?: number | undefined;
 }
 /** Gambar aula: kolom pijakan dan gerbang beserta tiga lampunya. */
+export interface HallRoute {
+  spineX: number;
+  lanes: { y: number; turnX: number }[];
+  merge: Point;
+}
+
 export interface HallArt {
   column: ArtPlacement;
   gate: ArtPlacement & { lamps: Point[]; lampRadius: number };
   /** Sisi plat mesin di Area Kerja (kecil karena bingkainya sempit). */
   machineSize: number;
+  route: HallRoute;
 }
+
 /** Satu lajur masuk (konveyor) menuju gerbang pada arena aula dua lajur. */
 export interface LaneHallLane {
   /** Sumbu y lajur (piksel kanvas). */

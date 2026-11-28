@@ -103,11 +103,61 @@ function pick(spots: readonly Point[], index: number, name: string): Point {
   return spot;
 }
 
+/** Indeks lajur yang sumbu y-nya paling dekat dengan `y`. */
+function nearestLaneIndex(lanes: readonly { y: number }[], y: number): number {
+  let best = 0;
+  let bestGap = Infinity;
+  lanes.forEach((lane, index) => {
+    const gap = Math.abs(lane.y - y);
+    if (gap < bestGap) {
+      best = index;
+      bestGap = gap;
+    }
+  });
+  return best;
+}
+
+/**
+ * Menaruh robot antre ke titik antrean. Tanpa lajur (layout polos), semua
+ * robot berbagi satu urutan. Dengan lajur (layout bergambar), robot dibagi
+ * rata menurut indeks (robot 0..3 lajur atas, 4..7 lajur bawah) dan tiap
+ * lajur punya antrean sendiri, sehingga robot tidak pernah pindah lajur.
+ */
+function assignQueue(
+  layout: HallLayout,
+  ordered: readonly HallRobot[],
+  totalRobots: number,
+  spots: Map<string, Point>,
+): void {
+  const lanes = layout.art?.route.lanes;
+  if (lanes === undefined || lanes.length < 2) {
+    ordered.forEach((robot, place) => {
+      spots.set(robot.id, pick(layout.queueSpots, place, 'antrean'));
+    });
+    return;
+  }
+
+  const perLane = Math.ceil(totalRobots / lanes.length);
+  lanes.forEach((_, laneIndex) => {
+    const laneSpots = layout.queueSpots.filter(
+      (p) => nearestLaneIndex(lanes, p.y) === laneIndex,
+    );
+    const inLane = ordered.filter(
+      (r) =>
+        Math.min(lanes.length - 1, Math.floor(r.index / perLane)) === laneIndex,
+    );
+    inLane.forEach((robot, place) => {
+      spots.set(robot.id, pick(laneSpots, place, 'antrean lajur'));
+    });
+  });
+}
+
 /**
  * Titik layar tiap robot menurut zonanya.
  * - work dan done: titik tetap menurut indeks thread.
  * - antrean: robot di depan pintu dulu, lalu yang menunggu menurut
  *   `waitingOrder` (antrean FIFO semaphore); yang tidak tercantum di belakang.
+ *   Pada layout bergambar antrean dibagi per lajur (lihat assignQueue).
  * - aula: kursi lengket (lihat seatInHall).
  * `seats` dikembalikan agar dipakai lagi sebagai `previousSeats` pada pemanggilan
  * berikutnya. Fungsi murni.
@@ -139,9 +189,7 @@ export function assignHallSpots(
         (rank.get(a.id) ?? unknown) - (rank.get(b.id) ?? unknown) ||
         byIndex(a, b),
     );
-  [...atDoor, ...waiting].forEach((robot, place) => {
-    spots.set(robot.id, pick(layout.queueSpots, place, 'antrean'));
-  });
+  assignQueue(layout, [...atDoor, ...waiting], robots.length, spots);
 
   const inside = robots
     .filter((r) => r.zone === 'hall')
