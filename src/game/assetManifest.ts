@@ -22,7 +22,12 @@ export const ARENA_BACKGROUND = {
   key: 'bg-arena',
   path: 'world/bg-arena.png',
 } as const;
-
+/** Gambar arena aula Level 1-3 (latar, kolom pijakan, gerbang). */
+export const HALL_ART = {
+  background: { key: 'bg-level-1-3', path: 'world/bg-level-1-3.jpg' },
+  column: { key: 'hall-slots', path: 'world/hall-slots.png' },
+  gate: { key: 'hall-gate', path: 'world/hall-gate.png' },
+} as const;
 /** Semua spritesheet yang dimuat Preloader. */
 export const SHEETS: readonly SheetSpec[] = [TINY_FACTORY];
 
@@ -66,6 +71,9 @@ export const EXTRA_FILES: readonly string[] = [
   'world/road-straight.png',
   'world/road-curve.png',
   ARENA_BACKGROUND.path,
+  HALL_ART.background.path,
+  HALL_ART.column.path,
+  HALL_ART.gate.path,
 ];
 
 /** Kunci tekstur lantai arena yang dibakar sekali oleh FloorView. */

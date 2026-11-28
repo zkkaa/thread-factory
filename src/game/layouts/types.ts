@@ -98,8 +98,18 @@ export interface HallLayout {
   doneSpots: Point[];
   /** Pusat panel rak Kartu Akses. */
   tokenRack: Point;
+    /** Latar gambar dan sprite statis; bila ada, panel zona polos tidak digambar. */
+  art?: HallArt | undefined;
+  /** Jarak minimal antar titik robot; bawaan HALL.minSpotGap. */
+  minSpotGap?: number | undefined;
 }
-
+/** Gambar aula: kolom pijakan dan gerbang beserta tiga lampunya. */
+export interface HallArt {
+  column: ArtPlacement;
+  gate: ArtPlacement & { lamps: Point[]; lampRadius: number };
+  /** Sisi plat mesin di Area Kerja (kecil karena bingkainya sempit). */
+  machineSize: number;
+}
 /** Satu lajur masuk (konveyor) menuju gerbang pada arena aula dua lajur. */
 export interface LaneHallLane {
   /** Sumbu y lajur (piksel kanvas). */

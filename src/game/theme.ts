@@ -543,3 +543,10 @@ export const LINE = {
   /** Jarak y minimal antar lajur. */
   minLaneGap: 64,
 } as const;
+/** Lampu gerbang Kartu Akses di arena aula bergambar (Level 1-3). */
+export const HALL_LAMP = {
+  on: 0x22c55e,
+  off: 0x111827,
+  stroke: 0x93a4c8,
+  strokeWidth: 2,
+} as const;
